@@ -12,12 +12,13 @@ Run each of the following tcl scripts in order from a command line:
 	- (must run first)
 - **naisen**.tcl
 	- (must run before simulation scripts)
-- **enviro**.tcl (currently useless)
 - /simulations/**numberline**.tcl (demo simulation)
 	- (must run after all naisen.tcl)
 - **user**.tcl
 
 In this demo Maestro will explore the numberline learning how to traverse it using four motor commands.
+
+To use Maestro with other things at this point one must build an interface to their environment using numberline.tcl as an guide. Maestro will communicate actions to the environment. It has 99 actions ranging from 1 to 99. action 0 is reserved for an error message and is currently not used. 
 
 
 ## User Commands ##
@@ -34,7 +35,7 @@ The user can communicate with the running Maestro Bot using the following comman
 
 **try __** - The double underscore subcommand indicates that Maestro is to stop all behavior.
 
-**sleep acts** - Tells Maestro to determine which of its default 98 actions have produced results. Once the list of viable actions is determined Maestro will only use those actions to affect the environment.
+**sleep acts** - Tells Maestro to determine which of its default 99 actions have produced results. Once the list of viable actions is determined Maestro will only use those actions to affect the environment.
 
 **sleep opps** - Tells Maestro to find behaviors that have consistently produced the opposite result in the change of state of the environment. Once found, Maestro will extrapolate those opposite actions into a list of new, predicted, but not necessarily ever seen before states that it can reference to learn more about its environment.
 
@@ -58,6 +59,8 @@ Maestro requires the data its given to be void of particular characters: the und
 Maestro is not well equipped for "social" environments. For example, environments where separate actors have an influence on the environment it is in (such as other drivers).
 
 Maestro is not well equipped for time series environments; environments where the passage of time occurs without its input. That is to say when aspects of the environment can change zero or multiple times before it reacts to a particular arrangement of the environment at a particular time. For instance it may be able to solve a rubix cube because it does nothing when it is not perturbed, but playing the game 'snake' may be difficult because the snake constantly moves forward even if the player does take any action.
+
+Maestro is as of yet not optimized. It's neural net is not hardware accelerated, in fact all its connections are kept in a sqlite database. It is not written in C it is written in Tcl. It is not fast. It is merely a prototype.
 
 In short Maestro is best equipped to learn and engage in static environments, even highly complex ones. Its performance in other types of environments will vary from 'very well' to 'unacceptable.'
 
