@@ -1,0 +1,678 @@
+
+
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html id="sys_background" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html id="sys_background" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html id="sys_background" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html id="sys_background" class="no-js"> <!--<![endif]-->
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>Maestro AI</title>
+		<meta name="description" content="" />
+		<meta name="keywords" content="" />
+    <link href='https://fonts.googleapis.com/css?family=Armata' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Muli' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+
+    <link rel="icon" type="image/png" href="resources/crop16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="resources/crop32.png" sizes="32x32">
+    <link rel="icon" type="image/x-icon" href="resources/favicon.ico" >
+    <link rel="shortcut icon" type="image/x-icon" href="resources/favicon.ico"/>
+		<style type="text/css" id="styleCSS">
+
+html {
+  font-size: 16px;
+  height: 100%;
+  width: 100%;
+  display: table;
+  background-image: url(resources/Untitled.png);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center center;
+  background-size: cover;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  	background-color: #null;
+
+}
+body {
+  height: 100%;
+  margin:0;
+
+}
+
+.Text_2_Default,
+
+
+.outer-wrap {
+  position: relative;
+  width:100%;
+  overflow:hidden;
+  height: 100%;
+  display: table;
+}
+.inner-wrap {
+  position: relative;
+  display: table-cell;
+  width:100%;
+  vertical-align: middle;
+}
+
+ul.sys_navigation {
+  margin: 0;
+  padding: 0;
+}
+ul.sys_navigation li {
+  display: block;
+  list-style-type: none;
+  margin:0.8rem 0 0 0;
+}
+ul.sys_navigation li a{
+  text-decoration: none;
+}
+.content-wrapper {
+  display: block;
+  padding-top: 2rem;
+  padding-right: 0rem;
+  padding-bottom: 4.5rem;
+  padding-left: 0rem;
+}
+.content-inner-wrapper {
+  margin:0 auto;
+  max-width: 800px;
+}
+.content-innermost-wrapper {
+  margin:0 auto;
+}
+
+
+
+.sys_layout blockquote {
+  border-color: #ffe9c8;;
+
+
+
+
+
+
+  font-style: italic;
+
+}
+
+/* A rendered screen width > 736px excludes event the largest of mobile
+ * phones such as the iPhone 6+ in landscape mode. Everything smaller than
+ * these devices will have the following styles applied.
+ */
+@media only screen and (max-width: 736px) {
+  html {
+    font-size: 80%;
+  }
+
+  #sys_heading {
+    word-wrap: break-word;
+    word-break: break-word;
+  }
+}
+
+.new-text-widget img, .old_text_widget img {
+    max-width: 100%;
+}
+
+
+
+  /* Converts wraps to display:block; */
+  .outer-wrap {
+    display: block;
+    overflow-y:auto;
+  }
+
+  .inner-wrap {
+    display: block;
+    min-height: 100%;
+  }
+
+  /* Make column dividers stack together */
+  body .column_divider .left, body .column_divider .right {
+    width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  /* Make all image widgets center aligned */
+  .Image_Default img {
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* Center button widgets in column dividers */
+  .column_divider .sys_button {
+    text-align: center;
+  }
+
+
+  /* Limit iframes' width to 100% */
+  .inner-wrap iframe {
+    max-width: 100%;
+  }
+
+
+
+  .mobile_ham {
+    stroke: #333333;
+  }
+
+  .mobile_quit {
+    display: none;
+  }
+
+  .menu_open .mobile_ham {
+    display: none;
+  }
+
+  .menu_open .mobile_quit {
+    display: inline;
+    stroke: #333333;
+  }
+
+  .mob_menu_list {
+    font-family: 'Armata';
+    font-weight: lighter;
+    margin: 0;
+    font-size: 2.2em;
+    line-height: 1.05;
+    letter-spacing: 0.1em;
+    list-style: none;
+    text-align: right;
+    padding: 5% 7.5% 0 7.5%;
+    -webkit-animation-duration: .2s;
+    -webkit-animation-fill-mode: both;
+    -webkit-animation-name: fadeInUp;
+    -moz-animation-duration: .2s;
+    -moz-animation-fill-mode: both;
+    -moz-animation-name: fadeInUp;
+    -o-animation-duration: .2s;
+    -o-animation-fill-mode: both;
+    -o-animation-name: fadeInUp;
+    animation-duration: .2s;
+    animation-fill-mode: both;
+    animation-name: fadeInUp;
+  }
+
+  .mob_menu_list li {
+    margin-bottom: 1.1em;
+  }
+
+  .mob_menu_overlay .mob_menu_list a {
+    color: #333333;
+  }
+
+  .mob_more_toggle {
+    cursor: pointer;
+    background: none;
+    border: none;
+    outline: none;
+    margin-bottom: -0.5%;
+    margin-left: 1.5%;
+    stroke: #333333;
+  }
+
+  .up_arrow {
+    display: none;
+  }
+
+  .sub_menu_open svg .down_arrow {
+    display: none;
+  }
+
+  .sub_menu_open .up_arrow {
+    display: inline;
+  }
+
+  .mob_menu_overlay .mob_menu_list .selected a {
+    color: #e31d2c;
+  }
+  .sub_menu_open a {
+    color: #e31d2c;
+  }
+  .mob_menu_list .sub_menu_open a {
+    color: #e31d2c;
+  }
+  .sub_menu_open .mob_more_toggle {
+    stroke: #e31d2c;
+  }
+  .mob_submenu_list {
+    font-family: 'Armata';
+    font-weight: lighter;
+    list-style: none;
+    text-align: right;
+    margin: 0;
+    line-height: 1.05;
+    display: none;
+    -webkit-animation-duration: .2s;
+    -webkit-animation-fill-mode: both;
+    -webkit-animation-name: fadeInUp;
+    -moz-animation-duration: .2s;
+    -moz-animation-fill-mode: both;
+    -moz-animation-name: fadeInUp;
+    -o-animation-duration: .2s;
+    -o-animation-fill-mode: both;
+    -o-animation-name: fadeInUp;
+    animation-duration: .2s;
+    animation-fill-mode: both
+    animation-name: fadeInUp;
+  }
+
+  .mob_submenu_list li {
+    margin-top: 0.55em;
+    margin-bottom: 0;
+  }
+
+  .sub_menu_open .mob_submenu_list{
+    display: block;
+  }
+
+  .mob_submenu_items {
+    font-size: 0.75em;
+  }
+  .mob_menu_list .mob_nav_selected {
+    color: #e31d2c;
+  }
+  .menu_open ~ .content-wrapper {
+    display: none;
+  }
+  @-webkit-keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      -webkit-transform: translate3d(0, 100%, 0);
+      transform: translate3d(0, 100%, 0);
+    }
+    100% {
+      opacity: 1;
+      -webkit-transform: none;
+      transform: none;
+    }
+  }
+  @-moz-keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      -moz-transform: translate3d(0, 100%, 0);
+      transform: translate3d(0, 100%, 0);
+    }
+    100% {
+      opacity: 1;
+      -moz-transform: none;
+      transform: none;
+    }
+  }
+  @-o-keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      -o-transform: translate3d(0, 100%, 0);
+      transform: translate3d(0, 100%, 0);
+    }
+    100% {
+      opacity: 1;
+      -o-transform: none;
+      transform: none;
+    }
+  }
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translate3d(0, 100%, 0);
+    }
+    100% {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+
+}
+
+</style>
+<style type="text/css" id="styleOverrides">
+/* ======================
+*
+*  Site Style Settings
+*
+=========================*/
+/* Paragraph text (p) */
+
+.content p, #content p, .HTML_Default p, .Text_Default p, .sys_txt p, .sys_txt a, .sys_layout p, .sys_txt, .sys_layout  {
+    /*font-family: 'Muli';*/
+    font-family: 'Inconsolata';
+    font-weight: 300;
+    font-size: 1.3rem;
+    color: #ad69dd;
+
+
+
+}
+
+/* Navigation */
+.sys_navigation a, .ys_menu_2, div#menu ul, div#menu ul li a, ul.sys_navigation li a, div.sys_navigation ul li.selected a, div.sys_navigation ul li a, #navigation li a, div.ys_menu ul a:link, div.ys_menu ul a:visited, div.ys_nav ul li a, #sys_banner ul li a {
+    font-family: 'Armata';
+
+
+    color: #333333;
+    text-decoration: none;
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+}
+
+
+/* Navigation:selected */
+div.sys_navigation ul li.selected a, div#menu ul li.selected a, #navigation li.selected a, div.ys_menu ul li.selected a:link, div.ys_menu ul li.selected a:visited, div.ys_nav ul li.selected a, #sys_banner ul li.selected a {
+    color: #e31d2c;
+}
+
+/* Navigation:hover */
+div.sys_navigation ul li a:hover, div#menu ul li a:hover, #navigation li a:hover, div.ys_menu ul a:hover, div.ys_nav ul li a:hover, div.ys_menu ul li a:hover, #sys_banner ul li a:hover {
+    color: #e31d2c;
+}
+
+/* Site Title */
+#sys_heading, a#sys_heading, #sys_banner h1 a, #header h1 a, div#heading h1 a {
+    font-family: 'Armata';
+
+    font-size: 1.5rem;
+    color: #333333;
+    text-decoration: none;
+
+    line-height: 1.4em;
+    text-transform: none;
+}
+
+/* Hyperlinks (a, a:hover, a:visited) */
+a, .sys_txt a:link, .sys_layout a:link {color: #ffffff;}
+a, .sys_txt a:link, .sys_layout a:link {text-decoration: underline;}
+a:visited, .sys_txt a:visited, .sys_layout a:visited {color: #ffffff;}
+a:hover, .sys_txt a:hover, .sys_layout a:hover {color: #e31d2c;}
+a:hover, .sys_txt a:hover, .sys_layout a:hover {text-decoration: underline;}
+
+/* Headings (h2, h3, h4, h5, h6) */
+.sys_layout h2, .sys_txt h2 {
+    font-family: 'Armata';
+
+    font-size: 3.8rem;
+    color: #ffffff;
+    text-decoration: none;
+    letter-spacing: 1.9rem;
+
+
+}
+
+.sys_layout h2 a, .sys_layout h2 a:link, .sys_layout h2 a:hover, .sys_layout h2 a:visited {
+    font-family: 'Armata';
+
+    font-size: 3.8rem;
+    color: #ffffff;
+    letter-spacing: 1.9rem;
+
+
+}
+
+.sys_layout h3, .sys_txt h3 {
+    font-family: 'Armata';
+
+
+    color: #ffffff;
+    text-decoration: none;
+    letter-spacing: 0.6rem;
+
+
+}
+
+.sys_layout h3 a, .sys_layout h3 a:link, .sys_layout h3 a:hover, .sys_layout h3 a:visited {
+    font-family: 'Armata';
+
+
+    color: #ffffff;
+    letter-spacing: 0.6rem;
+
+
+}
+
+.sys_layout h4, .sys_txt h4 {
+    font-family: 'Mrs Saint Delafield';
+
+    font-size: 3rem;
+    color: #5f200f;
+    text-decoration: none;
+
+
+
+}
+
+.sys_layout h4 a, .sys_layout h4 a:link, .sys_layout h4 a:hover, .sys_layout h4 a:visited {
+    font-family: 'Mrs Saint Delafield';
+
+    font-size: 3rem;
+    color: #5f200f;
+
+
+
+}
+
+.sys_layout h5, .sys_txt h5 {
+    font-family: 'Armata';
+
+    font-size: 1.3rem;
+    color: #ffffff;
+    text-decoration: none;
+    letter-spacing: 5px;
+
+
+}
+
+.sys_layout h5 a, .sys_layout h5 a:link, .sys_layout h5 a:hover, .sys_layout h5 a:visited {
+    font-family: 'Armata';
+
+    font-size: 1.3rem;
+    color: #ffffff;
+    letter-spacing: 5px;
+
+
+}
+
+.sys_layout h6, .sys_txt h6 {
+    font-family: 'Armata';
+
+    font-size: 0.9rem;
+    color: #ffffff;
+
+    letter-spacing: 3px;
+
+
+}
+
+.sys_layout h6 a, .sys_layout h6 a:link, .sys_layout h6 a:hover, .sys_layout h6 a:visited {
+    font-family: 'Armata';
+
+    font-size: 0.9rem;
+    color: #ffffff;
+    letter-spacing: 3px;
+
+
+}
+
+/*button widget*/
+.sys_layout .sys_button a, .sys_layout .sys_button a:link, .sys_layout .sys_button a:visited {
+    display:inline-block;
+    text-decoration: none;
+}
+.sys_layout .sys_button a:link, .sys_layout .sys_button a:visited {
+    cursor:pointer;
+}
+.sys_layout .sys_button a {
+    cursor:default;
+}
+
+.sys_layout .sys_button.square a, .sys_layout .sys_button.square a:link {
+    border-radius:0px;
+}
+.sys_layout .sys_button.rounded a, .sys_layout .sys_button.rounded a:link {
+    border-radius:3px;
+}
+.sys_layout .sys_button.pill a, .sys_layout .sys_button.pill a:link {
+    border-radius:90px;
+}
+
+/*button sizes*/
+.sys_layout .sys_button.small a, .sys_layout .sys_button.small a:link, .sys_layout .sys_button.small a:visited {font-size: 0.8rem;padding-top:0.6rem;padding-bottom:0.6rem;padding-left:1.5rem;padding-right:1.5rem;}
+.sys_layout .sys_button.medium a, .sys_layout .sys_button.medium a:link, .sys_layout .sys_button.medium a:visited {font-family: 'Muli';font-weight: 'regular';font-size: 0.9rem;padding-top:0.6rem;padding-bottom:0.6rem;padding-left:2.3rem;padding-right:2.3rem;}
+.sys_layout .sys_button.large a, .sys_layout .sys_button.large a:link, .sys_layout .sys_button.large a:visited {font-size: 1.3rem;padding-top:1.3rem;padding-bottom:1.3rem;padding-left:3.1rem;padding-right:3.1rem;}
+
+/*button styles:small*/
+.sys_layout .sys_button.small.outline a, .sys_layout .sys_button.small.outline a:link {
+    border-color:#88d5c2;
+    color: #88d5c2;
+    border-style: solid;
+    border-width: 2px;
+}
+.sys_layout .sys_button.small.outline a:visited {
+    color: #88d5c2;
+}
+.sys_layout .sys_button.small.solid a, .sys_layout .sys_button.small.solid a:link {
+    	background-color: #88d5c2;
+
+    color: #ffffff;
+    border-color:#88d5c2;
+    border-style: solid;
+    border-width: 2px;
+}
+.sys_layout .sys_button.small.solid a:visited {
+    color: #ffffff;
+}
+.sys_layout .sys_button.small.outline a:hover {
+    background-color: #88d5c2;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+/*button styles:medium*/
+.sys_layout .sys_button.medium.outline a, .sys_layout .sys_button.medium.outline a:link {
+    border-color:rgba(252,252,252,1.00);
+    color: rgba(252,252,252,1.00);
+    border-style: solid;
+    border-width: 2px;
+}
+.sys_layout .sys_button.medium.outline a:visited {
+    color: rgba(252,252,252,1.00);
+}
+.sys_layout .sys_button.medium.solid a, .sys_layout .sys_button.medium.solid a:link {
+    	background-color: #fcfcfc;
+
+    color: #5f200f;
+    border-color:rgba(252,252,252,1.00);
+    border-style: solid;
+    border-width: 2px;
+}
+.sys_layout .sys_button.medium.solid a:visited {
+    color: #5f200f;
+}
+.sys_layout .sys_button.medium.outline a:hover {
+    background-color: rgba(252,252,252,1.00);
+    color: #5f200f;
+    text-decoration: none;
+}
+/*button styles:large*/
+.sys_layout .sys_button.large.outline a, .sys_layout .sys_button.large.outline a:link {
+    border-color:#88d5c2;
+    color: #88d5c2;
+    border-style: solid;
+    border-width: 2px;
+}
+.sys_layout .sys_button.large.outline a:visited {
+    color: #88d5c2;
+}
+.sys_layout .sys_button.large.solid a, .sys_layout .sys_button.large.solid a:link {
+    	background-color: #88d5c2;
+
+    color: #ffffff;
+    border-color:#88d5c2;
+    border-style: solid;
+    border-width: 2px;
+}
+.sys_layout .sys_button.large.solid a:visited {
+    color: #ffffff;
+}
+.sys_layout .sys_button.large.outline a:hover {
+    background-color: #88d5c2;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.sys_layout .sys_button.solid a:hover {
+    text-decoration: none;
+    opacity: .8;
+}
+</style>
+  </head>
+  <body lang="en">
+
+    <div class="outer-wrap">
+      <div class="inner-wrap">
+        <div class="content-wrapper">
+          <div class="content-inner-wrapper">
+            <div id="sys_banner" class="yola_banner_wrap" style="display:none">
+              <div class="yola_inner_banner_wrap"></div>
+            </div>
+            <div class="content-innermost-wrapper">
+              <style media="screen">
+                .layout_1-column {
+                  width: 100%;
+                  padding: 0;
+                  margin: 0;
+                }
+                .zone_top {
+                  margin: 0;
+                  padding: 5px;
+                  vertical-align: top;
+                  line-height: normal;
+                  min-width: 100px;
+                }
+              </style>
+
+              <div class="layout_1-column sys_layout">
+                <div id="layout_row1">
+                  <div id="sys_region_1" class="zone_top" >
+                    <div id="I1" style="display:block;clear: both;" class="Text_2_Default">
+                      <style type="text/css">
+                        div.sys_text_widget img.float-left{float:left;margin:10px 15px 10px 0;}
+                        div.sys_text_widget img.float-right{position:relative;margin:10px 0 10px 15px;}
+                        div.sys_text_widget img{margin:4px;}
+                        div.sys_text_widget {
+                            overflow: hidden;
+                            margin: 0;
+                            padding: 0;
+                            color: ;
+                            font: ;
+                            background-color: ;
+                        }
+                      </style>
+                      <div id="I1_sys_txt" systemElement="true" class="sys_txt sys_text_widget new-text-widget">
+                        <p style="text-align: center;" class="over_outline">
+                          <img src="resources/logo.png?timestamp=1456035859807" height="468" style="width: 468px;">
+                        </p>
+                        <h3 style="text-align: center;"></h3>
+                        <h2 style="text-align: center; color: #fafafa;">maestro ai</h2>
+                      <a href="resources/Maestroai.pptx" style="text-decoration: none;"><p style="text-align: center;" class="over_outline">conduct <span style="color: #dadada;">everything</span></p></a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
