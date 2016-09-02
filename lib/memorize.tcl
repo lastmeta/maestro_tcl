@@ -1,11 +1,11 @@
-namespace eval ::wick {}
-namespace eval ::wick::set {}
-namespace eval ::wick::from {}
-namespace eval ::wick::help {}
-namespace eval ::wick::respond {}
-namespace eval ::wick::record {}
-namespace eval ::wick::actions {}
-namespace eval ::wick::commanded {}
+namespace eval ::memorize {}
+namespace eval ::memorize::set {}
+namespace eval ::memorize::from {}
+namespace eval ::memorize::help {}
+namespace eval ::memorize::respond {}
+namespace eval ::memorize::record {}
+namespace eval ::memorize::actions {}
+namespace eval ::memorize::commanded {}
 
 
 ################################################################################################################################################################
@@ -17,140 +17,108 @@ namespace eval ::wick::commanded {}
 #
 # Sets global variables
 #
-proc ::wick::set::globals {name downline upline} {
-  set ::actionslist ""              ;# list we're currently compiling to send as motor commands
-  # all available actions
-  set ::acts [string trim [::repo::get::actions] \{\}]
-  set ::loc     ""                  ;# current location or latest input
-  set ::act     ""                  ;# last action
-  set ::input   ""                  ;# new input
-  set ::goal    ""                  ;# the goal.
-  set ::myname  $name               ;# myname
-  set ::dlnames $downline           ;# 1.1 1.2
-  set ::upline  $upline             ;# 2.1
-  set ::cangoal ""                  ;# potential goal
-  set ::canacts ""                  ;# potential actionslist
+proc ::memorize::set::globals {} {
+  set ::memorize::learn   yes                 ;# if you want to stop learning for whatever reason set to no.
+  set ::memorize::loc     ""                  ;# current location or latest input
+  set ::memorize::act     ""                  ;# last action
+  set ::memorize::input   ""                  ;# new input
+
+  #these do not belong here, they're all about actions.
+  set ::memorize::actionslist ""              ;# list we're currently compiling to send as motor commands
+  set ::memorize::acts [string trim [::repo::get::actions] \{\}] ;# all avilable actions.
+  set ::memorize::goal    ""                  ;# the goal.
+  set ::memorize::cangoal ""                  ;# potential goal
+  set ::memorize::canacts ""                  ;# potential actionslist
   puts "::acts $::acts"
   if {[llength $::acts] < 2 } {
     for {set i 0} {$i < 100} {incr i} {
       lappend actions $i
     }
-    set ::acts $actions ;#+1 +10 -1 -10" ;#"0 north front east back west south"
+    set ::memorize::acts $actions ;#+1 +10 -1 -10" ;#"0 north front east back west south"
   }
-  puts "::acts $::acts"
+  puts "::memorize::acts $::memorize::acts"
 }
 
-proc ::wick::test {var} {
+proc ::memorize::test {var} {
   puts $var
-  puts "actionslist:$::actionslist loc:$::loc act:$::act input:$::input "
+  puts "actionslist:$::memorize::actionslist loc:$::memorize::loc act:$::memorize::act input:$::memorize::input "
 
 }
 
 
 ################################################################################################################################################################
-# From #########################################################################################################################################################
+# Make Memory ##################################################################################################################################################
 ################################################################################################################################################################
 
 
-## evaluateMessage msg as message
-#
-# based on who this was from decide where to send it.
-#
-proc ::wick::evaluate {msg} {
-  set return {}
-  set from [::see::from $msg]
-  if {$from eq "env" || [string range $from 0 1] eq "s."} {
-    return [::wick::from::environment $msg]
-  } elseif {[lsearch $::upline $from] != -1} {
-    return [::wick::from::up $msg]
-  } elseif {$from eq "user"} {
-    return [::wick::from::user $msg]
-  } elseif {$from eq "server"} {
-    return [::wick::from::server $msg]
-  } else {
-    #unknown origin?!
-  }
-  return $return
-}
-
-
-## takeInput input as word, optional isnoise as word
-#
-# Given an input it tries to find a path of actions from the input to the goal.
-# If the input isnoise then it forgets the old path it was following and makes a
-# new one.
-#
-proc ::wick::raw {msg} {
-  if {[::see::command $msg] eq "noise"} {
-    set isnoise yes
-  } else {
-    set isnoise no
-  }
-  ::wick::makeMemory [::see::when $msg] [::see::message $msg] $isnoise
+proc ::memorize::raw {msg} {
+  ::memorize::makeMemory [::see::when $msg] [::see::message $msg] [::see::command $msg]
   set ::input [::see::message $msg]
-  # MOVE TO ACTIONS MODULE
-  #if {$isnoise} {
-  #  set ::actionslist ""
-  #}
-  #if {$::input ne "" && $::goal ne "" && $::goal ne "__"} {
-  #  return [::wick::respond::environment $msg]
-  #}
 }
 
-
-
-## makeMemory isresult as word
-#
-# record the last input, the last action and the current result if the current
-# result is a direct result of the last input plus last action. Else, if noise
-# is introduced to the system then reset the actionslist to adjust to new data.
-#
-# Record memory notes
-# If isnoise eq ""
-#   If it's the same input as what came before- my action had no effect. then
-#     If it's already in bad don't record it.
-#     else, record it in bad.
-#   else new input is not same as ::input - my action did have an effect. then
-#     if it's already in main don't record it.
-#     else, record change in main.
-#
-proc ::wick::makeMemory {when input isnoise} {
-  if {[::wick::help::weHaveActions?] eq no    &&
-      $::loc    ne ""                         &&
-      $::act    ne ""                         &&
-      $::input  ne ""                         &&
-      $isnoise  ne "yes"                      &&
-      $::input  ne "_"                        &&
-      $::goal   eq "_"
+proc ::memorize::makeMemory {when input isnoise} {
+  if {$::memorize::learn
+  &&  $::memorize::loc ne ""
+  &&  $input           ne ""
   } then {
-    ::wick::record::lastStep $when $::loc $::act $input
-  } elseif {[::wick::help::weHaveActions?] eq no    &&
-      $::loc    ne ""                               &&
-      $::act    ne ""                               &&
-      $::input  ne ""                               &&
-      $isnoise  ne "yes"                            &&
-      $::input  ne "_"                              &&
-      $::goal   eq ""
-  } then {
-    ::wick::record::lastStep $when $::loc $::act $input
-  } elseif {$isnoise} {
-    set ::actionslist ""
+    if {$isnoise         eq "noise"
+    &&  $::memorize::act ne ""
+    } then {
+      ::memorize::record::lastStep $when $::memorize::loc $::memorize::act $input
+    } else {
+      ::memorize::record::lastStep $when $::memorize::loc "_" $input
+    }
   }
-  set ::act {}
-  set ::loc $input
+  set ::memorize::act {}
+  set ::memorize::loc $input
 }
 
 
+################################################################################################################################################################
+# RECORD #######################################################################################################################################################
+################################################################################################################################################################
 
+proc ::wick::record::lastStep {when input action result} {
+  set $action [string trim $action]
+  if {$action ne ""} {
+    if {$result eq $input} {
+      ::wick::record::newBad $when $input $action $result
+    } else {
+      ::wick::record::newMain $when $input $action $result
+    }
+  }
+}
 
+# Saves a new main action if there isn't one in the database already.
+proc ::wick::record::newMain {when input action result} {
+  set returned [::repo::get::allMatch main $input [string trim $action] $result]
+  if {$returned eq ""} {
+    ::repo::insert main "time $when input $input result $result action $action"
+  }
+}
 
-
+# Saves a new bad move if there isn't one in the database already.
+proc ::wick::record::newBad {when input action result} {
+  set returned [::repo::get::allMatch bad $input [string trim $action] $result]
+  if {$returned eq ""} {
+    ::repo::insert bad "time $when input $input result $result action $action"
+  }
+}
 
 
 
 ################################################################################################################################################################
 # Up #########################################################################################################################################################
 ################################################################################################################################################################
+
+# MOVE TO ACTIONS MODULE
+#if {$isnoise} {
+#  set ::actionslist ""
+#}
+#if {$::input ne "" && $::goal ne "" && $::goal ne "__"} {
+#  return [::wick::respond::environment $msg]
+#}
+
 
 
 proc ::wick::commanded::can msg {
@@ -450,55 +418,5 @@ proc ::wick::actions::filterBad {newaction} {
     return
   } else {
     return $newaction
-  }
-}
-
-
-################################################################################################################################################################
-# RECORD #######################################################################################################################################################
-################################################################################################################################################################
-
-
-## record::lastStep input as word, action as word, result as word
-#
-# records the last action we took, its location and result in the database
-# if it was fruitless we record it in bad, else main.
-# To do:
-# some movements are really bad - detrimental. we should be able to check for
-# these as well.
-#
-proc ::wick::record::lastStep {when input action result} {
-#::wick::test "$input, $action, $result"
-set $action [string trim $action]
-  if {$action ne ""} {
-    if {$result eq $input} {
-      ::wick::record::newBad $when $input $action $result
-    } else {
-      ::wick::record::newMain $when $input $action $result
-
-    }
-  }
-}
-
-
-## record::newMain input as word, actions as word, result as word
-#
-# Saves a new main action if there isn't one in the database already.
-#
-proc ::wick::record::newMain {when input action result} {
-  set returned [::repo::get::allMatch main $input [string trim $action] $result]
-  if {$returned eq ""} {
-    ::repo::insert main "time $when input $input result $result action $action"
-  }
-}
-
-## record::newBad input as word, actions as word, result as word
-#
-# Saves a new bad move if there isn't one in the database already.
-#
-proc ::wick::record::newBad {when input action result} {
-  set returned [::repo::get::allMatch bad $input [string trim $action] $result]
-  if {$returned eq ""} {
-    ::repo::insert bad "time $when input $input result $result action $action"
   }
 }

@@ -29,7 +29,7 @@ namespace eval ::maestro::client::helpers {}
 
 proc ::maestro::set::up {} {
   ::repo::create $::communicate::myname
-  ::wick::set::globals
+  ::memorize::set::globals
 }
 
 
@@ -38,11 +38,6 @@ proc ::maestro::set::up {} {
 ################################################################################
 
 
-## ::interpret msg as message
-#
-# Entery and exit point. Work on this, make it aseries of chains if you have to.
-# format once all data is gathered rather than formatting in various procs.
-#
 proc ::maestro::handle::interpret msg {
   set from [::see::from $msg]
   if {$from eq "env" || [string range $from 0 1] eq "s."} {
@@ -53,23 +48,19 @@ proc ::maestro::handle::interpret msg {
 }
 
 proc ::maestro::handle::environment msg {
-  # record raw data
-  ::wick::raw $msg
-  # choose behavior
-    # get path or choose randomly, etc.
-  # incorporate into causal structure
-  # return behavior.
+  ::maestro::record $msg
+  set behavior [::maestro::choose $msg]
+  ::maestro::encode [::see::message $msg] $behavior
+  return [::maestro::respond $behavior]
 }
-
-
 
 proc ::maestro::handle::user msg {
   if {[::see::command $msg] eq "can"} {
-    return [::wick::commanded::can $msg]
+    return [::memorize::commanded::can $msg]
   } elseif {[::see::command $msg] eq "try"} {
-    return [::wick::commanded::try $msg]
+    return [::memorize::commanded::try $msg]
   } elseif {[::see::command $msg] eq "sleep"} {
-    return [::wick::commanded::sleep $msg]
+    return [::memorize::commanded::sleep $msg]
   }
 }
 
@@ -80,11 +71,12 @@ proc ::maestro::handle::user msg {
 
 
 proc ::maestro::record msg {
-  ::wick::evaluate $msg
+  ::memorize::raw $msg
   return $msg
 }
 
 proc ::maestro::choose msg {
+  # get path or choose randomly, etc.
   ::wax::evaluate $msg
   return $msg
 }
@@ -97,6 +89,11 @@ proc ::maestro::encode msg {
 proc ::maestro::respond msg {
   # format response of our motor command from choose
 }
+
+
+################################################################################
+# Run ##########################################################################
+################################################################################
 
 
 ::communicate::setup
