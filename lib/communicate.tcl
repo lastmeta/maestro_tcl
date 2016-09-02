@@ -7,12 +7,7 @@ proc ::communicate::globals {} {
   set ::communicate::talkto {}
 }
 
-############################################################################
-# Client ###################################################################
-############################################################################
-
-
-proc ::communicate::interact {} {
+proc ::communicate::setup {} {
   set msg {}
   set sendmsg {}
   set introduction "from"
@@ -26,6 +21,41 @@ proc ::communicate::interact {} {
   ::maestro::set::up
   puts "Server responded: [gets $::communicate::chan]"
   puts "Awaiting Instructions from Server..."
+}
+
+
+############################################################################
+# Helpers ##################################################################
+############################################################################
+
+
+proc ::communicate::helpers::getMyName {} {
+  puts "Who am I?"
+  flush stdout
+  set ::communicate::myname [gets stdin]
+  return $::communicate::myname
+}
+
+proc ::communicate::helpers::whoTalksToMe? {} {
+  puts "Who talks to me?"
+  flush stdout
+  set ::communicate::hearfrom [gets stdin]
+  return $::communicate::hearfrom
+}
+
+proc ::communicate::helpers::whoDoITalkTo? {} {
+  puts "Who do I talk to?"
+  flush stdout
+  set ::communicate::talkto [gets stdin]
+  return $::communicate::talkto
+}
+
+
+################################################################################
+# Interaction ##################################################################
+################################################################################
+
+proc ::communicate::interact {} {
   while {1} {
     set msg [::communicate::getsMsg [gets $::communicate::chan]]
     puts "received: $msg"
@@ -56,31 +86,4 @@ proc ::communicate::sendMsg {sendmsg} {
     puts $::communicate::chan $sendmsg
     flush $::communicate::chan
   }
-}
-
-
-############################################################################
-# Helpers ##################################################################
-############################################################################
-
-
-proc ::communicate::helpers::getMyName {} {
-  puts "What is my position? (eg. 1.1) "
-  flush stdout
-  set ::communicate::myname [gets stdin]
-  return $::communicate::myname
-}
-
-proc ::communicate::helpers::whoTalksToMe? {} {
-  puts "Who  do I take orders from? (eg. 2.1) (eg. user)"
-  flush stdout
-  set ::communicate::hearfrom [gets stdin]
-  return $::communicate::hearfrom
-}
-
-proc ::communicate::helpers::whoDoITalkTo? {} {
-  puts "Who do I give orders to? (eg. 1.1 1.2) (eg. act) (eg. a.1) "
-  flush stdout
-  set ::communicate::talkto [gets stdin]
-  return $::communicate::talkto
 }

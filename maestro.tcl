@@ -99,5 +99,5 @@ proc ::maestro::respond msg {
 }
 
 
-
+::communicate::setup
 ::communicate::interact
