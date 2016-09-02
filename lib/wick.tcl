@@ -58,27 +58,18 @@ proc ::wick::test {var} {
 #
 proc ::wick::evaluate {msg} {
   set return {}
-  #foreach msg $msgs { #No longer getting multiple messages because epoch design removed "lappend return ..." too:
-    #puts $msg
-    #puts [llength $msg]
-    set from [::see::from $msg]
-    if {$from eq "env" || [string range $from 0 1] eq "s."} {
-      return [::wick::from::environment $msg]
-    } elseif {[lsearch $::upline $from] != -1} {
-      return [::wick::from::up $msg]
-    } elseif {[lsearch $::downline $from] != -1} {
-      return [::wick::from::down $msg]
-    } elseif {$from eq "user"} {
-      return [::wick::from::user $msg]
-    } elseif {$from eq "server"} {
-      return [::wick::from::server $msg]
-    } elseif {$from eq [concat [string range $::myname 0 [expr [string match $::myname .] + 1]]0]} {
-      return [::wick::from::inference $msg]
-    } else {
-      #unknown origin?!
-    }
-  #}
-  #puts "returning: $return"
+  set from [::see::from $msg]
+  if {$from eq "env" || [string range $from 0 1] eq "s."} {
+    return [::wick::from::environment $msg]
+  } elseif {[lsearch $::upline $from] != -1} {
+    return [::wick::from::up $msg]
+  } elseif {$from eq "user"} {
+    return [::wick::from::user $msg]
+  } elseif {$from eq "server"} {
+    return [::wick::from::server $msg]
+  } else {
+    #unknown origin?!
+  }
   return $return
 }
 
@@ -89,65 +80,72 @@ proc ::wick::evaluate {msg} {
 # If the input isnoise then it forgets the old path it was following and makes a
 # new one.
 #
-proc ::wick::from::environment {msg} {
-
+proc ::wick::raw {msg} {
   if {[::see::command $msg] eq "noise"} {
     set isnoise yes
   } else {
     set isnoise no
   }
+  ::wick::makeMemory [::see::when $msg] [::see::message $msg] $isnoise
+  set ::input [::see::message $msg]
+  # MOVE TO ACTIONS MODULE
+  #if {$isnoise} {
+  #  set ::actionslist ""
+  #}
+  #if {$::input ne "" && $::goal ne "" && $::goal ne "__"} {
+  #  return [::wick::respond::environment $msg]
+  #}
+}
 
-  set input [::see::message $msg]
-  set when [::see::when $msg]
 
-  ::wick::help::makeMemory $when $input $isnoise
 
-  set ::input $input
-
-  if {$isnoise} {
+## makeMemory isresult as word
+#
+# record the last input, the last action and the current result if the current
+# result is a direct result of the last input plus last action. Else, if noise
+# is introduced to the system then reset the actionslist to adjust to new data.
+#
+# Record memory notes
+# If isnoise eq ""
+#   If it's the same input as what came before- my action had no effect. then
+#     If it's already in bad don't record it.
+#     else, record it in bad.
+#   else new input is not same as ::input - my action did have an effect. then
+#     if it's already in main don't record it.
+#     else, record change in main.
+#
+proc ::wick::makeMemory {when input isnoise} {
+  if {[::wick::help::weHaveActions?] eq no    &&
+      $::loc    ne ""                         &&
+      $::act    ne ""                         &&
+      $::input  ne ""                         &&
+      $isnoise  ne "yes"                      &&
+      $::input  ne "_"                        &&
+      $::goal   eq "_"
+  } then {
+    ::wick::record::lastStep $when $::loc $::act $input
+  } elseif {[::wick::help::weHaveActions?] eq no    &&
+      $::loc    ne ""                               &&
+      $::act    ne ""                               &&
+      $::input  ne ""                               &&
+      $isnoise  ne "yes"                            &&
+      $::input  ne "_"                              &&
+      $::goal   eq ""
+  } then {
+    ::wick::record::lastStep $when $::loc $::act $input
+  } elseif {$isnoise} {
     set ::actionslist ""
   }
-  if {$::input ne "" && $::goal ne "" && $::goal ne "__"} {
-    return [::wick::respond::environment $msg]
-  }
+  set ::act {}
+  set ::loc $input
 }
 
-proc ::wick::from::up msg {
-  if {[::see::command $msg] eq "can"} {
-    return [::wick::commanded::can $msg]
-  } elseif {[::see::command $msg] eq "try"} {
-    return [::wick::commanded::try $msg]
-  } elseif {[::see::command $msg] eq "sleep"} {
-    return [::wick::commanded::sleep $msg]
-  } else {
-    #unknown command!
-  }
-}
 
-proc ::wick::from::user msg {
-  if {[::see::command $msg] eq "can"} {
-    return [::wick::commanded::can $msg]
-  } elseif {[::see::command $msg] eq "try"} {
-    return [::wick::commanded::try $msg]
-  } elseif {[::see::command $msg] eq "sleep"} {
-    return [::wick::commanded::sleep $msg]
-  } elseif {[::see::command $msg] eq "goal"} {
-    #look for path to goal, return yes path or "will try"
-  } elseif {[::see::command $msg] eq "question"} {
-    #answer question
-  } elseif {[::see::command $msg] eq "command"} {
-    #assimilate command
-  } else {
-    #unknown command!
-  }
-  #return message
-}
-proc ::wick::from::server msg {
-  # if the informstion is important, record using candle.
-}
-proc ::wick::from::infer msg {
-  # if the informstion is important, record using candle.
-}
+
+
+
+
+
 
 
 ################################################################################################################################################################
@@ -381,47 +379,7 @@ proc ::wick::respond::guess {} {
 
 
 
-## makeMemory isresult as word
-#
-# record the last input, the last action and the current result if the current
-# result is a direct result of the last input plus last action. Else, if noise
-# is introduced to the system then reset the actionslist to adjust to new data.
-#
-# Record memory notes
-# If isnoise eq ""
-#   If it's the same input as what came before- my action had no effect. then
-#     If it's already in bad don't record it.
-#     else, record it in bad.
-#   else new input is not same as ::input - my action did have an effect. then
-#     if it's already in main don't record it.
-#     else, record change in main.
-#
-proc ::wick::help::makeMemory {when input isnoise} {
-  ::wick::help::makeNewMemory $when $input $isnoise
-  if {[::wick::help::weHaveActions?] eq no    &&
-      $::loc    ne ""                         &&
-      $::act    ne ""                         &&
-      $::input  ne ""                         &&
-      $isnoise  ne "yes"                      &&
-      $::input  ne "_"                        &&
-      $::goal   eq "_"
-  } then {
-    ::wick::record::lastStep $when $::loc $::act $input
-  } elseif {[::wick::help::weHaveActions?] eq no    &&
-      $::loc    ne ""                               &&
-      $::act    ne ""                               &&
-      $::input  ne ""                               &&
-      $isnoise  ne "yes"                            &&
-      $::input  ne "_"                              &&
-      $::goal   eq ""
-  } then {
-    ::wick::record::lastStep $when $::loc $::act $input
-  } elseif {$isnoise} {
-    set ::actionslist ""
-  }
-  set ::act {}
-  set ::loc $input
-}
+
 
 
 proc ::wick::help::shouldWeChain? {} {

@@ -6,18 +6,19 @@ pkg_mkIndex -verbose [pwd]/lib prepdata.tcl
 lappend auto_path [pwd]/lib
 package require prepdata 1.0
 
-source lib/see.tcl    ;# get info from msg
-source lib/wick.tcl   ;# record data
-source lib/candle.tcl ;# get actions
-source lib/wax.tcl    ;# post analyzation of data to discover structure.
+source lib/see.tcl          ;# get info from msg
+source lib/communicate.tcl  ;# hear from and talk to server.
+source lib/memorize.tcl     ;# record raw data
+source lib/recall.tcl       ;# get action chains from raw data
+source lib/sleep.tcl        ;# post analyzation of data to discover structure.
+source lib/understand.tcl   ;# encode raw data into a relative strucutre
+source lib/intuit.tcl       ;# get action chains from relative structure
 
 namespace eval ::maestro {}
 namespace eval ::maestro::set {}
-namespace eval ::maestro::main {}
-namespace eval ::maestro::actions {}
-namespace eval ::maestro::record {}
-namespace eval ::maestro::find {}
+namespace eval ::maestro::handle {}
 namespace eval ::maestro::client {}
+namespace eval ::maestro::respond {}
 namespace eval ::maestro::client::helpers {}
 
 
@@ -27,74 +28,14 @@ namespace eval ::maestro::client::helpers {}
 
 
 proc ::maestro::set::up {} {
-  ::repo::create $::myname
-  ::wick::set::globals  $::myname $::talkto $::hearfrom
-}
-
-proc ::maestro::set::globals {} {
-  set ::chan {}
-  set ::myname {}
-  set ::hearfrom {}
-  set ::talkto {}
+  ::repo::create $::communicate::myname
+  ::wick::set::globals
 }
 
 
-############################################################################
-# Client ###################################################################
-############################################################################
-
-
-proc ::maestro::client::run {} {
-  set msg {}
-  set sendmsg {}
-  set introduction "from"
-  lappend introduction [::maestro::client::helpers::getMyName]
-  lappend introduction "to"
-  lappend introduction "server"
-  lappend introduction "message"
-  lappend introduction [list "up:" [::maestro::client::helpers::whoTalksToMe?] "down:" [::maestro::client::helpers::whoDoITalkTo?]]
-  puts $::chan $introduction
-  flush $::chan
-  ::maestro::set::up
-  puts "Server responded: [gets $::chan]"
-  puts "Awaiting Instructions from Server..."
-  while {1} {
-    set msg [::maestro::client::getsMsg [gets $::chan]]
-    puts "received: $msg"
-    set sendmsg [::maestro::interpret $msg]
-    ::maestro::client::sendMsg $sendmsg
-  }
-}
-
-proc ::maestro::client::getsMsg {message} {
-  set x yes
-  set msg $message
-  while {$x} {
-    fconfigure $::chan -blocking 0
-    gets $::chan message
-    if {$message eq ""} {
-      set x no
-    } else {
-      lappend msg $message
-    }
-  }
-  fconfigure $::chan -blocking 1
-  return $msg
-}
-
-
-proc ::maestro::client::sendMsg {sendmsg} {
-  if {$sendmsg ne ""} {
-    puts $::chan $sendmsg
-    flush $::chan
-  }
-}
-
-
-
-############################################################################
-# Interpret ################################################################
-############################################################################
+################################################################################
+# Handle #######################################################################
+################################################################################
 
 
 ## ::interpret msg as message
@@ -102,10 +43,18 @@ proc ::maestro::client::sendMsg {sendmsg} {
 # Entery and exit point. Work on this, make it aseries of chains if you have to.
 # format once all data is gathered rather than formatting in various procs.
 #
-proc ::maestro::interpret msg {
-  # make the following into their own procs and call them here:
+proc ::maestro::handle::interpret msg {
+  set from [::see::from $msg]
+  if {$from eq "env" || [string range $from 0 1] eq "s."} {
+    return [::maestro::handle::environment $msg]
+  } elseif {$from eq "user"} {
+    return [::maestro::handle::user $msg]
+  }
+}
+
+proc ::maestro::handle::environment msg {
   # record raw data
-  return [::wick::evaluate $msg]
+  ::wick::raw $msg
   # choose behavior
     # get path or choose randomly, etc.
   # incorporate into causal structure
@@ -113,35 +62,42 @@ proc ::maestro::interpret msg {
 }
 
 
-############################################################################
-# Helpers ##################################################################
-############################################################################
 
-
-proc ::maestro::client::helpers::getMyName {} {
-  puts "What is my position? (eg. 1.1) "
-  flush stdout
-  set ::myname [gets stdin]
-  return $::myname
-}
-proc ::maestro::client::helpers::whoTalksToMe? {} {
-  puts "Who do I take orders from? (eg. 2.1) (eg. user)"
-  flush stdout
-    set ::hearfrom [gets stdin]
-  return $::hearfrom
-}
-proc ::maestro::client::helpers::whoDoITalkTo? {} {
-  puts "Who do I give orders to? (eg. 1.1 1.2) (eg. act) (eg. a.1) "
-  flush stdout
-  set ::talkto [gets stdin]
-  return $::talkto
+proc ::maestro::handle::user msg {
+  if {[::see::command $msg] eq "can"} {
+    return [::wick::commanded::can $msg]
+  } elseif {[::see::command $msg] eq "try"} {
+    return [::wick::commanded::try $msg]
+  } elseif {[::see::command $msg] eq "sleep"} {
+    return [::wick::commanded::sleep $msg]
+  }
 }
 
-############################################################################
-# Run ######################################################################
-############################################################################
+
+################################################################################
+# Environment ##################################################################
+################################################################################
 
 
-::maestro::set::globals
-set ::chan [socket 127.0.0.1 9900]
-::maestro::client::run
+proc ::maestro::record msg {
+  ::wick::evaluate $msg
+  return $msg
+}
+
+proc ::maestro::choose msg {
+  ::wax::evaluate $msg
+  return $msg
+}
+
+proc ::maestro::encode msg {
+  ::encode::evaluate $msg
+  return $msg
+}
+
+proc ::maestro::respond msg {
+  # format response of our motor command from choose
+}
+
+
+
+::communicate::interact
