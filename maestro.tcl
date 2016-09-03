@@ -28,7 +28,7 @@ namespace eval ::maestro::client::helpers {}
 
 
 proc ::maestro::set::up {} {
-  ::repo::create $::communicate::myname
+  ::repo::create $::communicate::name
   ::memorize::set::globals
 }
 
@@ -80,17 +80,17 @@ proc ::maestro::handle::user msg {
 
 proc ::maestro::format {{msg ""} {cmd ""} {to ""}} {
   if {$msg ne "" && $cmd ne "" && $to ne ""} {
-    return [list [list from $::communicate::myname to $to                    command $cmd message $msg when [clock milliseconds]]]
+    return [list [list from $::communicate::name to $to                command $cmd message $msg when [clock milliseconds]]]
   } elseif {$msg ne "" && $cmd ne ""} {
-    return [list [list from $::communicate::myname to $::communicate::talkto command $cmd message $msg when [clock milliseconds]]]
+    return [list [list from $::communicate::name to $::communicate::to command $cmd message $msg when [clock milliseconds]]]
   } elseif {$msg ne "" && $to ne ""} {
-    return [list [list from $::communicate::myname to $to                                 message $msg when [clock milliseconds]]]
+    return [list [list from $::communicate::name to $to                             message $msg when [clock milliseconds]]]
   } elseif {$cmd ne "" && $to ne ""} {
-    return [list [list from $::communicate::myname to $to                    command $cmd              when [clock milliseconds]]]
+    return [list [list from $::communicate::name to $to                command $cmd              when [clock milliseconds]]]
   } elseif {$msg ne ""} {
-    return [list [list from $::communicate::myname to $::communicate::talkto              message $msg when [clock milliseconds]]]
+    return [list [list from $::communicate::name to $::communicate::to              message $msg when [clock milliseconds]]]
   } elseif {$cmd ne ""} {
-    return [list [list from $::communicate::myname to $::communicate::talkto command $cmd              when [clock milliseconds]]]
+    return [list [list from $::communicate::name to $::communicate::to command $cmd              when [clock milliseconds]]]
   } else {
     return ""
   }

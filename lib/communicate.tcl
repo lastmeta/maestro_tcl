@@ -2,9 +2,9 @@ namespace eval ::communicate {}
 
 proc ::communicate::globals {} {
   set ::communicate::chan [socket 127.0.0.1 9900]
-  set ::communicate::myname {}
-  set ::communicate::hearfrom {}
-  set ::communicate::talkto {}
+  set ::communicate::name {}
+  set ::communicate::from {}
+  set ::communicate::to {}
 }
 
 proc ::communicate::setup {} {
@@ -32,22 +32,22 @@ proc ::communicate::setup {} {
 proc ::communicate::helpers::getMyName {} {
   puts "Who am I?"
   flush stdout
-  set ::communicate::myname [gets stdin]
-  return $::communicate::myname
+  set ::communicate::name [gets stdin]
+  return $::communicate::name
 }
 
 proc ::communicate::helpers::whoDoIHearFrom? {} {
   puts "Who talks to me?"
   flush stdout
-  set ::communicate::hearfrom [gets stdin]
-  return $::communicate::hearfrom
+  set ::communicate::from [gets stdin]
+  return $::communicate::from
 }
 
 proc ::communicate::helpers::whoDoITalkTo? {} {
   puts "Who do I talk to?"
   flush stdout
-  set ::communicate::talkto [gets stdin]
-  return $::communicate::talkto
+  set ::communicate::to [gets stdin]
+  return $::communicate::to
 }
 
 
