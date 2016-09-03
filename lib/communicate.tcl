@@ -15,7 +15,7 @@ proc ::communicate::setup {} {
   lappend introduction "to"
   lappend introduction "server"
   lappend introduction "message"
-  lappend introduction [list "up:" [::maestro::client::helpers::whoTalksToMe?] "down:" [::maestro::client::helpers::whoDoITalkTo?]]
+  lappend introduction [list "up:" [::maestro::client::helpers::whoDoIHearFrom?] "down:" [::maestro::client::helpers::whoDoITalkTo?]]
   puts $::communicate::chan $introduction
   flush $::communicate::chan
   ::maestro::set::up
@@ -36,7 +36,7 @@ proc ::communicate::helpers::getMyName {} {
   return $::communicate::myname
 }
 
-proc ::communicate::helpers::whoTalksToMe? {} {
+proc ::communicate::helpers::whoDoIHearFrom? {} {
   puts "Who talks to me?"
   flush stdout
   set ::communicate::hearfrom [gets stdin]
@@ -60,7 +60,7 @@ proc ::communicate::interact {} {
     set msg [::communicate::getsMsg [gets $::communicate::chan]]
     puts "received: $msg"
     set sendmsg [::maestro::handle::interpret $msg]
-    ::communicate::sendMsg $sendmsg
+    if {$sendmsg ne ""} { ::communicate::sendMsg $sendmsg }
   }
 }
 

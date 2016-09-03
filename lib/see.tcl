@@ -25,12 +25,12 @@ proc ::see::message msg {
   return [::see::ifNotBlank $msg message]
 }
 proc ::see::contents msg {
-  if {[::see::ifNotBlank $msg from]     eq "" &&
-      [::see::ifNotBlank $msg to]       eq "" &&
-      [::see::ifNotBlank $msg when]     eq "" &&
-      [::see::ifNotBlank $msg about]    eq "" &&
-      [::see::ifNotBlank $msg command]  eq "" &&
-      [::see::ifNotBlank $msg message]  eq ""
+  if {[::see::ifNotBlank $msg from    ] eq ""
+  &&  [::see::ifNotBlank $msg to      ] eq "" 
+  &&  [::see::ifNotBlank $msg when    ] eq ""
+  &&  [::see::ifNotBlank $msg about   ] eq ""
+  &&  [::see::ifNotBlank $msg command ] eq ""
+  &&  [::see::ifNotBlank $msg message ] eq ""
   } then {
     return
   }

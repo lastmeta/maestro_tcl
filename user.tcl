@@ -68,6 +68,8 @@ proc ::user::helpers::displayHelp {} {
   puts "try   __     tell Maestro to stop (flat)"
   puts "sleep acts   tell Maestro to explore what actions are useful"
   puts "sleep opps   tell Maestro to find and extrapolate opposite actions"
+  puts "sleep react  tell Maestro to reset available actions to default actions"
+  puts "learn on/off tell Maestro to turn learning on or off" 
   puts "acts  INTS   tell Maestro to use only this list of actions ie. 1 2 3"
   puts "limit INT    sets the limit of learning; lower is faster. 1 - 10"
   puts "cells INT    sets the number of cells per node; 1 - 10. Not advised"

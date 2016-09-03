@@ -39,9 +39,13 @@ The user can communicate with the running Maestro Bot using the following comman
 
 **sleep opps** - Tells Maestro to find behaviors that have consistently produced the opposite result in the change of state of the environment. Once found, Maestro will extrapolate those opposite actions into a list of new, predicted, but not necessarily ever seen before states that it can reference to learn more about its environment.
 
-(not yet programmed, but necessary...)
+**sleep react** - Tells Maestro to reset its available actions (for instance "1 2 3 4") to the default available actions (which is "1 2 3 ... 97 98 99").
+
+**learn** {on/off} - Tells Maestro to memorize and encode data while it interacts with the environment or not. Default is always on. For example: **learn off**
 
 **acts** {actions} - Tells Maestro to use this list of actions to affect the environment. This command can be used before Maestro explores the environment and makes its exploration more efficient. For example: **acts 1 2 3 4**
+
+(not yet programmed, but necessary...)
 
 **limit** {integer} - Tells Maestro to use a threshold other than the default (2) to determine how quickly it learns things. This is a parameter of the internal neural network and should not normally be changed. {integer} may be 1 - 10. For example: **limit 5**
 
