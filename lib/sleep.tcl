@@ -33,15 +33,18 @@ namespace eval ::sleep::update {}
 # actions that do anything. starting at 1 and ending at 999. limit usually < 20.
 #
 proc ::sleep::find::actions {args} {
-  #set min [::repo::get::minAction]
   set max [::repo::get::maxAction]
   set n $max
-  incr n
-  for {set i 0} {$i < $n} {incr i} {
-    lappend actions $i
+  if {$n ne "_"} {
+    incr n
+    for {set i 0} {$i < $n} {incr i} {
+      lappend actions $i
+    }
+    ::sleep::update::actions $actions
+    return $actions
+  } else {
+    return [::repo::get::tableColumnsWhere rules rowid [list type "available actions"]]
   }
-  ::sleep::update::actions $actions
-  return $actions
 }
 
 proc ::sleep::update::actions {actions} {

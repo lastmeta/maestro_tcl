@@ -29,7 +29,7 @@ proc ::simulation::run {} {
   #flush $::chan
   puts "Awaiting Instructions from Server..."
   while {1} {
-    after 1000
+    after 400
     set msg [gets $::chan]
     puts "received: $msg"
     set sendmsg [::simulation::interpret $msg]

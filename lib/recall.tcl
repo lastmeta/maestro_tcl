@@ -23,6 +23,7 @@ proc ::recall::main {input goals} {
   if {$input                  eq {}     } { return ""          }
   if {$goals                  eq {}     } { return ""          }
 
+  set goal [lindex $goals 0]
   set chain [::recall::helpers::savedChain $input $goal]
   if { $chain ne ""} { return $chain }
 
@@ -300,7 +301,9 @@ proc ::recall::guess {input acts} {
     }
   }
   if {$alist ne ""} {
-    return [lindex $alist [expr { int([llength $alist] * rand()) }]]
+    set ::memorize::act [lindex $alist [expr { int([llength $alist] * rand()) }]]
+    return $::memorize::act
   }
-  return [lindex $acts [expr 1 + round( rand() * ([llength $acts]-2)) ]]
+  set ::memorize::act [lindex $acts [expr 1 + round( rand() * ([llength $acts]-2)) ]]
+  return $::memorize::act
 }

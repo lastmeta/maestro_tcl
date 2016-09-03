@@ -47,7 +47,7 @@ proc ::decide::commanded::try msg {
   } elseif {$::decide::goal eq $::memorize::input} {
     ::decide::commanded::stop
   } else {
-    return [::wick::commanded::find $msg]
+    return [::decide::commanded::find $msg]
   }
 }
 
@@ -151,6 +151,7 @@ proc ::decide::commanded::goal msg {
 proc ::decide::action {msg} {
   if {$::decide::goal eq "_"} {
     return [::recall::guess [::see::message $msg] $::decide::acts]
+  } elseif {$::decide::goal eq ""} {
   } else {
     if {$::decide::path eq ""} { ;# we have no path, try to make one.
       if {[::decide::help::shouldWeChain?]} {
@@ -197,6 +198,7 @@ proc ::decide::help::weHaveActions? {} {
 proc ::decide::actions::do {} {
   set ::decide::path [string map {\{ "" \} ""} $::decide::path ]
   set act [lindex $::decide::path 0]
+  set ::memorize::act $act
   set ::decide::path [lrange $::decide::path 1 [expr [llength $::decide::path ]-1]]
   return $act
 }

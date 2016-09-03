@@ -40,7 +40,7 @@ proc ::memorize::makeMemory {when input isnoise} {
   &&  $::memorize::loc ne ""
   &&  $input           ne ""
   } then {
-    if {$isnoise         eq "noise"
+    if {$isnoise         ne "noise"
     &&  $::memorize::act ne ""
     } then {
       ::memorize::record::lastStep $when $::memorize::loc $::memorize::act $input

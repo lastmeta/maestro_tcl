@@ -63,7 +63,8 @@ proc ::communicate::interact::always {} {
     set msg [::communicate::interact::get [gets $::communicate::chan]]
     puts "received: $msg"
     set sendmsg [::maestro::handle::interpret $msg]
-    if {$sendmsg ne ""} { ::communicate::interact::send $sendmsg }
+    if {$sendmsg ne ""} { ::communicate::interact::send $sendmsg } \
+    else {puts "no message to send."}
   }
 }
 
