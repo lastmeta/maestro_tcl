@@ -90,34 +90,11 @@ proc ::repo::insert {table datas} {
 	}
 }
 
-#data is a list with all the columns used in the same order each time. _ ==
-proc ::repo::insert::smoke {time env datas} {
-	set csv "'$time'"
-	set csv "$csv,'$env'"
-	foreach data $datas {
-		set csv "$csv,'$data'"
-	}
-	puts "insert: $csv"
-	brain eval "INSERT INTO smoke VALUES ($csv)"
-}
-
-proc ::repo::insert::mainSmoke {time input result} {
-	brain eval {INSERT INTO main VALUES ($time,$input,$action,$result)}
-}
 
 ################################################################################################################################################################
 # update #########################################################################################################################################################
 ################################################################################################################################################################
 
-#generic update for updating anything (only 1 table. column is always 'perm')
-proc ::repo::update::oneWhere {table column data input result} {
-	brain eval "UPDATE '$table' SET '$column'='$data' WHERE input='$input' AND result='$result'"
-}
-
-#update an incorrect environment state correlation. - make another one for multiple ids
-proc ::repo::update::smoke {id env} {
-	brain eval "UPDATE 'smoke' SET 'env'='$env' WHERE rowid='$id'"
-}
 
 #generic update for updating anything (only 1 table. column is always 'perm')
 proc ::repo::update::onId {table column data id} {
@@ -172,16 +149,15 @@ proc ::repo::get::tableColumnsWhere {table cols where} {
 proc ::repo::get::allMatch {table input action result} {
 	return [brain eval "SELECT input,action,result FROM $table WHERE input='$input' AND result='$result' AND action='$action'"]
 }
+
 proc ::repo::get::randomSet {} {
 	return [brain eval "SELECT input,action,result FROM main ORDER BY RANDOM() LIMIT 1"]
 }
+
 proc ::repo::get::actMatch {table input result} {
 	return [brain eval "SELECT action FROM $table WHERE input='$input' AND result='$result'"]
 }
 
-proc ::repo::get::exactResult {table goal} {
-	return [brain eval "SELECT input FROM $table WHERE result='$goal'"]
-}
 proc ::repo::get::chain {table column result} {
 		return [brain eval "SELECT $column FROM $table WHERE result='$result'"]
 }
@@ -194,45 +170,6 @@ proc ::repo::get::chainMatch {table mod thelist} {
 	}
 	return [brain eval "SELECT input,action,result FROM $table WHERE $newlist"]
 }
-proc ::repo::get::smokeChainMatch {mod thelist} {
-	set newlist ""
-	foreach item $thelist {
-		if {$newlist ne ""} { set newlist "$newlist OR" }
-		set newlist "$newlist $mod='$item'"
-	}
-	#if {$mod eq "result"} {
-	#	set col "input"
-	#} elseif {$mod eq "input"} {
-	#	set col "result"
-	#}
-	return [brain eval "SELECT input,result FROM main WHERE $newlist"]
-}
-proc ::repo::get::smokeMatch {colist valist} {
-	set newlist ""
-	foreach item $valist thing $colist {
-		if {$newlist ne ""} { set newlist "$newlist AND" }
-		set newlist "$newlist smoke.'$thing'='$item'"
-	}
-	puts $newlist
-	return [brain eval "SELECT env FROM smoke WHERE $newlist"]
-}
-
-proc ::repo::get::smokeLatest {} {
-	return [brain eval "SELECT * FROM smoke WHERE rowid = (SELECT MAX(rowid) FROM smoke)"]
-}
-proc ::repo::get::smokeLatestId {} {
-	return [brain eval "SELECT rowid FROM smoke WHERE rowid = (SELECT MAX(rowid) FROM smoke)"]
-}
-proc ::repo::get::smokeSinceTimeIdEnv time {
-	return [brain eval "SELECT rowid,env FROM smoke WHERE time >= $time "]
-}
-
-proc ::repo::get::smokeMainMatch {input result} {
-	return [brain eval "SELECT input,result FROM main WHERE input='$input' AND result='$result'"]
-}
-proc ::repo::get::smokeList {input} {
-	return [brain eval "SELECT * FROM smoke WHERE env='$input'"]
-}
 
 proc ::repo::get::chainActions {input result} {
 	return [brain eval "SELECT action FROM chains WHERE input='$input' AND result='$result'"]
@@ -244,21 +181,10 @@ proc ::repo::get::actsDoneHere {input} {
 	return "$a $b"
 }
 
-proc ::repo::get::mapMatch {input} {
-	return [brain eval "SELECT state FROM map WHERE state='$input'"]
-}
-
-proc ::repo::get::statesMatch {input} {
-	return [brain eval "SELECT state FROM states WHERE state='$input'"]
-}
-
-proc ::repo::get::mapAddress {input} {
-	return [brain eval "SELECT address FROM map WHERE state='$input'"]
-}
-
 proc ::repo::get::maxAction {} {
 	return [brain eval "SELECT max(action) FROM main"]
 }
+
 proc ::repo::get::minAction {} {
 	return [brain eval "SELECT min(action) FROM bad"]
 }
@@ -267,25 +193,20 @@ proc ::repo::get::minAction {} {
 # Like #########################################################################
 ################################################################################
 
-
 #select * from uniq WHERE input like '_0_'
 proc ::repo::get::byResultsLike {table result} {
 	puts $table$result
 	return [brain eval "SELECT DISTINCT result FROM $table WHERE result LIKE '$result'"]
 }
-#select * from uniq WHERE input like '_0_'
-proc ::repo::get::smokeLike {env} {
-	return [brain eval "SELECT DISTINCT * FROM smoke WHERE env LIKE '$env'"]
-}
-
-
 
 ################################################################################################################################################################
 # Delete #########################################################################################################################################################
 ################################################################################################################################################################
+
 proc ::repo::delete::rowsTableColumnValue {table col value} {
 	return [brain eval "DELETE FROM $table WHERE $col='$value'"]
 }
+
 ################################################################################################################################################################
 # Help #########################################################################################################################################################
 ################################################################################################################################################################

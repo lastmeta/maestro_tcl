@@ -1,16 +1,6 @@
-#pkg_mkIndex -verbose [pwd] repo.tcl
-#lappend auto_path [pwd]
-#package require repo 1.0
-
-#pkg_mkIndex -verbose [pwd]/prep prepdata.tcl
-#lappend auto_path [pwd]/prep
-#package require prepdata 1.0
-
 namespace eval ::recall {}
-namespace eval ::candle::record {}
-namespace eval ::candle::helpers {}
-#testing:
-#::repo::create 1.1
+namespace eval ::recall::record {}
+namespace eval ::recall::helpers {}
 
 ## main input as word, goal as word
 #
@@ -20,69 +10,42 @@ namespace eval ::candle::helpers {}
 # example:  000 123
 # returns:  0 1 2
 #
-proc ::candle::main {input goals} {
-  puts "going from $input to $goals."
+proc ::recall::main {input goals} {
+  # plan:
+  # if you can find a direct path using main - great! return that actions list.
+  # otherwise try to intuit a path towards the goal. return that actions list.
+  # later we can figure out how to combine those two so we can intuit a way to
+  # any of the states that explicitly lead to the goal.
+
+  puts "from $input to $goals:"
   if {$input                  eq $goals } { return "$input __" }
   if {[lsearch $goals $input] >= 0      } { return "$input __" }
-  if {$input eq {} || $goals eq {}      } { return "" }
+  if {$input                  eq {}     } { return ""          }
+  if {$goals                  eq {}     } { return ""          }
 
-  if {[llength $goals] > 1} {
-    set $goals [::candle::orderGoals $input $goals]
-  }
+  set chain [::recall::helpers::savedChain $input $goal]
+  if { $chain ne ""} { return $chain }
 
-  foreach goal $goals {
-    set chain [::candle::helpers::savedChain $input $goal]
-    if { $chain ne ""} {
-      return $chain
-    }
-
-    set actions ""
-    set newgoal [getBestGoal $goal]
-    set actions [getActionsPathWithPrediction $input $newgoal]
-
-    set Comment "\
-      this is how we set the actions if we are only using the main table:\
-      set actions [getActionsPath $input $newgoal]"
-
-    if { [lindex $actions 0] eq "_"} {
-      #its a suggestion because we couldn't find the exact answer.
-      #lindex $actions 1 = suggested action
-      #lindex $actions 2 to last=list of inputs having direct connection to goal
-      #how to proceed: if this is a new input we've never seen before
-      # random movement until we find a path to something we have seen?
-      # - look for a path to each of the list, if none found, do random
-      #50/50 chance of taking the advice or doing something random.
-    } elseif {$actions eq "" } {
-      #do nothing
-    } else {
-      return [concat $newgoal $actions] ;# its some legit actions
+  set actions ""
+  set newgoal [::recall::getBestGoal $goal]
+  if {$newgoal ne $goal} { ;# goal not in db. try to intuit.
+    # set actions [### INTUIT ###]
+  } else {
+    set actions [::recall::getActionsPathWithPrediction $input $newgoal]
+    if {[lindex $actions 0] eq "_"} { ;# unable to find explicit path, try to intuit.
+      # set actions [### INTUIT ###]
     }
   }
+  return $actions
+  #if {$newgoal ne $goal} {
+  #  set actions [::recall::getActionsPathWithPrediction $input $newgoal]
+  #  set comment {
+  #    this is how we set the actions if we are only using the main table:
+  #    set actions [getActionsPath $input $newgoal]
+  #  }
+  #}
 }
 
-## orderGoals goals as list
-#
-# takes a list of potential goals and orders them based upon which goal is
-# closest looking to our current input. then takes that list and reorders them
-# based upon whats in the database, if there is a match it gets moved to the
-# front.
-#
-# example:  100 {925 310 101 020}
-# returns:  {101 310 020 925}
-#
-proc ::candle::orderGoals {input goals} {
-  set goals [::prepdata::helpers::reorderByMatch $input $goals]
-  set a ""
-  set b ""
-  foreach goal $goals {
-    if {[::repo::get::exactResult main $goal] ne ""} {
-      lappend a $goal
-    } else {
-      lappend b $goal
-    }
-  }
-  return [concat $a $b]
-}
 
 ## getBestGoal goal as word
 #
@@ -94,7 +57,7 @@ proc ::candle::orderGoals {input goals} {
 # example:  134
 # returns:  104
 #
-proc ::candle::getBestGoal {goal} {
+proc ::recall::getBestGoal {goal} {
   set c 0
   set combos [::prepdata::combinations $goal]
   set newresults ""
@@ -103,7 +66,7 @@ proc ::candle::getBestGoal {goal} {
     lappend newresults [::repo::get::byResultsLike predictions [lindex $combos $c]]
     incr c
   }
-  return [::candle::getBestMatch $goal $newresults]
+  return [::recall::getBestMatch $goal $newresults]
 }
 
 ## getBestMatch goal as word, newresults as list
@@ -113,7 +76,7 @@ proc ::candle::getBestGoal {goal} {
 # example:  000 {134 032 104}
 # returns:  032
 #
-proc ::candle::getBestMatch {goal newresults} {
+proc ::recall::getBestMatch {goal newresults} {
 
   set bestscore 0
   set bestresult ""
@@ -132,21 +95,7 @@ proc ::candle::getBestMatch {goal newresults} {
   return $bestresult
 }
 
-## getCombos word as word, changebits as list
-#
-# takes a dense representation. Returns a dictionary of all possible
-# combinations of changed bits and unchanged bits.
-#
-# example:  abc {0 2}
-# returns:  0 {a__ a_c ab_ abc} 2 {__c a_c _bc abc}
-#
-proc ::candle::getCombos {word changebits} {
-  set wordcombos ""
-  foreach bit $changebits {
-    lappend wordcombos $bit [::prepdata::combinations $word $bit $changebits]
-  }
-  return $wordcombos
-}
+
 ## getActionsPathWithPrediction input as word, goal as word
 #
 # Takes an input and a goal. Searches two locations: the main and the prediction
@@ -160,7 +109,7 @@ proc ::candle::getCombos {word changebits} {
 # example:  000 002
 # returns:  +1 +1
 #
-proc ::candle::getActionsPathWithPrediction {input goal} {
+proc ::recall::getActionsPathWithPrediction {input goal} {
   set ::actionslist ""
   #initialize everything
   set tiloc "" ;#temporary input location
@@ -253,8 +202,8 @@ proc ::candle::getActionsPathWithPrediction {input goal} {
     set gres [concat $gres $tgres]
 
     #check for match
-    set match [::candle::helpers::findMatch [concat $tires $input] $gloc]
-    if {$match eq ""} { set match [::candle::helpers::findMatch $ires [concat $tgloc $goal]] }
+    set match [::recall::helpers::findMatch [concat $tires $input] $gloc]
+    if {$match eq ""} { set match [::recall::helpers::findMatch $ires [concat $tgloc $goal]] }
   }
 
   #compile actions
@@ -277,175 +226,14 @@ proc ::candle::getActionsPathWithPrediction {input goal} {
     #first an idicator saying this is a suggestion
     #second the action that matches the input the closest to our input.
     #thridly, the list of inputs that the goal touches directly.
-    return [concat _ [lindex $ires [lsearch $ires [::candle::getBestMatch $goal $ires]]] $ires]
+    return [concat _ [lindex $ires [lsearch $ires [::recall::getBestMatch $goal $ires]]] $ires]
   }
-  if {[llength $::actionslist] > 1} {
-    ::candle::record::newChain $input $goal $actions
-  }
-  return $actions
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## getActionsPath input as word, goal as word
-#
-# Takes an input representation and a goal representation. Searches the main
-# table in the database to find a path from the goal, back to the input, while
-# at the same time it looks for the goal starting at the input. As soon as it
-# finds a place where the two intersect it finds the path and compiles the list
-# of actions that must be taken to get there. Finds the shortest possible path.
-# Returns the list of actions if one is found. If one is not found it finds the
-# input in the list that is closest to the input passed to it and returns that.
-#
-# example:  000 002
-# returns:  +1 +1
-#
-proc ::candle::getActionsPath {input goal} {
-set ::actionslist ""
-#initialize everything
-  set tiloc "" ;#temporary input location
-  set tiact ""
-  set tires ""
-
-  set tgloc ""
-  set tgact ""
-  set tgres ""
-
-  set iloc "" ;#large list input location
-  set iact ""
-  set ires ""
-
-  set gloc ""
-  set gact ""
-  set gres ""
-
-  set go $goal
-  set in $input
-  set temp ""
-  set match ""
-
-  while {($go ne "" || $in ne "") && $match eq ""} {
-    #get all the goals
-
-    set temp ""
-    if {$go ne ""} { set temp [::repo::get::chainMatch main result $go] }
-    set c 0
-    set tgloc ""
-    set tgact ""
-    set tgres ""
-    set go ""
-    foreach item $temp {
-      if {$c == 0} {
-        if {[lsearch [concat $gloc $tgloc] $item] == -1} {
-          lappend tgloc $item
-          lappend go $item
-        } else {
-          set c -3
-        }
-      } elseif {$c == 1} {
-        lappend tgact $item
-      } elseif {$c == 2} {
-        lappend tgres $item
-        set c -1
-      }
-      incr c
-    }
-
-    #fill the temporary inputs out.
-    set temp ""
-    if {$in ne ""} { set temp [::repo::get::chainMatch main input $in] }
-    set c 0
-    set tiloc ""
-    set tiact ""
-    set tires ""
-    set in ""
-    foreach item $temp {
-      if {$c == 0} {
-          lappend tiloc $item
-      } elseif {$c == 1} {
-        lappend tiact $item
-      } elseif {$c == 2} {
-        if {[lsearch [concat $ires $tires] $item] == -1} {
-          lappend tires $item
-          lappend in $item
-        } else {
-          set tiloc [lrange $tiloc 0 [expr [llength $tiloc]-2]]
-          set tiact [lrange $tiact 0 [expr [llength $tiact]-2]]
-        }
-        set c -1
-      }
-      incr c
-    }
-
-    #fill the long lists with what we found
-    set iloc [concat $iloc $tiloc]
-    set iact [concat $iact $tiact]
-    set ires [concat $ires $tires]
-
-    set gloc [concat $gloc $tgloc]
-    set gact [concat $gact $tgact]
-    set gres [concat $gres $tgres]
-
-    #check for match
-    set match [::candle::helpers::findMatch [concat $tires $input] $gloc]
-    if {$match eq ""} { set match [::candle::helpers::findMatch $ires [concat $tgloc $goal]] }
-  }
-
-  #compile actions
-  set actions ""
-  if {$match ne ""} {
-    set tempinput $match
-    while {$tempinput != $input} {
-      set tiindex [lsearch $ires $tempinput]
-      set actions "[lindex $iact $tiindex] $actions"
-      set tempinput [lindex $iloc $tiindex]
-    }
-    set tempgoal $match
-    while {$tempgoal != $goal} {
-      set tgindex [lsearch $gloc $tempgoal]
-      lappend actions [lindex $gact $tgindex]
-      set tempgoal [lindex $gres $tgindex]
-    }
-  } else {
-    #If no match, return 3 thingss:
-    #first an idicator saying this is a suggestion
-    #second the action that matches the input the closest to our input.
-    #thridly, the list of inputs that the goal touches directly.
-    return [concat _ [lindex $ires [lsearch $ires [::candle::getBestMatch $goal $ires]]] $ires]
-  }
-  if {[llength $::actionslist] > 1} {
-    ::candle::record::newChain $input $goal $actions
+  if {[llength $::decide::path] > 1} {
+    ::recall::record::newChain $input $goal $actions
   }
   return $actions
 }
+
 
 ## ::newChain input as word, result as word, actions as list
 #
@@ -454,7 +242,7 @@ set ::actionslist ""
 # If a matching chain is in the database but its action list is longer
 # It'll delete the old one and save this new, shorter one.
 #
-proc ::candle::record::newChain {input result actions} {
+proc ::recall::record::newChain {input result actions} {
   set returned [::repo::get::allMatch chains $input $actions $result]
   if {$returned eq ""} {
     ::repo::insert chains "time [clock milliseconds] input $input result $result action { $actionslist }"
@@ -469,7 +257,7 @@ proc ::candle::record::newChain {input result actions} {
 # example:  {000 002} {006 005 004 003 002 001 000}
 # returns:  000
 #
-proc ::candle::helpers::findMatch {a b} {
+proc ::recall::helpers::findMatch {a b} {
  foreach i $a {
    if {[lsearch -exact $b $i] != -1} {
      return $i
@@ -477,14 +265,14 @@ proc ::candle::helpers::findMatch {a b} {
  }
  return
 }
-#puts [::candle::main 474 474]
+#puts [::recall::main 474 474]
 
 ## helpers::SavedChain input as word, goal as word
 #
 # checks to see if we've found a chain to this goal before
 # Adds all actions to ::actionslist
 #
-proc ::candle::helpers::savedChain {input goal} {
+proc ::recall::helpers::savedChain {input goal} {
   set actions [::repo::get::chainActions $input $goal]
   return $actions
 }

@@ -2,11 +2,8 @@ pkg_mkIndex -verbose [pwd] lib/repo.tcl
 lappend auto_path [pwd] lib
 package require repo 1.0
 
-pkg_mkIndex -verbose [pwd]/lib prepdata.tcl
-lappend auto_path [pwd]/lib
-package require prepdata 1.0
-
 source lib/see.tcl          ;# get info from msg
+source lib/prepdata.tcl     ;# mostly for recall
 source lib/communicate.tcl  ;# hear from and talk to server.
 source lib/memorize.tcl     ;# record raw data
 source lib/recall.tcl       ;# get actions and action chains from raw data
