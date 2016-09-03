@@ -99,5 +99,5 @@ proc ::maestro::format {{msg ""} {cmd ""} {to ""}} {
 ################################################################################
 
 
-::communicate::setup
-::communicate::interact
+::communicate::set::up
+::communicate::interact::always

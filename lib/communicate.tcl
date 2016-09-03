@@ -1,21 +1,25 @@
 namespace eval ::communicate {}
+namespace eval ::communicate::set {}
+namespace eval ::communicate::helpers {}
+namespace eval ::communicate::interact {}
 
-proc ::communicate::globals {} {
+proc ::communicate::set::globals {} {
   set ::communicate::chan [socket 127.0.0.1 9900]
   set ::communicate::name {}
   set ::communicate::from {}
   set ::communicate::to {}
 }
 
-proc ::communicate::setup {} {
+proc ::communicate::set::up {} {
+  ::communicate::set::globals
   set msg {}
   set sendmsg {}
   set introduction "from"
-  lappend introduction [::maestro::client::helpers::getMyName]
+  lappend introduction [::communicate::helpers::getMyName]
   lappend introduction "to"
   lappend introduction "server"
   lappend introduction "message"
-  lappend introduction [list "up:" [::maestro::client::helpers::whoDoIHearFrom?] "down:" [::maestro::client::helpers::whoDoITalkTo?]]
+  lappend introduction [list "up:" [::communicate::helpers::whoDoIHearFrom?] "down:" [::communicate::helpers::whoDoITalkTo?]]
   puts $::communicate::chan $introduction
   flush $::communicate::chan
   ::maestro::set::up
@@ -55,16 +59,16 @@ proc ::communicate::helpers::whoDoITalkTo? {} {
 # Interaction ##################################################################
 ################################################################################
 
-proc ::communicate::interact {} {
+proc ::communicate::interact::always {} {
   while {1} {
-    set msg [::communicate::getsMsg [gets $::communicate::chan]]
+    set msg [::communicate::interact::get [gets $::communicate::chan]]
     puts "received: $msg"
     set sendmsg [::maestro::handle::interpret $msg]
-    if {$sendmsg ne ""} { ::communicate::sendMsg $sendmsg }
+    if {$sendmsg ne ""} { ::communicate::interact::send $sendmsg }
   }
 }
 
-proc ::communicate::getsMsg {message} {
+proc ::communicate::interact::get {message} {
   set x yes
   set msg $message
   while {$x} {
@@ -81,9 +85,9 @@ proc ::communicate::getsMsg {message} {
 }
 
 
-proc ::communicate::sendMsg {sendmsg} {
-  if {$sendmsg ne ""} {
-    puts $::communicate::chan $sendmsg
+proc ::communicate::interact::send {message} {
+  if {$message ne ""} {
+    puts $::communicate::chan $message
     flush $::communicate::chan
   }
 }
