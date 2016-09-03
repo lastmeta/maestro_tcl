@@ -22,7 +22,6 @@ proc ::communicate::set::up {} {
   lappend introduction [list "up:" [::communicate::helpers::whoDoIHearFrom?] "down:" [::communicate::helpers::whoDoITalkTo?]]
   puts $::communicate::chan $introduction
   flush $::communicate::chan
-  ::maestro::set::up
   puts "Server responded: [gets $::communicate::chan]"
   puts "Awaiting Instructions from Server..."
 }

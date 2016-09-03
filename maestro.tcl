@@ -6,9 +6,10 @@ source lib/see.tcl          ;# get info from msg
 source lib/prepdata.tcl     ;# mostly for recall
 source lib/communicate.tcl  ;# hear from and talk to server.
 source lib/memorize.tcl     ;# record raw data
+source lib/decide.tcl       ;# when you get new data, decide what to do with it.
 source lib/recall.tcl       ;# get actions and action chains from raw data
 source lib/sleep.tcl        ;# post analyzation of data to discover structure.
-source lib/understand.tcl   ;# encode raw data into a relative strucutre
+source lib/encode.tcl       ;# encode raw data into a relative strucutre
 source lib/intuit.tcl       ;# get action chains from relative structure
 
 namespace eval ::maestro {}
@@ -27,6 +28,7 @@ namespace eval ::maestro::client::helpers {}
 proc ::maestro::set::up {} {
   ::repo::create $::communicate::name
   ::memorize::set::globals
+  ::decide::set::globals
 }
 
 
@@ -100,4 +102,5 @@ proc ::maestro::format {{msg ""} {cmd ""} {to ""}} {
 
 
 ::communicate::set::up
+::maestro::set::up
 ::communicate::interact::always

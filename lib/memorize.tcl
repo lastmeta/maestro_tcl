@@ -1,6 +1,6 @@
 namespace eval ::memorize {}
 namespace eval ::memorize::set {}
-
+namespace eval ::memorize::record {}
 
 ################################################################################################################################################################
 # SETUP ########################################################################################################################################################
@@ -77,7 +77,7 @@ proc ::memorize::record::newMain {when input action result} {
 }
 
 # Saves a new bad move if there isn't one in the database already.
-proc ::wimemorizek::record::newBad {when input action result} {
+proc ::memorize::record::newBad {when input action result} {
   set returned [::repo::get::allMatch bad $input [string trim $action] $result]
   if {$returned eq ""} {
     ::repo::insert bad "time $when input $input result $result action $action"

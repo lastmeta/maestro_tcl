@@ -150,7 +150,7 @@ proc ::decide::commanded::goal msg {
 
 proc ::decide::action {msg} {
   if {$::decide::goal eq "_"} {
-    return [::recall::guess [::see::msg $msg] $::decide::acts]
+    return [::recall::guess [::see::message $msg] $::decide::acts]
   } else {
     if {$::decide::path eq ""} { ;# we have no path, try to make one.
       if {[::decide::help::shouldWeChain?]} {
@@ -158,7 +158,7 @@ proc ::decide::action {msg} {
         set ::decide::path [lrange $path 1 end]
         return [::decide::actions::do]
       } else {
-        return [::recall::guess [::see::msg $msg] $::decide::acts]
+        return [::recall::guess [::see::message $msg] $::decide::acts]
       }
     } elseif {$::decide::path eq "_"} { ;# we can't find a path try to intuit one.
       #####   NOT PROGRAMMED YET   #####

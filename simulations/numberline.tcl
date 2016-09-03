@@ -24,11 +24,12 @@ proc ::simulation::run {} {
   puts $::chan "from $::myname to server message goodmorning"
   flush $::chan
   puts "Server responded: [gets $::chan]"
-  puts "SENDING FIRST [list [list from $::myname to $::mymaestro message 000 when [clock milliseconds]]]"
-  puts $::chan [list [list from $::myname to $::mymaestro message 000 when [clock milliseconds]]]
-  flush $::chan
+  #puts "SENDING FIRST [list [list from $::myname to $::mymaestro message 000 when [clock milliseconds]]]"
+  #puts $::chan [list [list from $::myname to $::mymaestro message 000 when [clock milliseconds]]]
+  #flush $::chan
   puts "Awaiting Instructions from Server..."
   while {1} {
+    after 1000
     set msg [gets $::chan]
     puts "received: $msg"
     set sendmsg [::simulation::interpret $msg]
