@@ -47,14 +47,14 @@ proc ::repo::create {id {datas ""} } {
 	                                                    action char,
 																											result char,
 																											ruleid char) }
-	brain eval { create table if not exists structure(
-																											columns char,
-																											cells char) }
-	brain eval { create table if not exists map(
-																											column int,
+	brain eval { create table if not exists nodes(
+																											node int,
 																											input char,
 																											ix char,
 																											type char) }
+	brain eval { create table if not exists connectom(
+																											cellid char,
+																											cell char) }
 }
 
 ################################################################################################################################################################
@@ -80,10 +80,10 @@ proc ::repo::insert {table datas} {
 	if [dict exists $datas rule				]	{ set rule 				[dict get $datas rule				]	}
 	if [dict exists $datas ruleid			]	{	set ruleid 			[dict get $datas ruleid			] }
 	if [dict exists $datas mainids		] {	set mainids 		[dict get $datas mainids		] }
-	if [dict exists $datas columns		] {	set columns 		[dict get $datas columns		]	}
-	if [dict exists $datas cells			]	{	set cells 			[dict get $datas cells			] }
+	if [dict exists $datas node				]	{	set node 				[dict get $datas node				] }
 	if [dict exists $datas ix					]	{	set ix 					[dict get $datas ix					] }
-	if [dict exists $datas column			]	{	set column 			[dict get $datas column			] }
+	if [dict exists $datas cellid			]	{	set cellid 			[dict get $datas cellid			] }
+	if [dict exists $datas cell				]	{	set cell	 			[dict get $datas cell				] }
 	switch $table {
 		setup				{ brain eval {INSERT INTO setup 			VALUES ($type,$data)} }
 		main 				{ brain eval {INSERT INTO main 				VALUES ($time,$input,$action,$result)} }
@@ -92,8 +92,8 @@ proc ::repo::insert {table datas} {
 		bad 				{ brain eval {INSERT INTO bad 				VALUES ($time,$input,$action,$result)} }
 		rules 			{ brain eval {INSERT INTO rules 			VALUES ($rule,$type,$mainids)} }
 		predictions { brain eval {INSERT INTO predictions VALUES ($input,$action,$result,$ruleid)}	}
-		structure 	{ brain eval {INSERT INTO structure 	VALUES ($columns,$cells)} }
-		map 				{ brain eval {INSERT INTO map		 			VALUES ($column,$input,$ix,$type)} }
+		nodes 				{ brain eval {INSERT INTO nodes	 		VALUES ($node,$input,$ix,$type)} }
+		connectom		{ brain eval {INSERT INTO connectom 	VALUES ($cellid,$cell)} }
 		default 		{ return "No data saved, please supply valid table name." }
 	}
 }
@@ -107,6 +107,10 @@ proc ::repo::insert {table datas} {
 #generic update for updating anything (only 1 table. column is always 'perm')
 proc ::repo::update::onId {table column data id} {
 	brain eval "UPDATE '$table' SET '$column'='$data' WHERE rowid='$id'"
+}
+
+proc ::repo::update::cell {id cell} {
+	brain eval "UPDATE connectom SET 'cell'='$cell' WHERE cellid='$id'"
 }
 
 ################################################################################################################################################################
@@ -196,13 +200,26 @@ proc ::repo::get::minAction {} {
 	return [brain eval "SELECT min(action) FROM bad"]
 }
 
-proc ::repo::get::mapMatch {input index type} {
-	return [brain eval "SELECT column FROM map WHERE input='$input' AND ix='$index' AND type='$type'"]
+proc ::repo::get::nodeMatch {input index type} {
+	return [brain eval "SELECT node FROM nodes WHERE input='$input' AND ix='$index' AND type='$type'"]
 }
 
-proc ::repo::get::maxColumn {} {
-	return [brain eval "SELECT max(column) FROM map"]
+proc ::repo::get::maxNode {} {
+	return [brain eval "SELECT max(node) FROM nodes"]
 }
+
+proc ::repo::get::nodeTable {} {
+	return [brain eval "SELECT node,input,ix,type FROM nodes"]
+}
+
+proc ::repo::get::connectom {} {
+	return [brain eval "SELECT cellid,cell FROM connectom"]
+}
+
+proc ::repo::get::cell {cellid} {
+	return [brain eval "SELECT cell FROM connectom WHERE cellid='$cellid'"]
+}
+
 
 ################################################################################
 # Like #########################################################################
