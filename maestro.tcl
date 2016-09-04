@@ -29,6 +29,7 @@ proc ::maestro::set::up {} {
   ::repo::create $::communicate::name
   ::memorize::set::globals
   ::decide::set::globals
+  ::encode::set::globals
 }
 
 
@@ -64,6 +65,7 @@ proc ::maestro::handle::user msg {
     ::memorize::set::learn [::see::message $msg] ;#encode will reference ::memorize::learn
   } elseif {[::see::command $msg] eq "acts"} {
     ::sleep::update::actions [::see::message $msg]
+    ::decide::set::actions [::see::message $msg]
   } elseif {[::see::command $msg] eq "limit"} {
     #return [::memorize::commanded::limit $msg]
   } elseif {[::see::command $msg] eq "cells"} {

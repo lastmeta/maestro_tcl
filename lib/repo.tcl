@@ -50,6 +50,11 @@ proc ::repo::create {id {datas ""} } {
 	brain eval { create table if not exists structure(
 																											columns char,
 																											cells char) }
+	brain eval { create table if not exists map(
+																											column int,
+																											input char,
+																											ix char,
+																											type char) }
 }
 
 ################################################################################################################################################################
@@ -77,6 +82,8 @@ proc ::repo::insert {table datas} {
 	if [dict exists $datas mainids		] {	set mainids 		[dict get $datas mainids		] }
 	if [dict exists $datas columns		] {	set columns 		[dict get $datas columns		]	}
 	if [dict exists $datas cells			]	{	set cells 			[dict get $datas cells			] }
+	if [dict exists $datas ix					]	{	set ix 					[dict get $datas ix					] }
+	if [dict exists $datas column			]	{	set column 			[dict get $datas column			] }
 	switch $table {
 		setup				{ brain eval {INSERT INTO setup 			VALUES ($type,$data)} }
 		main 				{ brain eval {INSERT INTO main 				VALUES ($time,$input,$action,$result)} }
@@ -86,6 +93,7 @@ proc ::repo::insert {table datas} {
 		rules 			{ brain eval {INSERT INTO rules 			VALUES ($rule,$type,$mainids)} }
 		predictions { brain eval {INSERT INTO predictions VALUES ($input,$action,$result,$ruleid)}	}
 		structure 	{ brain eval {INSERT INTO structure 	VALUES ($columns,$cells)} }
+		map 				{ brain eval {INSERT INTO map		 			VALUES ($column,$input,$ix,$type)} }
 		default 		{ return "No data saved, please supply valid table name." }
 	}
 }
@@ -110,7 +118,6 @@ proc ::repo::update::onId {table column data id} {
 #make perm = 0 to get all connections
 
 proc ::repo::get::actions {} {
-	#return [brain eval "SELECT data FROM setup WHERE type='ooutput'"]
 	return [brain eval "SELECT rule FROM rules WHERE type='available actions'"]
 }
 
@@ -187,6 +194,14 @@ proc ::repo::get::maxAction {} {
 
 proc ::repo::get::minAction {} {
 	return [brain eval "SELECT min(action) FROM bad"]
+}
+
+proc ::repo::get::mapMatch {input index type} {
+	return [brain eval "SELECT column FROM map WHERE input='$input' AND ix='$index' AND type='$type'"]
+}
+
+proc ::repo::get::maxColumn {} {
+	return [brain eval "SELECT max(column) FROM map"]
 }
 
 ################################################################################

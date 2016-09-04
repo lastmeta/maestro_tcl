@@ -24,6 +24,13 @@ proc ::decide::set::globals {} {
   }
 }
 
+proc ::decide::set::actions {actions} {
+  set ::decide::acts $actions
+  puts "actions: $::decide::acts"
+}
+
+
+
 
 ################################################################################################################################################################
 # commanded #########################################################################################################################################################
@@ -83,8 +90,8 @@ proc ::decide::commanded::stop {} {
 
 proc ::decide::commanded::sleep msg {
   ::decide::commanded::stop
-  set todo [::see::message $msg]
-  if {$todo eq "acts"} {
+  set subcommand [::see::message $msg]
+  if {$subcommand eq "acts"} {
     set ::decide::acts [::sleep::find::actions $::decide::acts]
     puts "actions: $::decide::acts"
   } else {
@@ -96,11 +103,11 @@ proc ::decide::commanded::sleep msg {
       puts "actions: $::decide::acts"
     }
   }
-  if {$todo eq "opps"} {
+  if {$subcommand eq "opps"} {
     set ::decide::acts [::sleep::find::opposites $::decide::acts]
     puts "opposite actions: $::decide::acts"
   }
-  if {$todo eq "react"} {
+  if {$subcommand eq "react"} {
     return [::decide::commanded::resetActions]
   }
 }
