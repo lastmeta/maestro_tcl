@@ -35,7 +35,7 @@ The user can communicate with the running Maestro Bot using the following comman
 
 **try __** - The double underscore subcommand indicates that Maestro is to stop all behavior.
 
-**sleep acts** - Tells Maestro to determine which of its default 99 actions have produced results. Once the list of viable actions is determined Maestro will only use those actions to affect the environment.
+**sleep acts** - Tells Maestro to determine which of its default 100 actions have produced results. Once the list of viable actions is determined Maestro will only use those actions to affect the environment.
 
 **sleep opps** - Tells Maestro to find behaviors that have consistently produced the opposite result in the change of state of the environment. Once found, Maestro will extrapolate those opposite actions into a list of new, predicted, but not necessarily ever seen before states that it can reference to learn more about its environment.
 
@@ -43,15 +43,17 @@ The user can communicate with the running Maestro Bot using the following comman
 
 **learn** {on/off} - Tells Maestro to memorize and encode data while it interacts with the environment or not. Default is always on. For example: **learn off**
 
-**acts** {actions} - Tells Maestro to use this list of actions to affect the environment. This command can be used before Maestro explores the environment and makes its exploration more efficient. For example: **acts 1 2 3 4**
-
-(not yet programmed, but necessary...)
-
-**limit** {integer} - Tells Maestro to use a threshold other than the default (2) to determine how quickly it learns things. This is a parameter of the internal neural network and should not normally be changed. {integer} may be 1 - 10. For example: **limit 5**
+**acts** {actions} - Tells Maestro to use this list of actions to affect the environment. This command can be used before Maestro explores the environment and makes its exploration more efficient. The default list of acts is 1 through 100. For example: **acts 1 2 3 4**
 
 **cells** {integer} - Tells Maestro to set the number of cells per node in its internal neural network. The higher the number the slower its Maestro is able to process data, but the more subtle relationships it can detect. The rate of change is exponential. This is a parameter of the internal neural network and should not normally be changed. This command can only be run before the Maestro explores the environment as it cannot reorganize its internal neural network so dramatically after it has been created. Default is 4; {integer} may be 1 - 10. For example: **cells 6**
 
-**from user to s.1 message _** - Messages from the environment to Maestro or vise versa follow this pattern. The user can spoof messages on the Maestro network this way. This particular command tells the demo simulation environment to tell Maestro the current state of the environment.
+**limit** {integer} - Tells Maestro to use a threshold other than the default (20) to determine how quickly it learns things. This is a parameter of the internal neural network and should not normally be changed. {integer} may be 1 - 100. For example: **limit 50**
+
+**incre** {integer} - Tells Maestro that when an assumption is verified to increase its belief in said assumption by the integer amount. Default is 10. This affects how quickly it learns things. This is a parameter of the internal neural network and should not normally be changed. {integer} may be 1 - 100. For example: **incre 21**
+
+**decre** {integer} - Tells Maestro that when an assumption is not verified to decrease its belief in said assumption by the integer amount. Default is 1. This affects how quickly it forgets things. This is a parameter of the internal neural network and should not normally be changed. {integer} may be 0 - 100. Setting decr to 0 will restrict the neural network from forgetting anything, even beliefs that are incorrect. For example: **decre 10**
+
+**from user to s.1 message _** - Using this format the user can send messages to anything on the Maestro network, including, (as in this example) the simulation script.
 
 
 ## Limitations ##

@@ -17,7 +17,7 @@ proc ::decide::set::globals {} {
   set ::decide::canpath ""        ;# potential actionslist
   set ::decide::acts [string trim [::repo::get::actions] \{\}] ;# all avilable actions.
   if {[llength $::decide::acts] < 2 } {
-    for {set i 0} {$i < 100} {incr i} {
+    for {set i 1} {$i < 101} {incr i} {
       lappend actions $i
     }
     set ::decide::acts $actions
@@ -114,7 +114,7 @@ proc ::decide::commanded::sleep msg {
 
 proc ::decide::commanded::resetActions {} {
   puts resetActions
-  for {set i 0} {$i < 100} {incr i} {
+  for {set i 1} {$i < 101} {incr i} {
     lappend actions $i
   }
   set ::decide::acts $actions

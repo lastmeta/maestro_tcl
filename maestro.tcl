@@ -67,9 +67,17 @@ proc ::maestro::handle::user msg {
     ::sleep::update::actions [::see::message $msg]
     ::decide::set::actions [::see::message $msg]
   } elseif {[::see::command $msg] eq "limit"} {
-    #return [::memorize::commanded::limit $msg]
+    ::encode::set::limit [::see::message $msg]
+    puts "learning limit: $::encode::limit"
   } elseif {[::see::command $msg] eq "cells"} {
-    #return [::memorize::commanded::cells $msg]
+    ::encode::set::cellspernode [::see::message $msg]
+    puts "cells per node: $::encode::cellspernode"
+  } elseif {[::see::command $msg] eq "incre"} {
+    ::encode::set::incre [::see::message $msg]
+    puts "increment amount: $::encode::incre"
+  } elseif {[::see::command $msg] eq "decre"} {
+    ::encode::set::decre [::see::message $msg]
+    puts "decrement amount: $::encode::decre"
   }
 }
 
