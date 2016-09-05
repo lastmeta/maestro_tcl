@@ -307,3 +307,9 @@ proc ::recall::guess {input acts} {
   set ::memorize::act [lindex $acts [expr 1 + round( rand() * ([llength $acts]-2)) ]]
   return $::memorize::act
 }
+
+# one thing to add to guess or before guess maybe is a curious search:
+# 1. compile a list of states/locations where it hasn't tried every action at such a state.
+# 2. pick two from the list at random.
+# 3. compute the distance to both.
+# 4. the one with the shorter distance wins, set that actionlist as my path and go there.
