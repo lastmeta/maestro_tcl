@@ -115,8 +115,8 @@ proc ::repo::update::cell {id cell} {
 proc ::repo::update::cellid {newid id} {
 	brain eval "UPDATE connectom SET 'cellid'='$newid' WHERE cellid='$id'"
 }
-proc ::repo::update::node {table column data id} {
-	brain eval "UPDATE node SET '$column'='$data' WHERE node='$id'"
+proc ::repo::update::node {column data id} {
+	brain eval "UPDATE nodes SET '$column'='$data' WHERE node='$id'"
 }
 
 ################################################################################################################################################################

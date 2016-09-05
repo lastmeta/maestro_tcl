@@ -28,9 +28,9 @@ proc ::encode::set::actions {} {
     set send ""
     set base ""
     for {set i 0} {$i < $::encode::cellspernode } {incr i} {
-      set base [concat 1 $base]
+      set base [concat $i $base]
     }
-    for {set i 1} {$i < 100 } {incr i} {
+    for {set i 1} {$i <= 20 } {incr i} {
       ::repo::insert nodes     [list node   $i input $i ix a type action]
       set send [concat $base $send]
     }
@@ -304,6 +304,7 @@ proc ::encode::connections::structure {} {
 proc ::encode::prune::node {input index type} {
 
   # get node id
+  set originalmax [::repo::get::maxNode]
   set node [::repo::get::nodeMatch $input $index $type]
   if {$node eq ""} { puts "error cell not found: input;$input index;$index type;$type" ; exit }
 
@@ -312,12 +313,12 @@ proc ::encode::prune::node {input index type} {
 
   # rename each node of higher value.
   set max [::repo::get::maxNode]
-  for {set i $node+1} {$i < $max} {incr i} {
+  for {set i [expr $node + 1]} {$i <= $max} {incr i} {
     ::repo::update::node node [expr $i - 1] $i
   }
 
   #delete corresponding cells
-  ::encode::prune::cells $node $max
+  ::encode::prune::cells $node $originalmax
 
 }
 
@@ -325,13 +326,13 @@ proc ::encode::prune::node {input index type} {
 proc ::encode::prune::cells {node maxnode} {
 
   # delete all indexes of those cells in all other cells
-  set start [expr ($node * $::encode::cellspernode) - 1]
+  set start [expr ($node * $::encode::cellspernode) - $::encode::cellspernode]
   set max [expr $maxnode * $::encode::cellspernode]
   for {set i 0} {$i <= $max} {incr i} {
     set cell [::repo::get::cell $i]
     set newcell ""
     for {set j 0} {$j < $max} {incr j} {
-      if {$j < $start || $j >= $start + $::encode::cellspernode} {
+      if {$j < $start || $j >= [expr $start + $::encode::cellspernode] } {
         set newcell "$newcell [lindex [lindex $cell 0] $j]"
       }
     }
@@ -340,11 +341,11 @@ proc ::encode::prune::cells {node maxnode} {
 
   # delete cells of that node
   for {set i 0} {$i < $::encode::cellspernode} {incr i} {
-    ::repo::delete::rowsTableColumnValue connectom cellid [expr $i + ($node * $::encode::cellspernode) - 1]
+    ::repo::delete::rowsTableColumnValue connectom cellid [expr ($node * $::encode::cellspernode) - $::encode::cellspernode + $i]
   }
 
   # rename each cell of higher value than the lowest cell
-  for {set i $start+$::encode::cellspernode} {$i < $max} {incr i} {
+  for {set i [expr $start + $::encode::cellspernode]} {$i < $max} {incr i} {
     ::repo::update::cellid [expr $i - $::encode::cellspernode] $i
   }
 

@@ -17,7 +17,7 @@ proc ::decide::set::globals {} {
   set ::decide::canpath ""        ;# potential actionslist
   set ::decide::acts [string trim [::repo::get::actions] \{\}] ;# all avilable actions.
   if {[llength $::decide::acts] < 2 } {
-    for {set i 1} {$i < 101} {incr i} {
+    for {set i 1} {$i <= 20} {incr i} { ;# put back to 101 please
       lappend actions $i
     }
     set ::decide::acts $actions
