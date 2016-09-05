@@ -18,7 +18,7 @@ proc ::encode::set::globals {} {
   set ::encode::predictive    {}
   set ::encode::incre         10
   set ::encode::decre         1
-  set ::encode::limit         {}
+  set ::encode::limit         20
   ::encode::set::actions
 }
 
@@ -28,7 +28,7 @@ proc ::encode::set::actions {} {
     set send ""
     set base ""
     for {set i 0} {$i < $::encode::cellspernode } {incr i} {
-      set base [concat $i $base]
+      set base [concat 0 $base]
     }
     for {set i 1} {$i <= 20 } {incr i} {
       ::repo::insert nodes     [list node   $i input $i ix a type action]
@@ -101,9 +101,9 @@ proc ::encode::this {input action} {
   ::encode::update::connectom
 
   ::encode::set::activation
-  #::encode::connections::activation $input $action
-  #::encode::connections::predictions
-  #::encode::connections::structure
+  ::encode::connections::activation $input $action
+  ::encode::connections::predictions
+  ::encode::connections::structure
 }
 
 
@@ -190,15 +190,16 @@ proc ::encode::connections::each {input index type} {
 
   # find the approapriate node number
   set node [::repo::get::nodeMatch $input $index $type]
-  if {$node eq ""} { puts "error cell not found" ; exit }
+  if {$node eq ""} { puts "error cell not found $input $index $type" ; exit }
+  set node [expr $node - 1]
 
   # figure out which cells in that node are predictive
   set predicted {}
   set count     {}
   for {set j 0} {$j < $::encode::cellspernode} {incr j} {
     set cell [expr ($node * $::encode::cellspernode) + $j]
-    set found [lsearch -all $::encode::lastactive $cell]
-    if {$found ne "-1"} {
+    set found [lsearch -all $::encode::predictive $cell]
+    if {$found ne "-1" && $found ne ""} {
       lappend predicted $cell
       lappend count     [llength $found]
     }
@@ -222,7 +223,10 @@ proc ::encode::connections::each {input index type} {
         set maxcount $number
       }
     }
-    return [lindex $predicted [lsearch $count $maxcount]]
+
+    # if there are more than one with the most predicted score, choose a random one.
+    set potentialactivelist [lsearch -all $count $maxcount]
+    lappend ::encode::active [lindex $predicted [::prepdata::randompick $potentialactivelist]]
   }
 }
 
@@ -231,9 +235,12 @@ proc ::encode::connections::activation {input action} {
 
   # foreach index in input
   for {set i 0} {$i < [string length $input]} {incr i} {
-    lappend ::encode::active [::encode::connections::each [string index $input $i] $i state]
+    ::encode::connections::each [string index $input $i] $i state
   }
-  lappend ::encode::active [::encode::connections::each $action a action]
+  if {$action ne ""} {
+    ::encode::connections::each $action a action
+  }
+
 }
 
 # make new predictions
@@ -247,7 +254,7 @@ proc ::encode::connections::predictions {} {
 
     # every connection
     set i 0
-    foreach connection $connections {
+    foreach connection [lindex $connections 0] {
 
       # over connection limit of 20
       if {$connection > $::encode::limit} {
@@ -269,15 +276,15 @@ proc ::encode::connections::structure {} {
     set i 0
 
     # go through each list.
-    foreach connection $connections {
+    foreach connection [lindex $connections 0] {
 
       # if active @ active index
-      if {[lsearch $::encode::acitve $i] } {
+      if {[lsearch $::encode::active $i] ne "-1"} {
 
         # increase by 10
         set add [expr $connection + $::encode::incre]
         if {$add > 100} { set add 100 }
-        lappend newconnections $add
+        set newconnections "$newconnections $add"
 
       # else if it was a prediction that didn't get fulfilled
       } else {
@@ -285,7 +292,7 @@ proc ::encode::connections::structure {} {
         # decrease by 1
         set sub [expr $connection - $::encode::decre]
         if {$sub < 0} { set sub 0 }
-        lappend newconnections $sub
+        set newconnections "$newconnections $sub"
       }
       incr i
     }

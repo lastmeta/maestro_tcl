@@ -1,6 +1,12 @@
 
 namespace eval ::prepdata {
 
+
+  proc randompick list {
+      lindex $list [expr {int(rand()*[llength $list])}]
+  }
+
+
   ## combinations input as word
   #
   # Given a word, it will return a list of words; each is a unique combination
