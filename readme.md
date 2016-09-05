@@ -43,7 +43,7 @@ The user can communicate with the running Maestro Bot using the following comman
 
 **learn** {on/off} - Tells Maestro to memorize and encode data while it interacts with the environment or not. Default is always on. For example: **learn off**
 
-**acts** {actions} - Tells Maestro to use this list of actions to affect the environment. This command can be used before Maestro explores the environment and makes its exploration more efficient. The default list of acts is 1 through 100. For example: **acts 1 2 3 4**
+**acts** {actions} - Tells Maestro to use this list of actions to affect the environment. This command can be used before Maestro explores the environment and makes its exploration more efficient. The fewer the actions Maestro has to choose from the more efficient Maestro can be. The possible list of acts is 1 through 100, but default is only 1 through 20. For example: **acts 1 2 3 4**
 
 **cells** {integer} - Tells Maestro to set the number of cells per node in its internal neural network. The higher the number the slower its Maestro is able to process data, but the more subtle relationships it can detect. The rate of change is exponential. This is a parameter of the internal neural network and should not normally be changed. This command can only be run before the Maestro explores the environment as it cannot reorganize its internal neural network so dramatically after it has been created. Default is 4; {integer} may be 1 - 10. For example: **cells 6**
 
