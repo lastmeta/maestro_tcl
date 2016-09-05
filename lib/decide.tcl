@@ -25,6 +25,11 @@ proc ::decide::set::globals {} {
 }
 
 proc ::decide::set::actions {actions} {
+  foreach act $::decide::acts {
+    if {[lsearch $actions $act] eq "-1"} {
+      ::encode::prune::node $act a action
+    }
+  }
   set ::decide::acts $actions
   puts "actions: $::decide::acts"
 }

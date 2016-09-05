@@ -1,8 +1,10 @@
 namespace eval ::encode {}
 namespace eval ::encode::set {}
 namespace eval ::encode::map {}
+namespace eval ::encode::prune {}
 namespace eval ::encode::update {}
 namespace eval ::encode::connections {}
+
 
 ################################################################################
 # Set ##########################################################################
@@ -26,7 +28,7 @@ proc ::encode::set::actions {} {
     set send ""
     set base ""
     for {set i 0} {$i < $::encode::cellspernode } {incr i} {
-      set base [concat 0 $base]
+      set base [concat 1 $base]
     }
     for {set i 1} {$i < 100 } {incr i} {
       ::repo::insert nodes     [list node   $i input $i ix a type action]
@@ -81,6 +83,7 @@ proc ::encode::set::decre {decre} {
 }
 
 proc ::encode::set::activation {} {
+  # update last cells to be old cells
   set ::encode::lastactive $::encode::active
   set ::encode::active ""
 }
@@ -97,9 +100,7 @@ proc ::encode::this {input action} {
 
   ::encode::update::connectom
 
-  # update last cells to be old cells
   ::encode::set::activation
-
   #::encode::connections::activation $input $action
   #::encode::connections::predictions
   #::encode::connections::structure
@@ -115,9 +116,9 @@ proc ::encode::map::input {input} {
   set max [::repo::get::maxNode]
   for {set i 0} {$i < [string length $input]} {incr i} {
     if {[::repo::get::nodeMatch [string index $input $i] $i state ] eq ""} { ;# alternatively, get all of node and search through it manually.
+      ::encode::map::cells $max
       incr max
       ::repo::insert nodes [list  node   $max  input [string index $input $i]  ix $i   type state]
-      ::encode::map::cells $max
     }
   }
 }
@@ -126,9 +127,9 @@ proc ::encode::map::action {action} {
   if {$action ne ""} {
     set max [::repo::get::maxNode]
     if {[::repo::get::nodeMatch $action a action ] eq ""} {
+      ::encode::map::cells $max
       incr max
       ::repo::insert nodes [list node $max input $action ix a type action]
-      ::encode::map::cells $max
     }
   } else {
       #debug purposes try __ yeilds:
@@ -154,8 +155,7 @@ proc ::encode::update::connectom {} {
   # only do something if that number has changed
   if {$max > $::encode::cells} {
 
-    # get change and reset number of cells to max
-    set dif [expr $max - $::encode::cells]
+    # reset number of cells to max
     set ::encode::cells $max
 
     # filter through every cell
@@ -163,22 +163,19 @@ proc ::encode::update::connectom {} {
 
       # get all the connections this cell has.
       set cell [::repo::get::cell $i]
-      puts "cell length: [llength [lindex $cell 0]]"
 
       # add on 0's for new connections to new cells.
-      #for {set j [llength $cell]} {$j <= $max} {incr j} {
-      #  set cell [concat $cell 0]
-      #}
       set newcell ""
       for {set j 0} {$j < $max} {incr j} {
-        if {$j <= [llength [lindex $cell 0]]} {
+        if {$j < [llength [lindex $cell 0]]} {
           set newcell "$newcell [lindex [lindex $cell 0] $j]"
         } else {
           set newcell "$newcell 0"
         }
+      }
 
       # update database
-      ::repo::update::cell $i $cell
+      ::repo::update::cell $i $newcell
     }
   }
 }
@@ -294,4 +291,65 @@ proc ::encode::connections::structure {} {
     }
     ::repo::update::cell $cellid $newconnections
   }
+}
+
+
+
+
+################################################################################
+# prune ########################################################################
+################################################################################
+
+
+proc ::encode::prune::node {input index type} {
+
+  # get node id
+  set node [::repo::get::nodeMatch $input $index $type]
+  if {$node eq ""} { puts "error cell not found: input;$input index;$index type;$type" ; exit }
+
+  # delete node
+  ::repo::delete::rowsTableColumnValue nodes node $node
+
+  # rename each node of higher value.
+  set max [::repo::get::maxNode]
+  for {set i $node+1} {$i < $max} {incr i} {
+    ::repo::update::node node [expr $i - 1] $i
+  }
+
+  #delete corresponding cells
+  ::encode::prune::cells $node $max
+
+}
+
+
+proc ::encode::prune::cells {node maxnode} {
+
+  # delete all indexes of those cells in all other cells
+  set start [expr ($node * $::encode::cellspernode) - 1]
+  set max [expr $maxnode * $::encode::cellspernode]
+  for {set i 0} {$i <= $max} {incr i} {
+    set cell [::repo::get::cell $i]
+    set newcell ""
+    for {set j 0} {$j < $max} {incr j} {
+      if {$j < $start || $j >= $start + $::encode::cellspernode} {
+        set newcell "$newcell [lindex [lindex $cell 0] $j]"
+      }
+    }
+    ::repo::update::cell $i $newcell
+  }
+
+  # delete cells of that node
+  for {set i 0} {$i < $::encode::cellspernode} {incr i} {
+    ::repo::delete::rowsTableColumnValue connectom cellid [expr $i + ($node * $::encode::cellspernode) - 1]
+  }
+
+  # rename each cell of higher value than the lowest cell
+  for {set i $start+$::encode::cellspernode} {$i < $max} {incr i} {
+    ::repo::update::cellid [expr $i - $::encode::cellspernode] $i
+  }
+
+  # set max cells variable
+  set max [::repo::get::maxNode]
+  set max [expr $max * $::encode::cellspernode]
+  set ::encode::cells $max ;# set it to $i - 1 - $::encode::cellspernode should be the same thing
 }
