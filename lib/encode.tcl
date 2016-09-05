@@ -70,7 +70,7 @@ proc ::encode::set::incre {incre} {
   }
 }
 
-proc ::encode::set::decr {decre} {
+proc ::encode::set::decre {decre} {
   if {$decre > $::encode::incre} {
     set ::encode::decre $::encode::incre
   } elseif {$decre < 0} {
@@ -78,6 +78,11 @@ proc ::encode::set::decr {decre} {
   } else {
     set ::encode::decre $decre
   }
+}
+
+proc ::encode::set::activation {} {
+  set ::encode::lastactive $::encode::active
+  set ::encode::active ""
 }
 
 ################################################################################
@@ -92,7 +97,10 @@ proc ::encode::this {input action} {
 
   ::encode::update::connectom
 
-  #::encode::connections::activation input
+  # update last cells to be old cells
+  ::encode::set::activation
+
+  #::encode::connections::activation $input $action
   #::encode::connections::predictions
   #::encode::connections::structure
 }
@@ -109,9 +117,7 @@ proc ::encode::map::input {input} {
     if {[::repo::get::nodeMatch [string index $input $i] $i state ] eq ""} { ;# alternatively, get all of node and search through it manually.
       incr max
       ::repo::insert nodes [list  node   $max  input [string index $input $i]  ix $i   type state]
-      for {set j 0} {$j < $::encode::cellspernode} {incr j} {
-        ::repo::insert connectom [list cellid [expr $j + ($max * $::encode::cellspernode)] cell 0]
-      }
+      ::encode::map::cells $max
     }
   }
 }
@@ -122,10 +128,17 @@ proc ::encode::map::action {action} {
     if {[::repo::get::nodeMatch $action a action ] eq ""} {
       incr max
       ::repo::insert nodes [list node $max input $action ix a type action]
+      ::encode::map::cells $max
     }
   } else {
       #debug purposes try __ yeilds:
       #puts [::repo::get::nodeTable]
+  }
+}
+
+proc ::encode::map::cells {max} {
+  for {set j 0} {$j < $::encode::cellspernode} {incr j} {
+    ::repo::insert connectom [list cellid [expr $j + ($max * $::encode::cellspernode)] cell 0]
   }
 }
 
@@ -153,9 +166,16 @@ proc ::encode::update::connectom {} {
       puts "cell length: [llength [lindex $cell 0]]"
 
       # add on 0's for new connections to new cells.
-      for {set j [llength $cell]} {$j <= $max} {incr j} {
-        set cell [concat $cell 0]
-      }
+      #for {set j [llength $cell]} {$j <= $max} {incr j} {
+      #  set cell [concat $cell 0]
+      #}
+      set newcell ""
+      for {set j 0} {$j < $max} {incr j} {
+        if {$j <= [llength [lindex $cell 0]]} {
+          set newcell "$newcell [lindex [lindex $cell 0] $j]"
+        } else {
+          set newcell "$newcell 0"
+        }
 
       # update database
       ::repo::update::cell $i $cell
@@ -169,52 +189,54 @@ proc ::encode::update::connectom {} {
 ################################################################################
 
 
+proc ::encode::connections::each {input index type} {
 
-proc ::encode::connections::activation {input} {
-  # update last cells to be old cells
-  set ::encode::lastactive $::encode::active
-  set ::encode::active ""
+  # find the approapriate node number
+  set node [::repo::get::nodeMatch $input $index $type]
+  if {$node eq ""} { puts "error cell not found" ; exit }
+
+  # figure out which cells in that node are predictive
+  set predicted {}
+  set count     {}
+  for {set j 0} {$j < $::encode::cellspernode} {incr j} {
+    set cell [expr ($node * $::encode::cellspernode) + $j]
+    set found [lsearch -all $::encode::lastactive $cell]
+    if {$found ne "-1"} {
+      lappend predicted $cell
+      lappend count     [llength $found]
+    }
+  }
+
+  # if no predictive cells are found in the node
+  if {$predicted eq ""} {
+
+    # set all cells in node to be active:
+    for {set j 0} {$j < $::encode::cellspernode} {incr j} {
+      lappend ::encode::active [expr ($node * $::encode::cellspernode) + $j]
+    }
+
+  # elseif there are predictive cells
+  } else {
+
+    # set the most predicted cell to active
+    set maxcount 0
+    foreach number $count {
+      if {$number > $maxcount} {
+        set maxcount $number
+      }
+    }
+    return [lindex $predicted [lsearch $count $maxcount]]
+  }
+}
+
+
+proc ::encode::connections::activation {input action} {
 
   # foreach index in input
   for {set i 0} {$i < [string length $input]} {incr i} {
-
-    # find the approapriate node number
-    set node [::repo::get::nodeMatch [string index $input $i] $i state]
-    if {$node eq ""} { puts "error cell not found" ; exit }
-
-    # figure out which cells in that node are predictive
-    set predicted {}
-    set count     {}
-    for {set j 0} {$j < $::encode::cellspernode} {incr j} {
-      set cell [expr ($node * $::encode::cellspernode) + $j]
-      set found [lsearch -all $::encode::lastactive $cell]
-      if {$found ne "-1"} {
-        lappend predicted $cell
-        lappend count     [llength $found]
-      }
-    }
-
-    # if no predictive cells are found in the node
-    if {$predicted eq ""} {
-
-      # set all cells in node to be active:
-      for {set j 0} {$j < $::encode::cellspernode} {incr j} {
-        lappend ::encode::active [expr ($node * $::encode::cellspernode) + $j]
-      }
-
-    # elseif there are predictive cells
-    } else {
-
-      # set the most predicted cell to active
-      set maxcount 0
-      foreach number $count {
-        if {$number > $maxcount} {
-          set maxcount $number
-        }
-      }
-      lappend ::encode::active [lindex $predicted [lsearch $count $maxcount]]
-    }
+    lappend ::encode::active [::encode::connections::each [string index $input $i] $i state]
   }
+  lappend ::encode::active [::encode::connections::each $action a action]
 }
 
 # make new predictions
