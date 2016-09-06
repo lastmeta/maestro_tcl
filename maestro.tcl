@@ -55,7 +55,11 @@ proc ::maestro::handle::environment msg {
 }
 
 proc ::maestro::handle::user msg {
-  if {[::see::command $msg] eq "try"} {
+  if {[::see::command $msg] eq "explore"} {
+    return [::maestro::format [::decide::commanded::explore $msg]]
+  } elseif {[::see::command $msg] eq "stop"} {
+    ::decide::commanded::stop
+  } elseif {[::see::command $msg] eq "try"} {
     return [::maestro::format [::decide::commanded::try $msg]]
   } elseif {[::see::command $msg] eq "can"} {
     return [::maestro::format [::decide::commanded::can $msg] "" [::see::from $msg]]

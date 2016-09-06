@@ -27,13 +27,13 @@ The user can communicate with the running Maestro Bot using the following comman
 
 **help** / **?** / **man** - Displays a help screen containing a list of commands.
 
-**can** {subcommand} - Tells Maestro to imagine how it could achieve a certain state of the environment defined by {subcommand} and report if it thinks it can achieve that state from the environments current state. For example: **can 999**
+**can** {environment} - Tells Maestro to imagine how it could achieve a certain state of the environment defined by {environment} and report if it thinks it can achieve that state from the environments current state. For example: **can 999**
 
-**try** {subcommand} - Tells Maestro to try to take action to achieve a certain state of the environment defined by {subcommand}. For example: **try 999**
+**try** {environment} - Tells Maestro to try to take action to achieve a certain state of the environment defined by {environment}. Default is nothing and will tell Maestro to try nothing, and has the same result as the **stop** command. For example: **try 999**
 
-**try _** - The underscore subcommand indicates that Maestro is to explore the environment.
+**explore** {random/curious} - Tells Maestro is to explore the environment. Default is curious. Random chooses a random action at every time-step. Curious tries to explore areas of the environment that are less explored than others. For example: **explore random**
 
-**try __** - The double underscore subcommand indicates that Maestro is to stop all behavior.
+**stop** - Indicates that Maestro is to stop all behavior, exploratory or otherwise.
 
 **sleep acts** - Tells Maestro to determine which of its default 100 actions have produced results. Once the list of viable actions is determined Maestro will only use those actions to affect the environment.
 

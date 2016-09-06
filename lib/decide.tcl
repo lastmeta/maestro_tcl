@@ -13,6 +13,7 @@ namespace eval ::decide::actions {}
 proc ::decide::set::globals {} {
   set ::decide::path    {}        ;# list we're currently compiling to send as motor commands
   set ::decide::goal    ""        ;# the goal.
+  set ::decide::explore ""        ;# if commanded to explore this should be random or curious
   set ::decide::cangoal ""        ;# potential goal
   set ::decide::canpath ""        ;# potential actionslist
   set ::decide::acts [string trim [::repo::get::actions] \{\}] ;# all avilable actions.
@@ -42,23 +43,35 @@ proc ::decide::set::actions {actions} {
 ################################################################################################################################################################
 
 
+proc ::decide::commanded::explore msg {
+  if {[::see::message $msg] eq "random"} {
+    set ::decide::explore "random"
+  } elseif {[::see::message $msg] eq "off"} {
+    set ::decide::explore ""
+  } else {  ;# default is to explore curiously.
+    set ::decide::explore "curious"
+  }
+  return [::decide::commanded::guess]
+}
+
 proc ::decide::commanded::try msg {
   set ::decide::goal [::see::message $msg]
   if {$::decide::goal               eq $::decide::cangoal
   &&  $::decide::canpath            ne  ""
-  &&  [lindex $::decide::canpath 0] ne  "_"
-  &&  [lindex $::decide::canpath 0] ne  "__"
   } then {
+    set ::decide::explore ""
     set ::decide::goal $::decide::cangoal
     set ::decide::path $::decide::canpath
     return [::decide::commanded::exists $msg]
-  } elseif {$::decide::goal eq "__"} {
+  } elseif {$::decide::goal eq "" && $::decide::explore eq ""} {
     ::decide::commanded::stop
-  } elseif {$::decide::goal eq "_"} {
-    return [::decide::commanded::guess $msg]
+  } elseif {$::decide::goal eq "" && $::decide::explore ne ""} {
+    return [::decide::commanded::guess]
   } elseif {$::decide::goal eq $::memorize::input} {
+    set ::decide::explore ""
     ::decide::commanded::stop
   } else {
+    set ::decide::explore ""
     return [::decide::commanded::find $msg]
   }
 }
@@ -89,8 +102,9 @@ proc ::decide::commanded::exists msg {
 }
 
 proc ::decide::commanded::stop {} {
-  set ::decide::path ""
-  set ::decide::goal ""
+  set ::decide::explore ""
+  set ::decide::goal    ""
+  set ::decide::path    {}
 }
 
 proc ::decide::commanded::sleep msg {
@@ -127,9 +141,14 @@ proc ::decide::commanded::resetActions {} {
   puts "available actions: $::decide::acts"
 }
 
-proc ::decide::commanded::guess msg {
-  set ::decide::path [::recall::curious $::memorize::input $::decide::acts]
-  if {$::decide::path eq ""} {
+proc ::decide::commanded::guess {} {
+  if {$::decide::explore eq "curious"} {
+    set ::decide::path [::recall::curious   $::memorize::input $::decide::acts]
+    if {$::decide::path eq "_"} {
+      set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
+    }
+  }
+  if {$::decide::explore eq "random"} {
     set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
   }
   return [::decide::actions::do]
@@ -164,7 +183,15 @@ proc ::decide::commanded::goal msg {
 ################################################################################################################################################################
 
 proc ::decide::action {msg} {
-  if {$::decide::goal eq "_"} {
+  if       {$::decide::explore eq "curious" && $::decide::goal ne ""} {
+    if {$::memorize::input ne $::decide::goal} {
+      return [::decide::actions::do]
+    } else {
+      return [::recall::guess [::see::message $msg] $::decide::acts]
+    }
+  } elseif {$::decide::explore eq "curious"} {
+    return [::decide::commanded::guess]
+  } elseif {$::decide::explore eq "random"} {
     return [::recall::guess [::see::message $msg] $::decide::acts]
   } elseif {$::decide::goal eq ""} {
   } else {

@@ -6,14 +6,18 @@ namespace eval ::prepdata {
     lindex $list [expr {int(rand()*[llength $list])}]
   }
 
-  #returns a list of the least common elements in a list that has ducplicate elements.
+  # returns a list of the least common elements in a list that has multiple of
+  # the same elements, as long as each item in the list isn't duplicated the
+  # same number of times.
   proc leastcommon list {
     set counts  {}
     set low     {}
+    set high    {}
     foreach element $list {
       if {![dict exists $counts $element]} {
         set count [llength [lsearch -all $list $element]]
-        if {$count < $low || $low eq ""} { set low $count }
+        if {$count < $low  || $low  eq ""} { set low  $count }
+        if {$count > $high || $high eq ""} { set high $count }
         dict set counts $element $count
       }
     }
@@ -23,7 +27,7 @@ namespace eval ::prepdata {
         lappend list $key
       }
     }
-    return $list
+    if {$high != $low} { return $list } else { return "_"}
   }
 
 

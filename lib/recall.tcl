@@ -111,7 +111,7 @@ proc ::recall::getBestMatch {goal newresults} {
 # returns:  +1 +1
 #
 proc ::recall::getActionsPathWithPrediction {input goal} {
-  set ::actionslist ""
+  set actionslist ""
   #initialize everything
   set tiloc "" ;#temporary input location
   set tiact ""
@@ -246,7 +246,7 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
 proc ::recall::record::newChain {input result actions} {
   set returned [::repo::get::allMatch chains $input $actions $result]
   if {$returned eq ""} {
-    ::repo::insert chains "time [clock milliseconds] input $input result $result action { $actionslist }"
+    ::repo::insert chains "time [clock milliseconds] input $input result $result action { $actions }"
   }
 }
 
@@ -271,7 +271,7 @@ proc ::recall::helpers::findMatch {a b} {
 ## helpers::SavedChain input as word, goal as word
 #
 # checks to see if we've found a chain to this goal before
-# Adds all actions to ::actionslist
+# Adds all actions to actionslist
 #
 proc ::recall::helpers::savedChain {input goal} {
   set actions [::repo::get::chainActions $input $goal]
@@ -318,20 +318,27 @@ proc ::recall::guess {input acts} {
 # returns a random act on the acts list as a last resort.
 #
 proc ::recall::curious {input acts} {
+  puts curious
   set main      [::repo::get::tableColumns main result]
   set bad       [::repo::get::tableColumns bad  result]
   set all       [concat $main $bad]
-  set uncommon  [::prepdata::leastcommon $results]
+  set uncommon  [::prepdata::leastcommon $all]
   set random1   [::prepdata::randompick $uncommon]
   set random2   [::prepdata::randompick $uncommon]
   set acts1     [::recall::getActionsPathWithPrediction $input $random1]
   set acts2     [::recall::getActionsPathWithPrediction $input $random2]
   set lacts1    [llength $acts1]
   set lacts2    [llength $acts2]
-  if {$lacts1 < $lacts2} {
+  if {$lacts1 < $lacts2 && [lindex $acts1 0] ne "_"} {
+    puts "------------- $random1"
+    set ::decide::goal $random1
     return $acts1
-  } else {
+  } elseif {[lindex $acts2 0] ne "_"} {
+    puts "------------- $random2"
+    set ::decide::goal $random2
     return $acts2
+  } else {
+    return "_"
   }
 }
 
