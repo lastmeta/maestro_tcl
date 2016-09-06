@@ -76,6 +76,12 @@ proc ::decide::commanded::try msg {
   }
 }
 
+proc ::decide::commanded::do msg {
+  ::decide::commanded::stop
+  set ::decide::path [::see::message $msg]
+  return [::decide::actions::do]
+}
+
 proc ::decide::commanded::can msg {
   set goal [::see::message $msg]
   set path [::recall::main $::memorize::input $goal]
@@ -183,26 +189,29 @@ proc ::decide::commanded::goal msg {
 ################################################################################################################################################################
 
 proc ::decide::action {msg} {
-  if       {$::decide::explore eq "curious" && $::decide::goal ne ""} {
-    if {$::memorize::input ne $::decide::goal} {
-      return [::decide::actions::do]
-    } else {
-      return [::recall::guess [::see::message $msg] $::decide::acts]
+  if {$::decide::explore eq "curious" && $::decide::goal ne ""} {
+    if {$::memorize::input eq $::decide::goal} {
+      set ::decide::goal ""
+      set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
     }
+    return [::decide::actions::do]
   } elseif {$::decide::explore eq "curious"} {
     return [::decide::commanded::guess]
   } elseif {$::decide::explore eq "random"} {
-    return [::recall::guess [::see::message $msg] $::decide::acts]
+    set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
+    return [::decide::actions::do]
+  } elseif {$::decide::path ne ""} {
+    return [::decide::actions::do]
   } elseif {$::decide::goal eq ""} {
   } else {
     if {$::decide::path eq ""} { ;# we have no path, try to make one.
       if {[::decide::help::shouldWeChain?]} {
         set path [::recall::main $::memorize::input $::decide::goal]
         set ::decide::path [lrange $path 1 end]
-        return [::decide::actions::do]
       } else {
-        return [::recall::guess [::see::message $msg] $::decide::acts]
+        set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
       }
+      return [::decide::actions::do]
     } elseif {$::decide::path eq "_"} { ;# we can't find a path try to intuit one.
       #####   NOT PROGRAMMED YET   #####
     } else { ;# follow it the path we're on.
