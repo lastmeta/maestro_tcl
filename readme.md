@@ -81,3 +81,11 @@ In short Maestro is best equipped to learn and engage in static environments, ev
 ## Convention ##
 
 The design of the Maestro network allows for multiple Maestro agents to interact, though this is not yet implemented. A hierarchy of Maestro agents may someday work together in to accomplish complex tasks or manage complex environments. For this reason it is conventional to name Maestro agents with numbers as an address. **1.1** is considered the first Maestro agent on the first (bottom) level of a (as of yet theoretical) Maestro Hierarchy. **s.1** or **e.1** then is considered the portion of the simulation or the environment that communicates with Maestro **1.1**. These are naming conventions; not naming rules. As of yet no functional logic relies on these conventions.
+
+
+## what to do next ##
+
+Curious isn't great, but it works ok.
+found glitch in chain - stops short or something.
+also doesn't save chains in chain table.
+add simple query to inquire.
