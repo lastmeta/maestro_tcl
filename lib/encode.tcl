@@ -15,8 +15,6 @@ proc ::encode::set::globals {} {
   set ::encode::cells         0
   set ::encode::active        {}
   set ::encode::lastactive    {}
-  set ::encode::behavior      {}
-  set ::encode::lastbehavior  {}
   set ::encode::predictive    {}
   set ::encode::incre         10
   set ::encode::decre         1
@@ -88,16 +86,16 @@ proc ::encode::set::activation {action} {
   # update last cells to be old cells
   set ::encode::lastactive $::encode::active
   set ::encode::active ""
-  set ::encode::lastbehavior $::encode::behavior
-  set ::encode::behavior $action
 }
 
 ################################################################################
 # Encode #######################################################################
 ################################################################################
 
-proc ::encode::this {input action} {
+proc ::encode::this {input} {
   if {$::memorize::learn eq "no"} { return }
+
+  set action $::memorize::act 
 
   ::encode::map::input  $input
   ::encode::map::action $action
@@ -105,7 +103,7 @@ proc ::encode::this {input action} {
   ::encode::update::connectom
 
   ::encode::set::activation $action
-  ::encode::connections::activation $input $::encode::behavior
+  ::encode::connections::activation $input $action
   ::encode::connections::predictions
   ::encode::connections::structure
 }

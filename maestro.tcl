@@ -49,8 +49,8 @@ proc ::maestro::handle::interpret msg {
 
 proc ::maestro::handle::environment msg {
   ::memorize::this $msg
+  ::encode::this [::see::message $msg]
   set action [::decide::action $msg]
-  ::encode::this [::see::message $msg] $action
   return [::maestro::format $action]
 }
 

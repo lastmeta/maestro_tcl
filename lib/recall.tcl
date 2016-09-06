@@ -308,8 +308,35 @@ proc ::recall::guess {input acts} {
   return $::memorize::act
 }
 
+
+
+## curious input as word, acts as list.
+#
+# look at main db and compile a list of all the actions that have been used on
+# this input before. Compare the acts list with the actionsdonehere list.
+# returns the first aciton that isn't on the actionshere list. If that fails it
+# returns a random act on the acts list as a last resort.
+#
+proc ::recall::curious {input acts} {
+  set main      [::repo::get::tableColumns main result]
+  set bad       [::repo::get::tableColumns bad  result]
+  set all       [concat $main $bad]
+  set uncommon  [::prepdata::leastcommon $results]
+  set random1   [::prepdata::randompick $uncommon]
+  set random2   [::prepdata::randompick $uncommon]
+  set acts1     [::recall::getActionsPathWithPrediction $input $random1]
+  set acts2     [::recall::getActionsPathWithPrediction $input $random2]
+  set lacts1    [llength $acts1]
+  set lacts2    [llength $acts2]
+  if {$lacts1 < $lacts2} {
+    return $acts1
+  } else {
+    return $acts2
+  }
+}
+
 # one thing to add to guess or before guess maybe is a curious search:
-# 1. compile a list of states/locations where it has the least amount of actions tried. 
+# 1. compile a list of states/locations where it has the least amount of actions tried.
 # 2. pick two from the list at random.
 # 3. compute the distance to both.
 # 4. the one with the shorter distance wins, set that actionlist as my path and go there.

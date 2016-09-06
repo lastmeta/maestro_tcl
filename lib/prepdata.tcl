@@ -3,7 +3,27 @@ namespace eval ::prepdata {
 
 
   proc randompick list {
-      lindex $list [expr {int(rand()*[llength $list])}]
+    lindex $list [expr {int(rand()*[llength $list])}]
+  }
+
+  #returns a list of the least common elements in a list that has ducplicate elements.
+  proc leastcommon list {
+    set counts  {}
+    set low     {}
+    foreach element $list {
+      if {![dict exists $counts $element]} {
+        set count [llength [lsearch -all $list $element]]
+        if {$count < $low || $low eq ""} { set low $count }
+        dict set counts $element $count
+      }
+    }
+    set list {}
+    foreach key [dict keys $counts] {
+      if {[dict get $counts $key] == $low} {
+        lappend list $key
+      }
+    }
+    return $list
   }
 
 

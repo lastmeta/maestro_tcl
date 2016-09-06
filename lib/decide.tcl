@@ -128,7 +128,10 @@ proc ::decide::commanded::resetActions {} {
 }
 
 proc ::decide::commanded::guess msg {
-  set ::decide::path [::recall::guess $::memorize::input $::decide::acts]
+  set ::decide::path [::recall::curious $::memorize::input $::decide::acts]
+  if {$::decide::path eq ""} {
+    set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
+  }
   return [::decide::actions::do]
 }
 
