@@ -309,7 +309,7 @@ proc ::recall::guess {input acts} {
 }
 
 # one thing to add to guess or before guess maybe is a curious search:
-# 1. compile a list of states/locations where it hasn't tried every action at such a state.
+# 1. compile a list of states/locations where it has the least amount of actions tried. 
 # 2. pick two from the list at random.
 # 3. compute the distance to both.
 # 4. the one with the shorter distance wins, set that actionlist as my path and go there.
