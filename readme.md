@@ -21,25 +21,32 @@ In this demo Maestro will explore the numberline learning how to traverse it usi
 To use Maestro with other things at this point one must build an interface to their environment using numberline.tcl as an guide. Maestro will communicate actions to the environment. It has 99 actions ranging from 1 to 99. action 0 is reserved for an error message and is currently not used.
 
 
-## User Commands ##
+## User Commands - Behavior ##
 
 The user can communicate with the running Maestro Bot using the following commands:
 
 **help** / **?** / **man** - Displays a help screen containing a list of commands.
 
+**explore** {random/curious} - Tells Maestro is to explore the environment. Default is curious. Random chooses a random action at every time-step. Curious tries to explore areas of the environment that are less explored than others. For example: **explore random**
+
 **can** {environment} - Tells Maestro to imagine how it could achieve a certain state of the environment defined by {environment} and report if it thinks it can achieve that state from the environments current state. For example: **can 999**
 
 **try** {environment} - Tells Maestro to try to take action to achieve a certain state of the environment defined by {environment}. Default is nothing and will tell Maestro to try nothing, and has the same result as the **stop** command. For example: **try 999**
 
-**explore** {random/curious} - Tells Maestro is to explore the environment. Default is curious. Random chooses a random action at every time-step. Curious tries to explore areas of the environment that are less explored than others. For example: **explore random**
-
 **stop** - Indicates that Maestro is to stop all behavior, exploratory or otherwise.
+
+**do** {action(s)} - Tells Maestro to do a particular action, or list of actions right now. For example: **do 1 2 3**
 
 **sleep acts** - Tells Maestro to determine which of its default 100 actions have produced results. Once the list of viable actions is determined Maestro will only use those actions to affect the environment.
 
 **sleep opps** - Tells Maestro to find behaviors that have consistently produced the opposite result in the change of state of the environment. Once found, Maestro will extrapolate those opposite actions into a list of new, predicted, but not necessarily ever seen before states that it can reference to learn more about its environment.
 
 **sleep react** - Tells Maestro to reset its available actions (for instance "1 2 3 4") to the default available actions (which is "1 2 3 ... 97 98 99").
+
+**from user to s.1 message _** - Using this format the user can send messages to anything on the Maestro network, including, (as in this example) the simulation script.
+
+
+## User Commands - Parameters ##
 
 **learn** {on/off} - Tells Maestro to memorize and encode data while it interacts with the environment or not. Default is always on. For example: **learn off**
 
@@ -52,8 +59,6 @@ The user can communicate with the running Maestro Bot using the following comman
 **incre** {integer} - Tells Maestro that when an assumption is verified to increase its belief in said assumption by the integer amount. Default is 10. This affects how quickly it learns things. This is a parameter of the internal neural network and should not normally be changed. {integer} may be 1 - 100. For example: **incre 21**
 
 **decre** {integer} - Tells Maestro that when an assumption is not verified to decrease its belief in said assumption by the integer amount. Default is 1. This affects how quickly it forgets things. This is a parameter of the internal neural network and should not normally be changed. {integer} may be 0 - 100. Setting decr to 0 will restrict the neural network from forgetting anything, even beliefs that are incorrect. For example: **decre 10**
-
-**from user to s.1 message _** - Using this format the user can send messages to anything on the Maestro network, including, (as in this example) the simulation script.
 
 
 ## Limitations ##
