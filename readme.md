@@ -3,6 +3,8 @@
 
 Maestro is an simplified and unoptimized attempt at generalized AI. It is a prototype. It performs sensory-motor inference to discover the causal structure of the environment in which it is placed. The hope is that once it has explored an environment it can then use what it has learned to intuitively achieve any arrangement of that environment.
 
+The learning task of Maestro is simple: learn what each action does in every situation. This is an impossible task to do naively thus simple AI techniques are employed to help simplify or limit the search space: to give Maestro intuition.  
+
 
 ## Setup ##
 
@@ -10,15 +12,15 @@ Run each of the following tcl scripts in order from a command line:
 
 - **server**.tcl
 	- (must run first)
-- **naisen**.tcl
+- **maestro**.tcl
 	- (must run before simulation scripts)
 - /simulations/**numberline**.tcl (demo simulation)
 	- (must run after all naisen.tcl)
 - **user**.tcl
 
-In this demo Maestro will explore the numberline learning how to traverse it using four motor commands.
+In this demo Maestro will explore a numberline from 000 to 999 learning how to traverse it using four motor commands.
 
-To use Maestro with other things at this point one must build an interface to their environment using numberline.tcl as an guide. Maestro will communicate actions to the environment. It has 99 actions ranging from 1 to 99. action 0 is reserved for an error message and is currently not used.
+To use Maestro with systems other than the included simulation one must build an interface to their environment, connecting it to the server on port 9900 (use numberline.tcl as a guide). Maestro will send actions to and get states (or input) from the environment. It has unlimited actions, but defaults at 4. The more actions Maestro has available to it, the less efficient it is at exploring its environment. Actions are mere numbers such as 1 or 2 or 3 or 4.
 
 
 ## User Commands - Behavior ##
@@ -41,7 +43,7 @@ The user can communicate with the running Maestro Bot using the following comman
 
 **sleep opps** - Tells Maestro to find behaviors that have consistently produced the opposite result in the change of state of the environment. Once found, Maestro will extrapolate those opposite actions into a list of new, predicted, but not necessarily ever seen before states that it can reference to learn more about its environment.
 
-**sleep react** - Tells Maestro to reset its available actions (for instance "1 2 3 4") to the default available actions (which is "1 2 3 ... 97 98 99").
+**sleep react** - Tells Maestro to reset its available actions (for instance "1 2 3 4") to the default available actions (which is "1 2 3 ... 18 19 20").
 
 **from user to s.1 message _** - Using this format the user can send messages to anything on the Maestro network, including, (as in this example) the simulation script.
 
@@ -75,6 +77,7 @@ Maestro is as of yet not optimized. Its neural net is not hardware accelerated. 
 
 In short Maestro is best equipped to learn and engage in static environments, even highly complex ones. Its performance in other types of environments will vary from 'very well' to 'unacceptable.'
 
-## Conventions ##
+
+## Convention ##
 
 The design of the Maestro network allows for multiple Maestro agents to interact, though this is not yet implemented. A hierarchy of Maestro agents may someday work together in to accomplish complex tasks or manage complex environments. For this reason it is conventional to name Maestro agents with numbers as an address. **1.1** is considered the first Maestro agent on the first (bottom) level of a (as of yet theoretical) Maestro Hierarchy. **s.1** or **e.1** then is considered the portion of the simulation or the environment that communicates with Maestro **1.1**. These are naming conventions; not naming rules. As of yet no functional logic relies on these conventions.
