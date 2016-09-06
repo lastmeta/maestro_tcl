@@ -88,4 +88,4 @@ The design of the Maestro network allows for multiple Maestro agents to interact
 Curious isn't great, but it works ok.
 found glitch in chain - stops short or something.
 also doesn't save chains in chain table.
-add simple query to inquire.
+add simple query to intuit.
