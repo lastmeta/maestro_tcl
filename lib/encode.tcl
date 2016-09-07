@@ -95,7 +95,7 @@ proc ::encode::set::activation {action} {
 proc ::encode::this {input} {
   if {$::memorize::learn eq "no"} { return }
 
-  set action $::memorize::act 
+  set action $::memorize::act
 
   ::encode::map::input  $input
   ::encode::map::action $action
@@ -280,7 +280,7 @@ proc ::encode::connections::structure {} {
     # go through each list.
     foreach connection [lindex $connections 0] {
 
-      # if active @ active index
+      # if active @ active index... and this cell is not an action cell?
       if {[lsearch $::encode::active $i] ne "-1"} {
 
         # increase by 10
