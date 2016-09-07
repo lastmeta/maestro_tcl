@@ -12,6 +12,7 @@ source lib/sleep.tcl        ;# post analyzation of data to discover structure.
 source lib/encode.tcl       ;# encode raw data into a relative strucutre
 source lib/intuit.tcl       ;# get action chains from relative structure
 #source lib/tracer.tcl       ;# debug.
+source ./chain.tcl          ;# code helper used in intuit.tcl
 
 namespace eval ::maestro {}
 namespace eval ::maestro::set {}
