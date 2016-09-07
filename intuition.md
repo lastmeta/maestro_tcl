@@ -95,7 +95,7 @@ Now that we have a list of candidates, lets prune that list
       S   6|  2   0   <--- 6 cannot lead to 5 ever so its no good
 
 
-So that leaves us with the following
+So that leaves us with the following. The hope here is that there are lots of 0's - things that have never happened before and we can assume wont happen forever. If there are we can prune this down a lot. the more we explore the fewer zeros there will be you would think, but that's not necessarily true, because the more we explore the more nodes will be created and instantiated with all zeros so it'll take quite a bit exploring to get ther.
 
             Goes To  NODES
               3   5
@@ -142,9 +142,47 @@ I feel like there should be an even more fine tuned way to do this - like a next
           A   -   -   0   3   8   4   4   6
           B   -   -   4   3   2   0   6   3
 
+              3   5
+          A   8 + 4 = 12
+          B   2 + 6 = 8
+
+so then our options really become:
+
+      A 2 4 |21    <--- second place
+      B 2 4 |17    <--- fourth place
+      A 2 5 |24    <--- first  place
+      B 2 5 |20    <--- third  place
+      A 3 4 |24    <--- first  place
+      B 3 4 |20    <--- third  place *** actual solution ***
 
 
+You can see how having actions affect only one thing in the environment would be useful, or how having as few actions as possible is efficient. What you might do is score them separately so first you do this
 
+      3 4 |12
+      2 5 |12
+      2 4 |9
+
+then you say, which action should I take at each location
+
+      A| 12
+      B| 8
+
+so then you get this list in order of what to try:
+
+      A   34
+      A   25
+      B   34
+      B   25
+      A   24
+      B   24
+
+In this case the top scores were the same (12) so 34 and 25 are interwoven. So you would come across the correct solution after 3 or 4 attempts.
+
+With this strategy we may not want to have a decrement unless its a percentage and never reaches 0. we want a clear distinction between what is never seen and what is rare. we may also want to have the threshold (if we need a threshold at all) to be a percentage of the highest connection on the map, idk.
+
+Also once we have a list of states and actions could we not play it forward and say, well if I did this here whats the most likely thing to show up out of all the options and if the answer to that closely matches our thing make that one our top prospect.
+
+Last thing I'll say on this topic, it may be the case that if you were to do this multiple times and make long chains, you could evaluate the chains as a whole and say, oh this chain is more likely to succeed than that chain. But aside from seeing of the states are in main I'm not sure how you would do this. Anyway, I think this has potential to be useful, and maybe improve speed at which we come to intuitive understandings, but all this information I think is in main (unrepeated) and maybe that would be faster. we'll have to consider it, however since its unrepeated we'll get vastly different scores. for instance lets say there's a bottle neck in the space where you have to take a particular action to get a common outcome, if this is unique it may be represented in main only once, but count in connectom thousands of times.
 
 EXTRA IDEA:
 (this could be the foundation for a better "curious" search too. It could make up a combination of nodes it's never seen before and attempt to get there using this method. as it travels it will learn how to get to something like what it imagined better - like dreaming - and you could make this adaptive: if it's easily getting to what it imagines make what it imagines crazier like less and less bits being familiar, if it it is having a hard time getting to its dreams make them more like baby steps, just substituting one digit as being different - of course this presupposes that the data will be somewhat semantically encoded, but that should usually be the case and if its not, it'll still work, just more slowly).
