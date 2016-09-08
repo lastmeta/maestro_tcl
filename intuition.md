@@ -82,7 +82,7 @@ So! lets give it an option we know for sure where it came from - 35. If I gave t
       E   5|  3   5   
       S   6|  2   0
 
-Now that we have a list of candidates, lets prune that list
+Now that we have a list of candidates, lets prune that list.
 
             Goes To  NODES
               3   5
@@ -95,7 +95,7 @@ Now that we have a list of candidates, lets prune that list
       S   6|  2   0   <--- 6 cannot lead to 5 ever so its no good
 
 
-So that leaves us with the following. The hope here is that there are lots of 0's - things that have never happened before and we can assume wont happen forever. If there are we can prune this down a lot. the more we explore the fewer zeros there will be you would think, but that's not necessarily true, because the more we explore the more nodes will be created and instantiated with all zeros so it'll take quite a bit exploring to get ther.
+So that leaves us with the following. The hope here is that there are lots of 0's - things that have never happened before and we can assume wont happen forever. If there are we can prune this down a lot. the more we explore the fewer zeros there will be you would think, but that's not necessarily true, because the more we explore the more nodes will be created and instantiated with all zeros so it'll take quite a bit exploring to get there. UPDATE! as I've been programming this I've decided removing the zeros is premature at this point. Just because we've never seen something happen before doesn't mean that it can't and what if we remove the ones with zeros then we have nothing left? No, the best way is to move those to the bottom of the list later instead of removing them now. Even if there's a crazy high correlation on say, node 1 below for node 5 if there is a 0 in the list no matter, move it to the bottom of the list of candidates.
 
             Goes To  NODES
               3   5
@@ -132,7 +132,7 @@ At this point I'm not sure If I'm doing it right, but to get the most likely act
           2 5 |12
           3 4 |12
 
-So we have a list of things we think might lead to 35. and 34 is in that list. We could at this point return the whole list or repeat the process on each item in the list (perhaps in order of their likeliness) to find something in the main table that would would be an option to travel to and explore. I'm not to happy about just adding up aggregates but whatever.
+So we have a list of things we think might lead to 35. and 34 is in that list. We could at this point return the whole list or repeat the process on each item in the list (perhaps in order of their likeliness) to find something in the main table that would would be an option to travel to and explore. I'm not to happy about just adding up aggregates but whatever. it maybe better to create a score out of the median and the aggregate or something, idk, at that point i think you're just trying to do surgery with a butchers knife - what you really want is a fine tuned model comparison, with all the precision of a scalpel, not aggregated blunt objects. But at the moment I'm afraid this is the best I can do. Is it good enough?
 
 I feel like there should be an even more fine tuned way to do this - like a next step that prunes it down even further or something. Well we could look in the main table and say, look have I seen 24, 25, or 34? if so have I done every action at those locations? if no, then perhaps we go to one of those locations and do the actions that are missing. Now, what about actions, I didn't include them but theoretically they're no different than different indexes of the state. so lets explore that together now.
 
@@ -188,3 +188,10 @@ sorry, one last thing I thought about. this entire example has used the assumpti
 
 EXTRA IDEA:
 (this could be the foundation for a better "curious" search too. It could make up a combination of nodes it's never seen before and attempt to get there using this method. as it travels it will learn how to get to something like what it imagined better - like dreaming - and you could make this adaptive: if it's easily getting to what it imagines make what it imagines crazier like less and less bits being familiar, if it it is having a hard time getting to its dreams make them more like baby steps, just substituting one digit as being different - of course this presupposes that the data will be somewhat semantically encoded, but that should usually be the case and if its not, it'll still work, just more slowly).
+
+Extra twist:
+We may be able to better order and thereby limit the list of candidates by first comparing the theoretical state with the closest match in the main table. Then find the list of things we think could lead to it. Then compare that list with the thing that lead to the item in the main table that was most like your theoretical state. and order my list of candidates based one how closely they match that one (or an average of close ones). Then we can more easily perform the thing again and the longer the chain we can make with the best matching scores maybe the better? probably not, but we'll see.
+
+```
+I wish we could do this a different way - make a causal map (like the diagram way above) using the main as our guide then make a mapping between state changes and its relative position on the map. because what I'm trying to do in all this intuition idea is create a structure that I can pattern match against to give my program the ability to reason by analogy.
+```

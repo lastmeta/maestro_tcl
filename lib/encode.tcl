@@ -11,7 +11,7 @@ namespace eval ::encode::connections {}
 ################################################################################
 
 proc ::encode::set::globals {} {
-  set ::encode::cellspernode  4
+  set ::encode::cellspernode  1
   set ::encode::cells         0
   set ::encode::active        {}
   set ::encode::lastactive    {}
@@ -31,12 +31,17 @@ proc ::encode::set::actions {} {
       set base [concat 0 $base]
     }
     for {set i 1} {$i <= 20 } {incr i} {
-      ::repo::insert nodes     [list node   $i input $i ix a type action]
+      ::repo::insert nodes     [list  node  $i     \
+                                      input $i     \
+                                      ix    a      \
+                                      type  action ]
       set send [concat $base $send]
     }
     set max [::repo::get::maxNode]
     for {set i 0} {$i < ($max * $::encode::cellspernode)} {incr i} {
-      ::repo::insert connectom [list cellid $i cell $send]
+      ::repo::insert connectom [list  node    $i    \
+                                      cellid  $i    \
+                                      cell    $send ]
     }
   }
   set ::encode::cells [expr $max * $::encode::cellspernode]
@@ -141,7 +146,9 @@ proc ::encode::map::action {action} {
 
 proc ::encode::map::cells {max} {
   for {set j 0} {$j < $::encode::cellspernode} {incr j} {
-    ::repo::insert connectom [list cellid [expr $j + ($max * $::encode::cellspernode)] cell 0]
+    ::repo::insert connectom [list node $max                                           \
+                                   cellid [expr $j + ($max * $::encode::cellspernode)] \
+                                   cell 0 ]
   }
 }
 
@@ -293,7 +300,7 @@ proc ::encode::connections::structure {} {
 
         # decrease by 1
         set sub [expr $connection - $::encode::decre]
-        if {$sub < 0} { set sub 0 }
+        if {$sub < 1} { set sub 1 }
         set newconnections "$newconnections $sub"
       }
       incr i

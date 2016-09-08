@@ -53,6 +53,7 @@ proc ::repo::create {id {datas ""} } {
 																											ix char,
 																											type char) }
 	brain eval { create table if not exists connectom(
+																											node int,
 																											cellid char,
 																											cell char) }
 }
@@ -93,7 +94,7 @@ proc ::repo::insert {table datas} {
 		rules 			{ brain eval {INSERT INTO rules 			VALUES ($rule,$type,$mainids)} }
 		predictions { brain eval {INSERT INTO predictions VALUES ($input,$action,$result,$ruleid)}	}
 		nodes 				{ brain eval {INSERT INTO nodes	 		VALUES ($node,$input,$ix,$type)} }
-		connectom		{ brain eval {INSERT INTO connectom 	VALUES ($cellid,$cell)} }
+		connectom		{ brain eval {INSERT INTO connectom 	VALUES ($node,$cellid,$cell)} }
 		default 		{ return "No data saved, please supply valid table name." }
 	}
 }
@@ -219,12 +220,13 @@ proc ::repo::get::nodeTable {} {
 }
 
 proc ::repo::get::connectom {} {
-	return [brain eval "SELECT cellid,cell FROM connectom"]
+	return [brain eval "SELECT node,cellid,cell FROM connectom"]
 }
 
 proc ::repo::get::cell {cellid} {
 	return [brain eval "SELECT cell FROM connectom WHERE cellid='$cellid'"]
 }
+
 
 
 ################################################################################
