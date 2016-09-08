@@ -51,6 +51,9 @@ namespace eval ::prepdata {
     #             1   0     1
     #
     #
+    # dictcount values needs to go from 0 0 0  to 1 1 1  in binary.
+
+
     set done false
 
     while {!$done} {
