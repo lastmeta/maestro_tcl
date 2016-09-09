@@ -51,6 +51,17 @@ namespace eval ::prepdata {
     return $xs
   }
 
+
+  proc lsum {l} {
+    set total 0.0
+    foreach nxt $l {
+      set total [expr {$total + $nxt}]
+    }
+    return $total
+  }
+
+
+
   ## combinations input as word
   #
   # Given a word, it will return a list of words; each is a unique combination
