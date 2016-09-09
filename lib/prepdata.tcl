@@ -34,48 +34,22 @@ namespace eval ::prepdata {
   # example: 1 {a b} 2 {c} 3 {d e}
   # returns: {a c d} {a c e} {b c d} {b c e}
   proc getDictCombos dictionary {
-    set length      [expr [llength $dictionary] / 2]
-    set combos      {}
-    set dictcounts {}
-    foreach key [dict keys $dictionary] {
-      dict set dictcounts $key 0
-    }
-
-    # example: {a b} {c} {d e}
-    # returns: {a c d} {a c e} {b c d} {b c e}
-    # how?
-    # example: {a b} {c} {d e}
-    # iters:    0     0   0
-    #           0     0     1
-    #             1   0   0
-    #             1   0     1
-    #
-    #
-    # dictcount values needs to go from 0 0 0  to 1 1 1  in binary.
-
-
-    set done false
-
-    while {!$done} {
-
-      #lappend combos due to iteration counts
-      set listmax true
-      foreach list [dict values $dictionary] {
-        increment the correct count (specifically {0->1} {0->0} {0->1}) }
-        reset the approapraite counts to 0
-        if {this iteration has not reached the max} {
-          set listmax to false
-        }
-
-      }
-
-      #if all the counts in all the lists are at or above their max
-      if {$listmax} {
-        set done true
-      }
-    }
+    return [combineEachElement {*}[dict values $dictionary]]
   }
 
+  proc combineEachElement args {
+    set xs {{}}
+    foreach ys $args {
+      set result {}
+      foreach x $xs {
+        foreach y $ys {
+          lappend result [list {*}$x $y]
+        }
+      }
+      set xs $result
+    }
+    return $xs
+  }
 
   ## combinations input as word
   #

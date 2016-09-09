@@ -99,6 +99,18 @@ proc ::intuit::worker::makeCombinations {nodetable nodes cells} {
   # make all making combintaions
   set allcombos    [::prepdata::getDictCombos]
   # remove the state from that comvbination.
+  set statecombo   [lsearch $allcombos $nodes]
+  if {$statecombo ne "-1"} {
+    if {$statecombo eq 0} {
+      set allcombos    [lrange $allcombos 1 end "" ]
+    } elseif {$statecombo eq [llength $allcombos] - 1} {
+      set allcombos    [lrange $allcombos 0 end-1 "" ]
+    } else {
+      set allcombos    [concat [lrange $allcombos 0 [expr $statecombo - 1]] [lrange $allcombos [expr $statecombo + 1] end ]]
+    }
+
+  }
+
   # get a list of all states that have fully been explored
   # remove each of those states from the combination list.
 }
