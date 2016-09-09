@@ -52,9 +52,9 @@ namespace eval ::prepdata {
   }
 
 
-  proc lsum {l} {
+  proc lsum {list} {
     set total 0.0
-    foreach nxt $l {
+    foreach nxt $list {
       set total [expr {$total + $nxt}]
     }
     return $total

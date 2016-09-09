@@ -1,28 +1,17 @@
 namespace eval ::intuit {}
-namespace eval ::intuit::set {}
-namespace eval ::intuit::get {}
 namespace eval ::intuit::worker {}
-namespace eval ::intuit::remove {}
-namespace eval ::intuit::compile {}
-namespace eval ::intuit::order {}
 
-proc ::intuit::get::guess {state} {
-  return [::chain::this $state                             \
-                  [list ::intuit::get::cellConnections {}] \
-                  [list ::intuit::remove::zeros        {}] \
-                  [list ::intuit::compile::list        {}] \
-                  [list ::intuit::order::list          {}] \ ]
-}
 
 # returns a list of cells (the actual connections, not id)
-proc ::intuit::get::guess {state} {
+proc ::intuit::guess {state} {
   set celltable [::repo::get::connectom                                             ]
   set cells     [::intuit::worker::makeCells        $celltable                      ]
   set nodetable [::repo::get::nodeTable                                             ]
   set nodelist  [::intuit::worker::makeNodes        $nodetable                      ]
   set nodes     [::intuit::worker::selectNodes      $nodelist  $state               ]
   set combos    [::intuit::worker::makeCombinations $nodelist  $nodes               ]
-  return        [::intuit::worker::orderedCombos    $nodelist  $nodes $cells $combos]
+  set combos    [::intuit::worker::orderedCombos    $nodelist  $nodes $cells $combos]
+  set best
 }
 
 
@@ -33,11 +22,10 @@ proc ::intuit::get::guess {state} {
 
 # return cell table, formatted correctly: nodeid, cellid, {cell connections}
 proc ::intuit::worker::makeCells {celltable} {
-  set celldata [::repo::get::connectom]
   set cells     {}
   set cell      {}
   set i         0
-  foreach item $celldata {
+  foreach item $celltable {
     if {$i > 2} {
       lappend cells $cell
       set cell $item
@@ -127,7 +115,7 @@ proc ::intuit::worker::orderedCombos {nodelist ndoes cells combos} {
     dict lappend comboscores $combo [::intuit::worker::calcScore $nodes $cells $combo]
   }
   # sort combos based upon score. return the highest one.
-  return [lsort -decreasing -stride 2 -index 1 $comboscores]
+  return [dict keys [lsort -decreasing -stride 2 -index 1 $comboscores]]
 }
 
 proc ::intuit::worker::calcScore {nodes cells combo} {
