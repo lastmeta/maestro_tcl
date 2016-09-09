@@ -12,6 +12,14 @@ proc ::intuit::guess {state} {
   set combos    [::intuit::worker::makeCombinations $nodelist  $nodes               ]
   set combos    [::intuit::worker::orderedCombos    $nodelist  $nodes $cells $combos]
   set best
+  #once we have a list of liekly combos starting at the top
+  # 1. remove 0s from that list unless its way better than the next one
+  # 2. remove ones that have been explored in main and bad already
+  # 3. return the top one that passes above
+  # 4. you'll have to convert cells back to nodes remember. separate input and action when you return it.
+  ###########################################################
+  # when recall gets it back it says is this in the db if yes find a path to it if no repeat with new goal as input
+
 }
 
 
