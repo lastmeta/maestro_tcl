@@ -298,10 +298,14 @@ proc ::encode::connections::structure {} {
       # else if it was a prediction that didn't get fulfilled
       } else {
 
-        # decrease by 1
-        set sub [expr $connection - $::encode::decre]
-        if {$sub < 1} { set sub 1 }
-        set newconnections "$newconnections $sub"
+        # decrease by 1 but not less than 1
+        if {$connection > 0} {
+          set sub [expr $connection - $::encode::decre]
+          if {$sub < 1} { set sub 1 }
+          set newconnections "$newconnections $sub"
+        } else {
+          set newconnections "$newconnections 0"
+        }
       }
       incr i
     }

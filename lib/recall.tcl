@@ -31,17 +31,17 @@ proc ::recall::main {input goals} {
   set newgoal [::recall::getBestGoal $goal]
   if {$newgoal ne $goal} { ;# goal not in db. try to intuit.
     # set actions [### INTUIT ###]
-    set theoryactions {}
+##    set theoryactions {}
 #    while $newgoal is not in database {
-      set newgoal           [lindex [::intuit::guess $goal] 0]
-      lappend theoryactions [lindex [::intuit::guess $goal] 1]
+##      set newgoal           [lindex [::intuit::guess $goal] 0]
+##      lappend theoryactions [lindex [::intuit::guess $goal] 1]
 #    }
 
   }
   set actions [::recall::getActionsPathWithPrediction $input $newgoal]
-  if {$theoryactions ne ""} {
-    set actions [concat $actions $theoryactions]
-  }
+##  if {$theoryactions ne ""} {
+##    set actions [concat $actions $theoryactions]
+##  }
   if {[lindex $actions 0] eq "_"} { ;# unable to find explicit path, try to intuit.
     # set actions [### INTUIT ###]
   }
