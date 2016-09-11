@@ -82,6 +82,46 @@ So! lets give it an option we know for sure where it came from - 35. If I gave t
       E   5|  3   5   
       S   6|  2   0
 
+UPDATE:
+instead of making a list of all the combinations and doing the computational work to score all those different options I think we should compute it in order on the fly. We remove zeros
+
+            3   5
+            -----
+    0   2|  3   2
+        3|  5   3
+
+            3   5
+            -----
+    1   4|  2   2  
+        5|  3   5
+
+
+Then we need to get the highest summed node/cell in each index for these nodes.
+
+            3   5
+            -----
+    0   2|  3   2 = 5
+        3|  5   3 = 8  <----- connection 8 so the cell is 3 for index 1  
+
+            3   5
+            -----
+    1   4|  2   2 = 4  
+        5|  3   5 = 8  <----- connection 8 so the cell is 5 for index 1   
+
+
+Then you check to see if this is the same as the state or rather the same numbers as the nodes. yes. it is. So what should we do? We need to embed this in a loop so that it does it again, asking for a different highest number on the appropriate index of cells - binary search. So the first iteration of that loop was 00 the next is 01 then 10 then 11 then 02 then 20 then 12 then 21 then 22.... 1 being the next highest, and 2 being the next highest after that. So we're now looking at finding the highest under "8" in index 1 or whatever
+
+            3   5
+            -----
+        4|  2   2 = 4   <----- connection 3 so the cell is 5 for index 1   
+    1   5|  3   5 = 8   
+
+34 is the answer we get.
+
+This way is better than the way described below because I don't waist all that computation, plus I don't have to add extra computation to filter out the 0's. I do however face a harder time of filtering out the actual index itself.
+
+
+OLD MATERIAL:
 Now that we have a list of candidates, lets prune that list.
 
             Goes To  NODES

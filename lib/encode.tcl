@@ -292,7 +292,7 @@ proc ::encode::connections::structure {} {
 
         # increase by 10
         set add [expr $connection + $::encode::incre]
-        if {$add > 100} { set add 100 }
+        if {$add > 1000000000} { set add 1000000000 }
         set newconnections "$newconnections $add"
 
       # else if it was a prediction that didn't get fulfilled
