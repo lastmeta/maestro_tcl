@@ -11,7 +11,10 @@ proc ::intuit::guess {state} {
   set nodes     [::intuit::worker::selectNodes      $nodelist  $state               ]
   set combos    [::intuit::worker::makeCombinations $nodelist  $nodes               ]
   set combos    [::intuit::worker::orderedCombos    $nodelist  $nodes $cells $combos]
-  set best
+  set best      [::intuit::worker::removeZeros                        $cells $combos]
+  set inputact  [::intuit::worker::splitNode                                 $combos]
+
+  return $inputact
   #once we have a list of liekly combos starting at the top
   # 1. remove 0s from that list unless its way better than the next one
   # 2. remove ones that have been explored in main and bad already
@@ -149,6 +152,47 @@ proc ::intuit::worker::calcScore {nodes cells combo} {
 }
 
 
+proc ::intuit::worker::removeZeros {cells combos} {
+  # 1. remove 0s from that list unless its way better than the next one
+  # 2. remove ones that have been explored in main and bad already
+  # 3. return the top one that passes above
+  set i 0
+  set break false
+  foreach combo $combos {
+    set ind 0
+    set found0 false
+    foreach index $combo {
+      if {[lindex [lindex $cell [lindex $combo 1]] [expr $ind]] == 0} {
+        set found0 true
+      }
+    }
+    if {$found0} {
+    } else {
+      if {[::intuit::worker::exploredInput? $combo]} {
+      } else {
+        break
+      }
+    }
+  }
+  return [lindex $combos $i]
+}
+
+proc ::intuit::worker::exploredInput? {combo} {
+  #convert to input state
+  #get a list of all available actions
+  #get all instances of input state and actions from the db main and bad
+  #go through all instances, if the actions are all acounted for
+  #return true
+  #else return false
+  
+  return true
+}
+
+proc ::intuit::worker::splitNode {combo} {
+  # 4. you'll have to convert cells back to nodes remember. separate input and action when you return it.
+
+
+}
 ################################################################################
 # useless ######################################################################
 ################################################################################
