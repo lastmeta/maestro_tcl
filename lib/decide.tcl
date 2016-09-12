@@ -192,32 +192,47 @@ proc ::decide::commanded::goal msg {
 
 proc ::decide::action {msg} {
   if {$::decide::explore eq "curious" && $::decide::goal ne ""} {
+    puts "A"
     if {$::memorize::input eq $::decide::goal} {
       set ::decide::goal ""
       set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
     }
     return [::decide::actions::do]
   } elseif {$::decide::explore eq "curious"} {
+    puts "B"
+
     return [::decide::commanded::guess]
   } elseif {$::decide::explore eq "random"} {
+    puts "C"
+
     set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
     return [::decide::actions::do]
   } elseif {$::decide::path ne ""} {
+    puts "D"
+
     if {$::memorize::input eq $::decide::goal} {
       set ::decide::goal ""
       ::decide::commanded::stop
-    }
-    #return [::decide::actions::do]
-  } elseif {$::decide::goal eq ""} {
-  } else {
-    if {$::decide::path eq ""} { ;# we have no path, try to make one.
-      if {[::decide::help::shouldWeChain?]} {
-        set path [::recall::main $::memorize::input $::decide::goal]
-        set ::decide::path [lrange $path 1 end]
-      } else {
-        set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
-      }
+    } else {
       return [::decide::actions::do]
+    }
+  } elseif {$::decide::goal eq ""} {
+    puts "E"
+  } else {
+    puts "F"
+    if {$::decide::path eq ""} { ;# we have no path, try to make one.
+      if {$::memorize::input eq $::decide::goal} {
+        set ::decide::goal ""
+        ::decide::commanded::stop
+      } else {
+        if {[::decide::help::shouldWeChain?]} {
+          set path [::recall::main $::memorize::input $::decide::goal]
+          set ::decide::path $path
+        } else {
+          set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
+        }
+        return [::decide::actions::do]
+      }
     } elseif {$::decide::path eq "_"} { ;# we can't find a path try to intuit one.
       #####   NOT PROGRAMMED YET   #####
     } else { ;# follow it the path we're on.

@@ -3,17 +3,30 @@ namespace eval ::intuit::worker {}
 
 
 # returns a list of cells (the actual connections, not id)
-proc ::intuit::guess {state} {
-  set celltable [::repo::get::connectom                                                         ]
-  set cells     [::intuit::worker::makeCells        $celltable                                  ]
-  set nodetable [::repo::get::nodeTable                                                         ]
-  set nodelist  [::intuit::worker::makeNodes        $nodetable                                  ]
-  set nodes     [::intuit::worker::selectNodes      $nodelist  $state                           ]
-  set nodesbyix [::intuit::worker::getNodesByIndex  $nodelist                                   ]
-  set bestnodes [::intuit::worker::getBestNodes     $nodelist  $nodes  $cells $nodesbyix $state ]
-  set beststate [::intuit::worker::getStateFrom     $nodelist  $bestnodes                       ]
-  set bestact   [::intuit::worker::getBestAction    $nodesbyix $nodes  $cells $beststate        ]
-  set bestact   [::intuit::worker::getStateFrom     $nodelist  $bestact                         ]
+proc ::intuit::guess {inputstate state {badstates ""}} {
+  set celltable [::repo::get::connectom                         ]
+  set cells     [::intuit::worker::makeCells        $celltable  ]
+  set nodetable [::repo::get::nodeTable                         ]
+  set nodelist  [::intuit::worker::makeNodes        $nodetable  ]
+  set nodes     [::intuit::worker::selectNodes      $nodelist   \
+                                                    $state      ]
+  set nodesbyix [::intuit::worker::getNodesByIndex  $nodelist   ]
+  set bestnodes [::intuit::worker::getBestNodes     $nodelist   \
+                                                    $nodes      \
+                                                    $cells      \
+                                                    $nodesbyix  \
+                                                    $state      \
+                                                    $inputstate \
+                                                    $badstates  ]
+  set beststate [::intuit::worker::getStateFrom     $nodelist   \
+                                                    $bestnodes  ]
+  set bestact   [::intuit::worker::getBestAction    $nodesbyix  \
+                                                    $nodes      \
+                                                    $cells      \
+                                                    $beststate  ]
+  set bestact   [::intuit::worker::getStateFrom     $nodelist   \
+                                                    $bestact    ]
+  puts "return [list $beststate $bestact]"
   return [list $beststate $bestact]
 }
 
@@ -86,9 +99,8 @@ proc ::intuit::worker::getNodesByIndex {nodelist} {
 }
 
 
-proc ::intuit::worker::getBestNodes {nodelist nodes cells nodesbyix originalstate} {
+proc ::intuit::worker::getBestNodes {nodelist nodes cells nodesbyix originalstate inputstate badstates} {
   set returnnodes {}
-  puts nodesbyix$nodesbyix
   set bestnodesbyix {}
   foreach key [dict key $nodesbyix] {
     if {$key ne "a"} {
@@ -123,27 +135,28 @@ proc ::intuit::worker::getBestNodes {nodelist nodes cells nodesbyix originalstat
   # you could save these lists for later then do the check when you're done with this loop process. that's probably best,
   # but I'm not going to take the time to write that now.
   set returnlist [::prepdata::getDictCombos $bestnodesbyix]
-  puts bestnodesbyix$bestnodesbyix
-  puts returnlist$returnlist
   set x 0
   set foundone false
-  set allinputs [::repo::get::allInputs]
   while {$x < [llength $returnlist] && !$foundone} {
     set state [::intuit::worker::getStateFrom $nodelist $returnnodes]
-    puts $state
-    puts $allinputs
-    if {[lsearch $allinputs $state] eq "-1" && $state ne $originalstate} {
+    set actsarefree false
+    set doneacts [::repo::get::actsDoneHere $state]
+    foreach action $::decide::acts {
+      if {[lsearch $doneacts $action] eq "-1"} {
+        set actsarefree true
+      }
+    }
+    if {$state                      ne $originalstate
+    &&  $state                      ne $inputstate
+    &&  $actsarefree
+    &&  [lsearch $badstates $state] eq "-1"
+    } then {
       set foundone true
-      puts gotinto$state
     } else {
       set returnnodes [lindex $returnlist $x]
     }
     incr x
   }
-
-
-
-    puts $returnnodes
   return $returnnodes
 }
 
@@ -186,21 +199,35 @@ proc ::intuit::worker::getBestAction {nodesbyix nodes cells beststate} {
       # get the cell of the largest score.
       set returnlist [lsort -real -decreasing -stride 2 -index 1 $scorebycells]
       lappend returnnodes [lindex $returnlist 0]
-      # this would be the place to make sure its returning an answer that hasn't been done at this location before.
-      set x 0
-      set foundone false
-      set actsdonehere [::repo::get::actsDoneHere $beststate]
-      while {$x < [llength $returnlist] && !$foundone} {
-        if {[lsearch [lindex $actsdonehere 0] $returnnodes] eq "-1" && [lsearch [lindex $actsdonehere 1] $returnnodes] eq "-1"} {
-          puts ACTIONS$actsdonehere
-          set foundone true
-        } else {
-          set returnnodes [lindex [dict keys $returnlist] $x]
-        }
-        incr x
-      }
+    }
+  }
+  # this would be the place to make sure its returning an answer that hasn't been done at this location before.
+  set x 0
+  set foundone false
+  set actsdonehere [::repo::get::actsDoneHere $beststate]
+  puts actsdonehere$actsdonehere
+  puts returnnodes$returnnodes
+  while {!$foundone} {
+    if {[lsearch $actsdonehere $returnnodes] eq "-1"} {
+      set foundone true
+    } else {
+      set returnnodes [lindex [dict keys $returnlist] $x]
+    }
+    if {$x < [llength $::decide::acts]} {
+      incr x
+    } else {
+      set foundone true
     }
   }
   return $returnnodes
-
 }
+
+# one idea I had was to score everything based on weights.
+# for instace if we have ever only once seen 3__ then
+# the thing that lead us to that is quite important,
+# and should be weighted accordingly?
+
+# what I am not happy about is this system doesn't reason by analogy.
+# for instance: it doesn't say, "oh I notice __8 is followed by __9 and
+# these bits seem to follow the same patterns so maybe _8_ is also followed
+# by _9_." That's the kind of stuff it needs to be able to do.

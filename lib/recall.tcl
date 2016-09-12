@@ -28,26 +28,52 @@ proc ::recall::main {input goals} {
   if { $chain ne ""} { return $chain }
 
   set actions ""
-  set newgoal [::recall::getBestGoal $goal]
+  set resultslist [::repo::get::allResults]
+  if {[lsearch $resultslist $goal] eq "-1"} {
+    set newgoal [::recall::getBestGoal $goal]
+  } else {
+    set newgoal $goal
+  }
+
   set theoryactions {}
+  puts "GOAL $goal NEWGOLA $newgoal"
   if {$newgoal ne $goal} { ;# goal not in db. try to intuit.
     # set actions [### INTUIT ###]
-    set mainstates [::repo::get::tableColumns main input]
-    set badstates  [::repo::get::tableColumns bad input ]
-    while {[lsearch $mainstates $newgoal] eq "-1" && [lsearch $badstates $newgoal] eq "-1"} {
-      set newgoal           [lindex [::intuit::guess $goal] 0]
-      puts "intuitive search $newgoal"
-      lappend theoryactions [lindex [::intuit::guess $goal] 1]
-    }
+    #set mainstates [::repo::get::tableColumns main input]
+    #set badstates  [::repo::get::tableColumns bad input ]
+    #while {[lsearch $mainstates $newgoal] eq "-1" && [lsearch $badstates $newgoal] eq "-1"} {
+      puts "intuitive search $goal"
+      set theory        [::intuit::guess $input $goal]
+      puts "theory $theory"
+      set newgoal       [lindex $theory 0]
+      set theoryactions [lindex $theory 1]
+      #lappend theoryactions [lindex [::intuit::guess $goal] 1]
+    #}
   }
   set actions [::recall::getActionsPathWithPrediction $input $newgoal]
-  if {$theoryactions ne ""} {
-    set actions [concat $actions $theoryactions]
-  }
-  if {[lindex $actions 0] eq "_"} { ;# unable to find explicit path, try to intuit.
+  #if {$theoryactions ne ""} {
+  #  set actions [concat $actions $theoryactions]
+  #}
+  if {[lindex $actions 0] eq "_"} { ;# unable to find explicit path, try to intuit a path...
     # set actions [### INTUIT ###]
+    set actions       {}
+    set theoryactions {}
+    set mainstates    [::repo::get::tableColumns main input]
+    set badstates     [::repo::get::tableColumns bad input ]
+    set explorelist   $newgoal
+    while {[lsearch $mainstates $newgoal] eq "-1" && [lsearch $badstates $newgoal] eq "-1"} {
+      set theory [::intuit::guess $input $newgoal $explorelist]
+      set newgoal           [lindex $theory 0]
+      lappend theoryactions [lindex $theory 1]
+      lappend explorelist   $newgoal
+      puts "intuitive search $newgoal"
+    }
   }
+  set actions "$actions [lreverse $theoryactions]"
   puts "returning $actions"
+  if {[string trim $actions] eq ""} {
+    set $actions [::recall::guess $input $::decide::acts]
+  }
   return $actions
   #if {$newgoal ne $goal} {
   #  set actions [::recall::getActionsPathWithPrediction $input $newgoal]

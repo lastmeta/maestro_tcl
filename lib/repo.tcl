@@ -196,13 +196,13 @@ proc ::repo::get::chainActions {input result} {
 proc ::repo::get::actsDoneHere {input} {
 	set a [brain eval "SELECT action FROM bad WHERE input='$input'"]
 	set b [brain eval "SELECT action FROM main WHERE input='$input'"]
-	return "$a $b"
+	return [concat $a $b]
 }
 
-proc ::repo::get::allInputs {} {
-	set a [brain eval "SELECT input FROM bad"]
-	set b [brain eval "SELECT input FROM main"]
-	return "$a $b"
+proc ::repo::get::allResults {} {
+	set a [brain eval "SELECT result FROM bad"]
+	set b [brain eval "SELECT result FROM main"]
+	return [concat $a $b]
 }
 
 proc ::repo::get::maxAction {} {

@@ -87,6 +87,7 @@ proc ::communicate::interact::get {message} {
 
 proc ::communicate::interact::send {message} {
   if {$message ne ""} {
+    puts "sending: $message"
     puts $::communicate::chan $message
     flush $::communicate::chan
   }
