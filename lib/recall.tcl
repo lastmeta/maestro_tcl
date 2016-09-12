@@ -22,6 +22,7 @@ proc ::recall::main {input goals} {
   if {[lsearch $goals $input] >= 0      } { return "$input __" }
   if {$input                  eq {}     } { return ""          }
   if {$goals                  eq {}     } { return ""          }
+  if {[string length $goals] ne [string length $input] } { return "_" }
 
   set goal [lindex $goals 0]
   set chain [::recall::helpers::savedChain $input $goal]
@@ -30,50 +31,35 @@ proc ::recall::main {input goals} {
   set actions ""
   set resultslist [::repo::get::allResults]
   if {[lsearch $resultslist $goal] eq "-1"} {
-    set newgoal [::recall::getBestGoal $goal]
+    set newgoal [lindex [::recall::getBestGoal $goal] 0]
   } else {
     set newgoal $goal
   }
 
-  set theoryactions {}
-  puts "GOAL $goal NEWGOLA $newgoal"
-  if {$newgoal ne $goal} { ;# goal not in db. try to intuit.
-    # set actions [### INTUIT ###]
-    #set mainstates [::repo::get::tableColumns main input]
-    #set badstates  [::repo::get::tableColumns bad input ]
-    #while {[lsearch $mainstates $newgoal] eq "-1" && [lsearch $badstates $newgoal] eq "-1"} {
-      puts "intuitive search $goal"
-      set theory        [::intuit::guess $input $goal]
-      puts "theory $theory"
-      set newgoal       [lindex $theory 0]
-      set theoryactions [lindex $theory 1]
-      #lappend theoryactions [lindex [::intuit::guess $goal] 1]
-    #}
-  }
+  #get actions to whatever we ended up with.
   set actions [::recall::getActionsPathWithPrediction $input $newgoal]
-  #if {$theoryactions ne ""} {
-  #  set actions [concat $actions $theoryactions]
-  #}
-  if {[lindex $actions 0] eq "_"} { ;# unable to find explicit path, try to intuit a path...
-    # set actions [### INTUIT ###]
+
+  #if we were able to get some acitons, intuitively search for something else in the db.
+  if {[lindex $actions 0] eq "_"} {
     set actions       {}
-    set theoryactions {}
     set mainstates    [::repo::get::tableColumns main input]
     set badstates     [::repo::get::tableColumns bad input ]
-    set explorelist   $newgoal
+    set noexplorelist $newgoal
     while {[lsearch $mainstates $newgoal] eq "-1" && [lsearch $badstates $newgoal] eq "-1"} {
-      set theory [::intuit::guess $input $newgoal $explorelist]
-      set newgoal           [lindex $theory 0]
-      lappend theoryactions [lindex $theory 1]
-      lappend explorelist   $newgoal
-      puts "intuitive search $newgoal"
+      puts "intuitloop      $newgoal"
+      set newgoal           [::intuit::guess $input $newgoal $noexplorelist]
+      lappend noexplorelist $newgoal
+    }
+    if {$newgoal ne ""} {
+      set actions [::recall::getActionsPathWithPrediction $input $newgoal]
     }
   }
-  set actions "$actions [lreverse $theoryactions]"
-  puts "returning $actions"
+
+  #if all else fails, randomly explore please.
   if {[string trim $actions] eq ""} {
-    set $actions [::recall::guess $input $::decide::acts]
+    set actions [::recall::guess $input $::decide::acts]
   }
+  puts "returning $actions"
   return $actions
   #if {$newgoal ne $goal} {
   #  set actions [::recall::getActionsPathWithPrediction $input $newgoal]
@@ -173,7 +159,6 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
 
   while {($go ne "" || $in ne "") && $match eq ""} {
     #get all the goals
-
     set temp ""
     if {$go ne ""} {
       set temp [concat [::repo::get::chainMatch main result $go] \
@@ -333,16 +318,20 @@ proc ::recall::helpers::savedChain {input goal} {
 proc ::recall::guess {input acts} {
   set actionsdonehere [::repo::get::actsDoneHere $input]
   set alist ""
+  puts adonehere$actionsdonehere
   foreach item $acts {
     if {[lsearch -exact $actionsdonehere $item] == -1 && $item != 0} {
       set alist "$alist $item"
+      puts alist$alist
     }
   }
   if {$alist ne ""} {
     set ::memorize::act [lindex $alist [expr { int([llength $alist] * rand()) }]]
+    puts ifmemorizeact$::memorize::act
     return $::memorize::act
   }
   set ::memorize::act [lindex $acts [expr 1 + round( rand() * ([llength $acts]-2)) ]]
+  puts memorizeact$::memorize::act
   return $::memorize::act
 }
 

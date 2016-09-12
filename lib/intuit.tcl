@@ -20,14 +20,8 @@ proc ::intuit::guess {inputstate state {badstates ""}} {
                                                     $badstates  ]
   set beststate [::intuit::worker::getStateFrom     $nodelist   \
                                                     $bestnodes  ]
-  set bestact   [::intuit::worker::getBestAction    $nodesbyix  \
-                                                    $nodes      \
-                                                    $cells      \
-                                                    $beststate  ]
-  set bestact   [::intuit::worker::getStateFrom     $nodelist   \
-                                                    $bestact    ]
-  puts "return [list $beststate $bestact]"
-  return [list $beststate $bestact]
+  puts intuit_$beststate
+  if {[::intuit::worker::isValid? $beststate]} { return $beststate }
 }
 
 
@@ -130,7 +124,7 @@ proc ::intuit::worker::getBestNodes {nodelist nodes cells nodesbyix originalstat
     }
   }
 
-
+  puts bestnodesbyix$bestnodesbyix
   # this would be the place to make sure its not a duplicate of the input nodes, but I don't know how to do that in a simple way.
   # you could save these lists for later then do the check when you're done with this loop process. that's probably best,
   # but I'm not going to take the time to write that now.
@@ -139,16 +133,11 @@ proc ::intuit::worker::getBestNodes {nodelist nodes cells nodesbyix originalstat
   set foundone false
   while {$x < [llength $returnlist] && !$foundone} {
     set state [::intuit::worker::getStateFrom $nodelist $returnnodes]
-    set actsarefree false
-    set doneacts [::repo::get::actsDoneHere $state]
+    puts s_$state
     foreach action $::decide::acts {
-      if {[lsearch $doneacts $action] eq "-1"} {
-        set actsarefree true
-      }
     }
     if {$state                      ne $originalstate
     &&  $state                      ne $inputstate
-    &&  $actsarefree
     &&  [lsearch $badstates $state] eq "-1"
     } then {
       set foundone true
@@ -171,6 +160,19 @@ proc ::intuit::worker::getStateFrom {nodelist bestnodes} {
   return [string map {" " ""} [dict values $nodes]]
 }
 
+################################################################################
+################################################################################
+# get best action - needs to be a separate call!
+################################################################################
+################################################################################
+#set bestact   [::intuit::worker::getBestAction    $nodesbyix  \
+#                                                  $nodes      \
+#                                                  $cells      \
+#                                                  $beststate  ]
+#set bestact   [::intuit::worker::getStateFrom     $nodelist   \
+#                                                  $bestact    ]
+################################################################################
+################################################################################
 
 proc ::intuit::worker::getBestAction {nodesbyix nodes cells beststate} {
   # looks a lot like ::intuit::worker::getBestNodes but only cares about actions, so much simpler.
@@ -199,27 +201,38 @@ proc ::intuit::worker::getBestAction {nodesbyix nodes cells beststate} {
       # get the cell of the largest score.
       set returnlist [lsort -real -decreasing -stride 2 -index 1 $scorebycells]
       lappend returnnodes [lindex $returnlist 0]
+      set x 0
+      set foundone false
+      set actsdonehere [::repo::get::actsDoneHere $inputstate]
+      puts actsdonehere$actsdonehere
+      puts returnnodes$returnnodes
+      while {!$foundone} {
+        if {[lsearch $actsdonehere $returnnodes] eq "-1"} {
+          set foundone true
+        } else {
+          set returnnodes [lindex [dict keys $returnlist] $x]
+          puts "reassigning at $x"
+        }
+        if {$x < [llength $::decide::acts]} {
+          incr x
+        } else {
+          set foundone true
+        }
+      }
     }
   }
   # this would be the place to make sure its returning an answer that hasn't been done at this location before.
-  set x 0
-  set foundone false
-  set actsdonehere [::repo::get::actsDoneHere $beststate]
-  puts actsdonehere$actsdonehere
-  puts returnnodes$returnnodes
-  while {!$foundone} {
-    if {[lsearch $actsdonehere $returnnodes] eq "-1"} {
-      set foundone true
-    } else {
-      set returnnodes [lindex [dict keys $returnlist] $x]
-    }
-    if {$x < [llength $::decide::acts]} {
-      incr x
-    } else {
-      set foundone true
-    }
-  }
   return $returnnodes
+}
+
+proc ::intuit::worker::isValid? {state} {
+  if {[string match *{* $state]
+  ||  [string match *}* $state]
+  ||  $state eq ""
+  } then {
+    return false
+  }
+  return true
 }
 
 # one idea I had was to score everything based on weights.
