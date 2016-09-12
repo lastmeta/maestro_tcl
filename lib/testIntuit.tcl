@@ -20,6 +20,6 @@ package require repo 1.0
 #    while $newgoal is not in database {
 ##      set newgoal           [lindex [::intuit::guess $goal] 0]
       #puts [
-      ::intuit::guess "000"
+      ::intuit::guess "054"
       #]
 #    }

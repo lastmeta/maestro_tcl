@@ -9,13 +9,12 @@ proc ::intuit::guess {state} {
   set nodetable [::repo::get::nodeTable                                       ]
   set nodelist  [::intuit::worker::makeNodes        $nodetable                ]
   set nodes     [::intuit::worker::selectNodes      $nodelist  $state         ]
-  set combos    [::intuit::worker::makeCombinations $nodelist  $nodes  $cells ]
   set nodesbyix [::intuit::worker::getNodesByIndex  $nodelist                 ]
   set bestnodes [::intuit::worker::getBestNodes     $nodesbyix $nodes  $cells ]
   set beststate [::intuit::worker::getStateFrom     $nodelist  $bestnodes     ]
-  set bestact   [::intuit::worker::getBestAction    $nodelist  $nodes         ]
+  #set bestact   [::intuit::worker::getBestAction    $nodelist  $nodes         ]
 
-  return [list $beststate $bestact]
+  #return [list $beststate $bestact]
 
 }
 
@@ -106,7 +105,10 @@ proc ::intuit::worker::getBestNodes {nodelist nodes cells} {
           }
           incr i
         }
-        dict lappend scorebycells $selectcell [::prepdata::lsum $connectionsofcell]
+        # filter out zeros and score cells
+        if {[lsearch $connectionsofcell 0] eq "-1"} {
+          dict lappend scorebycells $selectcell [::prepdata::lsum $connectionsofcell]
+        }
       }
       # get the cell of the largest score.
       lappend returnnodes [lindex [lsort -real -decreasing -stride 2 -index 1 $scorebycells] 0]
@@ -115,12 +117,20 @@ proc ::intuit::worker::getBestNodes {nodelist nodes cells} {
       # but I'm not going to take the time to write that now.
     }
   }
+  puts $returnnodes
   return $returnnodes
 }
 
 
-proc ::intuit::worker::getBestState {nodeslist bestnodes} {
+proc ::intuit::worker::getStateFrom {nodeslist bestnodes} {
   # converts bestnodes into a state to send back to recall.
+  set nodes {}
+  foreach bestnode $bestnodes {
+    dict set nodes [lindex [lindex $nodeslist [expr $bestnode - 1]] 2] [lindex [lindex $nodeslist [expr $bestnode - 1]] 1]
+  }
+  set nodes [lsort -increasing -stride 2 -index 0 $nodes]
+  puts [dict values $nodes]
+  return [dict values $nodes]
 }
 
 
