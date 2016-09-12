@@ -29,19 +29,21 @@ proc ::recall::main {input goals} {
 
   set actions ""
   set newgoal [::recall::getBestGoal $goal]
+  set theoryactions {}
   if {$newgoal ne $goal} { ;# goal not in db. try to intuit.
     # set actions [### INTUIT ###]
-##    set theoryactions {}
-#    while $newgoal is not in database {
-##      set newgoal           [lindex [::intuit::guess $goal] 0]
-##      lappend theoryactions [lindex [::intuit::guess $goal] 1]
-#    }
-
+    set mainstates [::repo::get::tableColumns main input]
+    set badstates  [::repo::get::tableColumns bad input ]
+    while {[lsearch $mainstates $newgoal] eq "-1" && [lsearch $badstates $newgoal] eq "-1"} {
+      set newgoal           [lindex [::intuit::guess $goal] 0]
+      puts "intuitive search $newgoal"
+      lappend theoryactions [lindex [::intuit::guess $goal] 1]
+    }
   }
   set actions [::recall::getActionsPathWithPrediction $input $newgoal]
-##  if {$theoryactions ne ""} {
-##    set actions [concat $actions $theoryactions]
-##  }
+  if {$theoryactions ne ""} {
+    set actions [concat $actions $theoryactions]
+  }
   if {[lindex $actions 0] eq "_"} { ;# unable to find explicit path, try to intuit.
     # set actions [### INTUIT ###]
   }

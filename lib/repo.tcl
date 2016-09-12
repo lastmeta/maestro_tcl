@@ -199,6 +199,12 @@ proc ::repo::get::actsDoneHere {input} {
 	return "$a $b"
 }
 
+proc ::repo::get::allInputs {} {
+	set a [brain eval "SELECT input FROM bad"]
+	set b [brain eval "SELECT input FROM main"]
+	return "$a $b"
+}
+
 proc ::repo::get::maxAction {} {
 	return [brain eval "SELECT max(action) FROM main"]
 }

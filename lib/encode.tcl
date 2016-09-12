@@ -19,6 +19,7 @@ proc ::encode::set::globals {} {
   set ::encode::incre         10
   set ::encode::decre         1
   set ::encode::limit         20
+  set ::encode::lastaction    {}
   ::encode::set::actions
 }
 
@@ -100,7 +101,7 @@ proc ::encode::set::activation {action} {
 proc ::encode::this {input} {
   if {$::memorize::learn eq "no"} { return }
 
-  set action $::memorize::act
+  set action $::encode::lastaction
 
   ::encode::map::input  $input
   ::encode::map::action $action
