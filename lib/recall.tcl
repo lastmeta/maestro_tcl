@@ -1,6 +1,24 @@
 namespace eval ::recall {}
+namespace eval ::recall::set {}
 namespace eval ::recall::record {}
 namespace eval ::recall::helpers {}
+
+
+proc ::recall::set::globals {} {
+  set ::recall::goal  {}
+  set ::recall::tried {}
+}
+
+proc ::recall::set::goal {goal} {
+  if {$goal ne $::recall::goal} {
+    set ::recall::goal $goal
+    set ::recall::tried {}
+  }
+}
+
+proc ::recall::set::tried {goal} {
+  lappend ::recall::tried $goal
+}
 
 ## main input as word, goal as word
 #
