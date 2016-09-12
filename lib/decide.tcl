@@ -68,10 +68,9 @@ proc ::decide::commanded::try msg {
   } elseif {$::decide::goal eq "" && $::decide::explore ne ""} {
     return [::decide::commanded::guess]
   } elseif {$::decide::goal eq $::memorize::input} {
-    set ::decide::explore ""
     ::decide::commanded::stop
   } else {
-    set ::decide::explore ""
+    ::decide::commanded::stop
     return [::decide::commanded::find $msg]
   }
 }
@@ -168,8 +167,11 @@ proc ::decide::commanded::find msg {
 
 proc ::decide::commanded::single msg {
   set path [::recall::main $::memorize::input $::decide::goal]
-  set newgoal [lindex $path 0]
-  set ::decide::path [lrange $path 1 end]
+  if {[lindex $path 0] eq "_"} {
+    set newgoal [lindex $path 1]
+    set path [::recall::main $::memorize::input $newgoal]
+  }
+  set ::decide::path $path
   return [::decide::commanded::goal $msg]
 }
 
@@ -201,7 +203,11 @@ proc ::decide::action {msg} {
     set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
     return [::decide::actions::do]
   } elseif {$::decide::path ne ""} {
-    return [::decide::actions::do]
+    if {$::memorize::input eq $::decide::goal} {
+      set ::decide::goal ""
+      ::decide::commanded::stop
+    }
+    #return [::decide::actions::do]
   } elseif {$::decide::goal eq ""} {
   } else {
     if {$::decide::path eq ""} { ;# we have no path, try to make one.

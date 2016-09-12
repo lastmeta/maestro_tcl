@@ -47,7 +47,7 @@ proc ::recall::main {input goals} {
   if {[lindex $actions 0] eq "_"} { ;# unable to find explicit path, try to intuit.
     # set actions [### INTUIT ###]
   }
-
+  puts "returning $actions"
   return $actions
   #if {$newgoal ne $goal} {
   #  set actions [::recall::getActionsPathWithPrediction $input $newgoal]
@@ -243,6 +243,7 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
   if {[llength $::decide::path] > 1} {
     ::recall::record::newChain $input $goal $actions
   }
+  puts "found actions $actions"
   return $actions
 }
 

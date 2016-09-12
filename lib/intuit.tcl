@@ -4,16 +4,16 @@ namespace eval ::intuit::worker {}
 
 # returns a list of cells (the actual connections, not id)
 proc ::intuit::guess {state} {
-  set celltable [::repo::get::connectom                                                   ]
-  set cells     [::intuit::worker::makeCells        $celltable                            ]
-  set nodetable [::repo::get::nodeTable                                                   ]
-  set nodelist  [::intuit::worker::makeNodes        $nodetable                            ]
-  set nodes     [::intuit::worker::selectNodes      $nodelist  $state                     ]
-  set nodesbyix [::intuit::worker::getNodesByIndex  $nodelist                             ]
-  set bestnodes [::intuit::worker::getBestNodes     $nodelist  $nodes  $cells $nodesbyix  ]
-  set beststate [::intuit::worker::getStateFrom     $nodelist  $bestnodes                 ]
-  set bestact   [::intuit::worker::getBestAction    $nodesbyix $nodes  $cells $beststate  ]
-  set bestact   [::intuit::worker::getStateFrom     $nodelist  $bestact                   ]
+  set celltable [::repo::get::connectom                                                         ]
+  set cells     [::intuit::worker::makeCells        $celltable                                  ]
+  set nodetable [::repo::get::nodeTable                                                         ]
+  set nodelist  [::intuit::worker::makeNodes        $nodetable                                  ]
+  set nodes     [::intuit::worker::selectNodes      $nodelist  $state                           ]
+  set nodesbyix [::intuit::worker::getNodesByIndex  $nodelist                                   ]
+  set bestnodes [::intuit::worker::getBestNodes     $nodelist  $nodes  $cells $nodesbyix $state ]
+  set beststate [::intuit::worker::getStateFrom     $nodelist  $bestnodes                       ]
+  set bestact   [::intuit::worker::getBestAction    $nodesbyix $nodes  $cells $beststate        ]
+  set bestact   [::intuit::worker::getStateFrom     $nodelist  $bestact                         ]
   return [list $beststate $bestact]
 }
 
@@ -86,7 +86,7 @@ proc ::intuit::worker::getNodesByIndex {nodelist} {
 }
 
 
-proc ::intuit::worker::getBestNodes {nodelist nodes cells nodesbyix} {
+proc ::intuit::worker::getBestNodes {nodelist nodes cells nodesbyix originalstate} {
   set returnnodes {}
   puts nodesbyix$nodesbyix
   set bestnodesbyix {}
@@ -132,7 +132,7 @@ proc ::intuit::worker::getBestNodes {nodelist nodes cells nodesbyix} {
     set state [::intuit::worker::getStateFrom $nodelist $returnnodes]
     puts $state
     puts $allinputs
-    if {[lsearch $allinputs $state] eq "-1"} {
+    if {[lsearch $allinputs $state] eq "-1" && $state ne $originalstate} {
       set foundone true
       puts gotinto$state
     } else {
