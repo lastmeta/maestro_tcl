@@ -258,7 +258,7 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
     #thridly, the list of inputs that the goal touches directly.
     return [concat _ [lindex $ires [lsearch $ires [::recall::getBestMatch $goal $ires]]] $ires]
   }
-  if {[llength $::decide::path] > 1} {
+  if {[llength $actions] > 1 && $input ne $goal} {
     ::recall::record::newChain $input $goal $actions
   }
   return $actions
@@ -275,7 +275,7 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
 proc ::recall::record::newChain {input result actions} {
   set returned [::repo::get::allMatch chains $input $actions $result]
   if {$returned eq ""} {
-    ::repo::insert chains "time [clock milliseconds] input $input result $result action { $actions }"
+    ::repo::insert chains "time [clock milliseconds] input $input result $result action [list $actions]"
   }
 }
 

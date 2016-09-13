@@ -30,9 +30,7 @@ proc ::repo::create {id {datas ""} } {
 																											time char,
                                                       input char,
                                                       action char,
-                                                      result char,
-																											last_used int,
-																											times_used int) }
+                                                      result char) }
 	brain eval { create table if not exists bad(
 																											time char,
                                                       input char,
@@ -65,19 +63,12 @@ proc ::repo::create {id {datas ""} } {
 
 #data is a dictionary - column, data
 proc ::repo::insert {table datas} {
-	if [dict exists $datas action] {
-		set action [dict get $datas action]
-		if {[llength $action] > 1 } {
-			set action [lrange $action 0 [expr [llength $action]-1] ]
-		}
-	}
+	if [dict exists $datas action     ] { set action      [dict get $datas action     ]	}
 	if [dict exists $datas time				]	{ set time 				[dict get $datas time				] }
 	if [dict exists $datas type				]	{ set type 				[dict get $datas type				]	}
 	if [dict exists $datas data				] { set data 				[dict get $datas data				]	}
 	if [dict exists $datas input			]	{ set input 			[dict get $datas input			]	}
 	if [dict exists $datas result			]	{ set result 			[dict get $datas result			]	}
-	if [dict exists $datas last_used	] {	set last_used 	[dict get $datas last_used	]	}
-	if [dict exists $datas times_used	] { set times_used 	[dict get $datas times_used	]	}
 	if [dict exists $datas rule				]	{ set rule 				[dict get $datas rule				]	}
 	if [dict exists $datas ruleid			]	{	set ruleid 			[dict get $datas ruleid			] }
 	if [dict exists $datas mainids		] {	set mainids 		[dict get $datas mainids		] }
@@ -89,7 +80,7 @@ proc ::repo::insert {table datas} {
 		setup				{ brain eval {INSERT INTO setup 			VALUES ($type,$data)} }
 		main 				{ brain eval {INSERT INTO main 				VALUES ($time,$input,$action,$result)} }
 		uniq 				{ brain eval {INSERT INTO uniq 				VALUES ($time,$input,$action,$result)} }
-		chains 			{ brain eval {INSERT INTO chains 			VALUES ($time,$input,$action,$result,$last_used,$times_used)} }
+		chains 			{ brain eval {INSERT INTO chains 			VALUES ($time,$input,$action,$result)} }
 		bad 				{ brain eval {INSERT INTO bad 				VALUES ($time,$input,$action,$result)} }
 		rules 			{ brain eval {INSERT INTO rules 			VALUES ($rule,$type,$mainids)} }
 		predictions { brain eval {INSERT INTO predictions VALUES ($input,$action,$result,$ruleid)}	}
