@@ -31,6 +31,7 @@ proc ::maestro::set::up {} {
   ::repo::create $::communicate::name
   ::memorize::set::globals
   ::decide::set::globals
+  ::recall::set::globals
   ::encode::set::globals
 }
 

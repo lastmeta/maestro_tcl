@@ -20,7 +20,6 @@ proc ::intuit::guess {inputstate state {badstates ""}} {
                                                     $badstates  ]
   set beststate [::intuit::worker::getStateFrom     $nodelist   \
                                                     $bestnodes  ]
-  puts intuit_$beststate
   if {[::intuit::worker::isValid? $beststate]} { return $beststate }
 }
 
@@ -113,6 +112,8 @@ proc ::intuit::worker::getBestNodes {nodelist nodes cells nodesbyix originalstat
           incr i
         }
         # filter out zeros and score cells
+          # ps We may want to score by weight instead of by sum - if there are few connections to one of the indexes of the goal (like 3__)
+          # and lots of connections to other indexes (like _00) we should weight the connections to 3__ much higher.
         if {[lsearch $connectionsofcell 0] eq "-1"} {
           dict lappend scorebycells $selectcell [::prepdata::lsum $connectionsofcell]
         }
@@ -124,7 +125,6 @@ proc ::intuit::worker::getBestNodes {nodelist nodes cells nodesbyix originalstat
     }
   }
 
-  puts bestnodesbyix$bestnodesbyix
   # this would be the place to make sure its not a duplicate of the input nodes, but I don't know how to do that in a simple way.
   # you could save these lists for later then do the check when you're done with this loop process. that's probably best,
   # but I'm not going to take the time to write that now.
@@ -133,7 +133,6 @@ proc ::intuit::worker::getBestNodes {nodelist nodes cells nodesbyix originalstat
   set foundone false
   while {$x < [llength $returnlist] && !$foundone} {
     set state [::intuit::worker::getStateFrom $nodelist $returnnodes]
-    puts s_$state
     foreach action $::decide::acts {
     }
     if {$state                      ne $originalstate
@@ -204,14 +203,11 @@ proc ::intuit::worker::getBestAction {nodesbyix nodes cells beststate} {
       set x 0
       set foundone false
       set actsdonehere [::repo::get::actsDoneHere $inputstate]
-      puts actsdonehere$actsdonehere
-      puts returnnodes$returnnodes
       while {!$foundone} {
         if {[lsearch $actsdonehere $returnnodes] eq "-1"} {
           set foundone true
         } else {
           set returnnodes [lindex [dict keys $returnlist] $x]
-          puts "reassigning at $x"
         }
         if {$x < [llength $::decide::acts]} {
           incr x

@@ -32,7 +32,6 @@ proc ::decide::set::actions {actions} {
     }
   }
   set ::decide::acts $actions
-  puts "actions: $::decide::acts"
 }
 
 
@@ -117,19 +116,16 @@ proc ::decide::commanded::sleep msg {
   set subcommand [::see::message $msg]
   if {$subcommand eq "acts"} {
     set ::decide::acts [::sleep::find::actions $::decide::acts]
-    puts "actions: $::decide::acts"
   } else {
     for {set i 0} {$i < 100} {incr i} {
       lappend actions $i
     }
     if {$::decide::acts eq $actions} {
       set ::decide::acts [::sleep::find::actions $::decide::acts]
-      puts "actions: $::decide::acts"
     }
   }
   if {$subcommand eq "opps"} {
     set ::decide::acts [::sleep::find::opposites $::decide::acts]
-    puts "opposite actions: $::decide::acts"
   }
   if {$subcommand eq "react"} {
     return [::decide::commanded::resetActions]
@@ -137,13 +133,11 @@ proc ::decide::commanded::sleep msg {
 }
 
 proc ::decide::commanded::resetActions {} {
-  puts resetActions
   for {set i 1} {$i < 101} {incr i} {
     lappend actions $i
   }
   set ::decide::acts $actions
   sleep::update::actions $actions
-  puts "available actions: $::decide::acts"
 }
 
 proc ::decide::commanded::guess {} {
@@ -192,23 +186,19 @@ proc ::decide::commanded::goal msg {
 
 proc ::decide::action {msg} {
   if {$::decide::explore eq "curious" && $::decide::goal ne ""} {
-    puts "A"
     if {$::memorize::input eq $::decide::goal} {
       set ::decide::goal ""
       set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
     }
     return [::decide::actions::do]
   } elseif {$::decide::explore eq "curious"} {
-    puts "B"
 
     return [::decide::commanded::guess]
   } elseif {$::decide::explore eq "random"} {
-    puts "C"
 
     set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
     return [::decide::actions::do]
   } elseif {$::decide::path ne ""} {
-    puts "D"
 
     if {$::memorize::input eq $::decide::goal} {
       set ::decide::goal ""
@@ -217,9 +207,7 @@ proc ::decide::action {msg} {
       return [::decide::actions::do]
     }
   } elseif {$::decide::goal eq ""} {
-    puts "E"
   } else {
-    puts "F"
     if {$::decide::path eq ""} { ;# we have no path, try to make one.
       if {$::memorize::input eq $::decide::goal} {
         set ::decide::goal ""

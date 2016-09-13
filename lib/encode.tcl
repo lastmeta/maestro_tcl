@@ -51,8 +51,8 @@ proc ::encode::set::actions {} {
 proc ::encode::set::cellspernode {cellspernode} {
   if {$cellspernode > 10} {
     set ::encode::cellspernode 10
-  } elseif {$cellspernode < 2} {
-    set ::encode::cellspernode 2
+  } elseif {$cellspernode < 1} {
+    set ::encode::cellspernode 1
   } else {
     set ::encode::cellspernode $cellspernode
   }
@@ -279,6 +279,8 @@ proc ::encode::connections::predictions {} {
 # update structure:
 proc ::encode::connections::structure {} {
 
+  puts "STRUCTURE:[::repo::get::cell 4]"
+  after 1000
   # get every previously active.
   foreach cellid $::encode::lastactive {
     set connections [::repo::get::cell $cellid]
