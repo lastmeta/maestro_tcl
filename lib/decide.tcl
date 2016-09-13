@@ -256,6 +256,9 @@ proc ::decide::help::weHaveActions? {} {
 
 # pops the first action off the acionlist and returns it.
 proc ::decide::actions::do {} {
+  if {[lsearch $::decide::path "_"] ne "-1" || $::decide::path eq ""} {
+    set ::decide::path [::recall::guess $::memorize::input $::decide::acts]
+  }
   set ::decide::path [string map {\{ "" \} ""} $::decide::path ]
   set act [lindex $::decide::path 0]
   set ::memorize::act $act

@@ -30,33 +30,32 @@ proc ::recall::main {input goal} {
   ::recall::set::goal $goal
 
   set actions [::recall::simple $input $goal]
-  if {$actions ne "" && [lindex $actions 0] ne "_"} {
-    return $actions
+  if {$actions ne "" && [lindex $actions 0] ne "_"} { return $actions }
+
+  # if we still have not returned a list of viable actions, try intuit
+  set actions       {}
+  set mainstates    [::repo::get::tableColumns main input]
+  set badstates     [::repo::get::tableColumns bad input ]
+  set newgoal $goal
+  while {[lsearch $mainstates $newgoal] eq "-1" && [lsearch $badstates $newgoal] eq "-1" && $newgoal ne ""} {
+    set newgoal           [::intuit::guess $input $newgoal $::recall::tried]
+    ::recall::set::tried $newgoal
   }
+  if {$newgoal ne ""} {
+    set actions [::recall::getActionsPathWithPrediction $input $newgoal]
+  }
+
+  if {$actions ne "" && [lindex $actions 0] ne "_"} { return $actions }
 
   # if no chain, look for the best next goal according best match
   if {[lindex $actions 0] ne "_"} {
     set newgoals [lrange $actions 1 end]
     foreach newgoal $newgoals {
-      set actions [::recall::simple $input $newgoal]
-      if {$actions ne "" && [lindex $actions 0] ne "_"} {
-        return $actions
+      if {[lsearch $::recall::tried $newgoal] eq  "-1"} {
+        set actions [::recall::simple $input $newgoal]
+        ::recall::set::tried $newgoal
       }
-    }
-  }
-
-  # if we still have not returned a list of viable actions, try intuit
-  if {$actions eq "" || [lindex $actions 0] eq "_"} {
-    set actions       {}
-    set mainstates    [::repo::get::tableColumns main input]
-    set badstates     [::repo::get::tableColumns bad input ]
-    set newgoal $goal
-    while {[lsearch $mainstates $newgoal] eq "-1" && [lsearch $badstates $newgoal] eq "-1"} {
-      set newgoal           [::intuit::guess $input $newgoal $::recall::tried]
-      ::recall::set::tried $newgoal
-    }
-    if {$newgoal ne ""} {
-      set actions [::recall::getActionsPathWithPrediction $input $newgoal]
+      if {$actions ne "" && [lindex $actions 0] ne "_"} { return $actions }
     }
   }
 
@@ -64,6 +63,7 @@ proc ::recall::main {input goal} {
   if {[string trim $actions] eq ""} {
     set actions [::recall::guess $input $::decide::acts]
   }
+
   return $actions
 }
 
@@ -75,137 +75,6 @@ proc ::recall::simple {input goal} {
   # if not in chain look for a chain
   set actions [::recall::getActionsPathWithPrediction $input $goal]
   return $actions
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## main input as word, goal as word
-#
-# Takes input and goal, returns a list of actions to get to the goal, or to get
-# as close as it can.
-#
-# example:  000 123
-# returns:  0 1 2
-#
-proc ::recall::oldmain {input goals} {
-  # plan:
-  # if you can find a direct path using main - great! return that actions list.
-  # otherwise try to intuit a path towards the goal. return that actions list.
-  # later we can figure out how to combine those two so we can intuit a way to
-  # any of the states that explicitly lead to the goal.
-
-  puts "from $input to $goals:"
-  if {$input                  eq $goals } { return "$input __" }
-  if {[lsearch $goals $input] >= 0      } { return "$input __" }
-  if {$input                  eq {}     } { return ""          }
-  if {$goals                  eq {}     } { return ""          }
-  if {[string length $goals] ne [string length $input] } { return "_" }
-
-
-  set goal [lindex $goals 0]
-  ::recall::set::goal $goal
-  ::recall::set::tried $input
-  set chain [::recall::helpers::savedChain $input $goal]
-  if { $chain ne ""} { return $chain }
-
-  set actions ""
-  set resultslist [::repo::get::allResults]
-  if {[lsearch $resultslist $goal] eq "-1"} {
-    set newgoals [lindex [::recall::getBestGoal $goal] 0]
-  } else {
-    set newgoal $goal
-  }
-
-  #get actions to whatever we ended up with.
-  foreach newgoal $newgoals {
-    if {[lsearch $::recall::tried $newgoal] eq  "-1"
-    &&                            $newgoal  ne  ""
-    &&                            $newgoal  ne  "_"
-    } then {
-      set actions [::recall::getActionsPathWithPrediction $input $newgoal]
-      ::recall::set::tried $newgoal
-      break
-    }
-  }
-
-
-  #if we were able to get some acitons, intuitively search for something else in the db.
-  if {$actions eq "" || [lindex $actions 0] eq "_"} {
-    set actions       {}
-    set mainstates    [::repo::get::tableColumns main input]
-    set badstates     [::repo::get::tableColumns bad input ]
-    set noexplorelist $newgoal
-    while {[lsearch $mainstates $newgoal] eq "-1" && [lsearch $badstates $newgoal] eq "-1"} {
-      puts "intuitloop      $newgoal"
-      set newgoal           [::intuit::guess $input $newgoal $noexplorelist]
-      lappend noexplorelist $newgoal
-      puts $newgoal
-      after 1000
-    }
-    if {$newgoal ne "" && [lsearch $::recall::tried $newgoal] eq "-1"} {
-      set actions [::recall::getActionsPathWithPrediction $input $newgoal]
-      ::recall::set::tried $newgoal
-    }
-  }
-
-  #if all else fails, randomly explore please.
-  if {[string trim $actions] eq ""} {
-    set actions [::recall::guess $input $::decide::acts]
-  }
-  puts "returning $actions"
-  puts "__$::recall::tried"
-  return $actions
-  #if {$newgoal ne $goal} {
-  #  set actions [::recall::getActionsPathWithPrediction $input $newgoal]
-  #  set comment {
-  #    this is how we set the actions if we are only using the main table:
-  #    set actions [getActionsPath $input $newgoal]
-  #  }
-  #}
 }
 
 
@@ -392,7 +261,6 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
   if {[llength $::decide::path] > 1} {
     ::recall::record::newChain $input $goal $actions
   }
-  puts "found actions $actions"
   return $actions
 }
 
@@ -427,7 +295,7 @@ proc ::recall::helpers::findMatch {a b} {
  }
  return
 }
-#puts [::recall::main 474 474]
+
 
 ## helpers::SavedChain input as word, goal as word
 #
@@ -456,20 +324,16 @@ proc ::recall::helpers::savedChain {input goal} {
 proc ::recall::guess {input acts} {
   set actionsdonehere [::repo::get::actsDoneHere $input]
   set alist ""
-  puts adonehere$actionsdonehere
   foreach item $acts {
     if {[lsearch -exact $actionsdonehere $item] == -1 && $item != 0} {
       set alist "$alist $item"
-      puts alist$alist
     }
   }
   if {$alist ne ""} {
     set ::memorize::act [lindex $alist [expr { int([llength $alist] * rand()) }]]
-    puts ifmemorizeact$::memorize::act
     return $::memorize::act
   }
   set ::memorize::act [lindex $acts [expr 1 + round( rand() * ([llength $acts]-2)) ]]
-  puts memorizeact$::memorize::act
   return $::memorize::act
 }
 
@@ -483,7 +347,6 @@ proc ::recall::guess {input acts} {
 # returns a random act on the acts list as a last resort.
 #
 proc ::recall::curious {input acts} {
-  puts curious
   set main      [::repo::get::tableColumns main result]
   set bad       [::repo::get::tableColumns bad  result]
   set all       [concat $main $bad]
@@ -495,11 +358,9 @@ proc ::recall::curious {input acts} {
   set lacts1    [llength $acts1]
   set lacts2    [llength $acts2]
   if {$lacts1 < $lacts2 && [lindex $acts1 0] ne "_"} {
-    puts "------------- $random1"
     set ::decide::goal $random1
     return $acts1
   } elseif {[lindex $acts2 0] ne "_"} {
-    puts "------------- $random2"
     set ::decide::goal $random2
     return $acts2
   } else {

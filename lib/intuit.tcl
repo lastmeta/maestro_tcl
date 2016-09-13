@@ -133,8 +133,8 @@ proc ::intuit::worker::getBestNodes {nodelist nodes cells nodesbyix originalstat
   set foundone false
   while {$x < [llength $returnlist] && !$foundone} {
     set state [::intuit::worker::getStateFrom $nodelist $returnnodes]
-    foreach action $::decide::acts {
-    }
+    #foreach action $::decide::acts {
+    #}
     if {$state                      ne $originalstate
     &&  $state                      ne $inputstate
     &&  [lsearch $badstates $state] eq "-1"
@@ -145,7 +145,12 @@ proc ::intuit::worker::getBestNodes {nodelist nodes cells nodesbyix originalstat
     }
     incr x
   }
-  return $returnnodes
+  if {$state                      ne $originalstate
+  &&  $state                      ne $inputstate
+  &&  [lsearch $badstates $state] eq "-1"
+  } then {
+    return $returnnodes
+  }
 }
 
 

@@ -40,9 +40,9 @@ proc ::encode::set::actions {} {
     }
     set max [::repo::get::maxNode]
     for {set i 0} {$i < ($max * $::encode::cellspernode)} {incr i} {
-      ::repo::insert connectom [list  node    $i    \
-                                      cellid  $i    \
-                                      cell    $send ]
+      ::repo::insert connectom [list  node    [expr $i + 1] \
+                                      cellid  $i            \
+                                      cell    $send         ]
     }
   }
   set ::encode::cells [expr $max * $::encode::cellspernode]
@@ -119,7 +119,7 @@ proc ::encode::this {input} {
 # map ##########################################################################
 ################################################################################
 
-
+# is this input new? then make a new node
 proc ::encode::map::input {input} {
   set max [::repo::get::maxNode]
   for {set i 0} {$i < [string length $input]} {incr i} {
@@ -147,9 +147,9 @@ proc ::encode::map::action {action} {
 
 proc ::encode::map::cells {max} {
   for {set j 0} {$j < $::encode::cellspernode} {incr j} {
-    ::repo::insert connectom [list node $max                                           \
-                                   cellid [expr $j + ($max * $::encode::cellspernode)] \
-                                   cell 0 ]
+    ::repo::insert connectom [list node   [expr  $max                            + 1  ] \
+                                   cellid [expr ($max * $::encode::cellspernode) + $j ] \
+                                   cell   0                                             ]
   }
 }
 
@@ -278,9 +278,7 @@ proc ::encode::connections::predictions {} {
 
 # update structure:
 proc ::encode::connections::structure {} {
-
-  puts "STRUCTURE:[::repo::get::cell 4]"
-  after 1000
+  #puts "STRUCTURE:[lindex [lindex [::repo::get::cell 4] 0] 17]"
   # get every previously active.
   foreach cellid $::encode::lastactive {
     set connections [::repo::get::cell $cellid]
