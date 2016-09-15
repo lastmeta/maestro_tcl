@@ -33,17 +33,18 @@ proc ::recall::main {input goal} {
   if {$actions ne "" && [lindex $actions 0] ne "_"} { return $actions }
 
   # if we still have not returned a list of viable actions, try intuit
-  set actions       {}
-  set mainstates    [::repo::get::tableColumns main input]
-  set badstates     [::repo::get::tableColumns bad input ]
-  set newgoal $goal
-  while {[lsearch $mainstates $newgoal] eq "-1" && [lsearch $badstates $newgoal] eq "-1" && $newgoal ne ""} {
-    set newgoal           [::intuit::guess $input $newgoal $::recall::tried]
-    ::recall::set::tried $newgoal
-  }
-  if {$newgoal ne ""} {
-    set actions [::recall::getActionsPathWithPrediction $input $newgoal]
-  }
+  # this is commented out because it don't work well and takes a lot of time during exploration.
+  #set actions       {}
+  #set mainstates    [::repo::get::tableColumns main input]
+  #set badstates     [::repo::get::tableColumns bad input ]
+  #set newgoal $goal
+  #while {[lsearch $mainstates $newgoal] eq "-1" && [lsearch $badstates $newgoal] eq "-1" && $newgoal ne ""} {
+  #  set newgoal           [::intuit::guess $input $newgoal $::recall::tried]
+  #  ::recall::set::tried $newgoal
+  #}
+  #if {$newgoal ne ""} {
+  #  set actions [::recall::getActionsPathWithPrediction $input $newgoal]
+  #}
 
   if {$actions ne "" && [lindex $actions 0] ne "_"} { return $actions }
 

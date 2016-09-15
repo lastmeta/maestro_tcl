@@ -26,11 +26,12 @@ proc ::decide::set::globals {} {
 }
 
 proc ::decide::set::actions {actions} {
-  foreach act $::decide::acts {
-    if {[lsearch $actions $act] eq "-1"} {
-      ::encode::prune::node $act a action
-    }
-  }
+  # this is commented out because it don't work well and takes a lot of time during exploration.
+  #foreach act $::decide::acts {
+  #  if {[lsearch $actions $act] eq "-1"} {
+  #   ::encode::prune::node $act a action
+  #  }
+  #}
   set ::decide::acts $actions
 }
 
@@ -76,7 +77,13 @@ proc ::decide::commanded::try msg {
 
 proc ::decide::commanded::do msg {
   ::decide::commanded::stop
-  set ::decide::path [::see::message $msg]
+  if {[llength [::see::message $msg]] == 2} {
+    for {set i 0} {$i < [lindex [::see::message $msg] 1]} {incr i} {
+      lappend ::decide::path [lindex [::see::message $msg] 0]
+    }
+  } elseif {[llength [::see::message $msg]] == 1} {
+    set ::decide::path [::see::message $msg]
+  }
   return [::decide::actions::do]
 }
 

@@ -48,7 +48,8 @@ proc ::memorize::makeMemory {when input isnoise} {
       ::memorize::record::lastStep $when $::memorize::loc "_" $input
     }
   }
-  set ::encode::lastaction $::memorize::act
+  # this is commented out because it don't work well and takes a lot of time during exploration.
+  #set ::encode::lastaction $::memorize::act
   set ::memorize::act {}
   set ::memorize::loc $input
 }
