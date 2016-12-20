@@ -49,6 +49,10 @@ proc ::user::run {} {
       ::user::helpers::displayHelpForLearn
     } elseif {$input eq "from user to server command help message acts"    } {
       ::user::helpers::displayHelpForActs
+    } elseif {$input eq "from user to server command help message encode"  } {
+      ::user::helpers::displayHelpForEncode
+    } elseif {$input eq "from user to server command help message backdoor"} {
+      ::user::helpers::displayHelpForBackdoor
     } else {
       puts $::chan [dict replace $input when [clock milliseconds]]
       flush $::chan
@@ -109,9 +113,22 @@ proc ::user::helpers::displayHelpForEncode {} { ;# isn't used right now
   puts ""
   puts "################################## help encode ################################"
   puts ""
-  puts "limit INT    sets the limit of learning; lower is faster. 1 - 10"
-  puts "cells INT    sets the number of cells per node; 1 - 10. Not advised"
-  puts "from user to s.1 message _ tells simulation to tell naisen its location"
+  puts "limit INT    sets the limit of learning; lower is faster; 1 - 10"
+  puts "cells INT    sets the number of cells per node; 1 - 10"
+  puts "incre INT    sets the belief increase amount upon verification; 1-100."
+  puts "decre INT    sets the belief decrease amount; 0-100"  
+  puts ""
+  puts "##################################### end #####################################"
+  puts ""
+}
+
+
+proc ::user::helpers::displayHelpForBackdoor {} { ;# lets not forget whos in charge.
+  puts ""
+  puts "################################ help backdoor ################################"
+  puts ""
+  puts "from user to s.1 message _    tells simulation to tell maestro its location"
+  puts "from 1.1 to s.1 message 1     spoofs user identity as maestro"
   puts ""
   puts "##################################### end #####################################"
   puts ""

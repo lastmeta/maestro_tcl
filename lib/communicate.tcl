@@ -61,7 +61,8 @@ proc ::communicate::helpers::whoDoITalkTo? {} {
 proc ::communicate::interact::always {} {
   while {1} {
     set msg [::communicate::interact::get [gets $::communicate::chan]]
-    puts "received: $msg"
+    #puts "received: $msg"
+    puts "received: [::see::message $msg]"
     set sendmsg [::maestro::handle::interpret $msg]
     if {$sendmsg ne ""} { ::communicate::interact::send $sendmsg } \
     else {puts "no message to send."}
@@ -87,7 +88,7 @@ proc ::communicate::interact::get {message} {
 
 proc ::communicate::interact::send {message} {
   if {$message ne ""} {
-    puts "sending: $message"
+    puts "sending: [::see::message [lindex $message 0]]"
     puts $::communicate::chan $message
     flush $::communicate::chan
   }
