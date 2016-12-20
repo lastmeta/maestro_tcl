@@ -50,6 +50,8 @@ proc ::user::run {} {
       ::user::helpers::displayHelpForActs
     } elseif {$input eq "from user to server command help message encode"  } {
       ::user::helpers::displayHelpForEncode
+    } elseif {$input eq "from user to server command help message debug"   } {
+      ::user::helpers::displayHelpForDebug
     } elseif {$input eq "from user to server command help message backdoor"} {
       ::user::helpers::displayHelpForBackdoor
     } else {
@@ -94,6 +96,7 @@ proc ::user::helpers::displayHelp {} {
   puts ""
 }
 
+
 proc ::user::helpers::displayHelpForHelp {} {
   puts ""
   puts "################################## help help ##################################"
@@ -107,6 +110,7 @@ proc ::user::helpers::displayHelpForHelp {} {
   puts "##################################### end #####################################"
   puts ""
 }
+
 
 proc ::user::helpers::displayHelpForEncode {} { ;# isn't used right now
   puts ""
@@ -122,7 +126,18 @@ proc ::user::helpers::displayHelpForEncode {} { ;# isn't used right now
 }
 
 
-proc ::user::helpers::displayHelpForBackdoor {} { ;# lets not forget whos in charge.
+proc ::user::helpers::displayHelpForDebug {} {
+  puts ""
+  puts "################################# help debug ##################################"
+  puts ""
+  puts "debug wait MILLISECONDS   tells Maestro to wait in between sending messages"
+  puts ""
+  puts "##################################### end #####################################"
+  puts ""
+}
+
+
+proc ::user::helpers::displayHelpForBackdoor {} { ;# lets not forget whos in charge... for now
   puts ""
   puts "################################ help backdoor ################################"
   puts ""
@@ -157,6 +172,7 @@ proc ::user::helpers::displayHelpForStop {} {
   puts ""
 }
 
+
 proc ::user::helpers::displayHelpForDo {} {
   puts ""
   puts "#################################### help do ##################################"
@@ -174,6 +190,7 @@ proc ::user::helpers::displayHelpForDo {} {
   puts ""
 }
 
+
 proc ::user::helpers::displayHelpForTry {} {
   puts ""
   puts "################################### help try ##################################"
@@ -187,6 +204,7 @@ proc ::user::helpers::displayHelpForTry {} {
   puts "##################################### end #####################################"
   puts ""
 }
+
 
 proc ::user::helpers::displayHelpForCan {} {
   puts ""

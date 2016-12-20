@@ -78,7 +78,8 @@ proc ::maestro::handle::user msg {
     ::decide::set::actions [::see::message $msg]
   } elseif {[::see::command $msg] eq "do"} {
     return [::maestro::format [::decide::commanded::do $msg]]
-
+  } elseif {[::see::command $msg] eq "debug"} {
+    ::communicate::debug [::see::message $msg]
   } elseif {[::see::command $msg] eq "limit"} {
     ::encode::set::limit [::see::message $msg]
     puts "learning limit: $::encode::limit"

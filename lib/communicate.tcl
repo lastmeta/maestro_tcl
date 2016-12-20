@@ -2,12 +2,14 @@ namespace eval ::communicate {}
 namespace eval ::communicate::set {}
 namespace eval ::communicate::helpers {}
 namespace eval ::communicate::interact {}
+namespace eval ::communicate::debug {}
 
 proc ::communicate::set::globals {} {
   set ::communicate::chan [socket 127.0.0.1 9900]
   set ::communicate::name {}
   set ::communicate::from {}
   set ::communicate::to {}
+  set ::communicate::debug::wait 0
 }
 
 proc ::communicate::set::up {} {
@@ -54,15 +56,29 @@ proc ::communicate::helpers::whoDoITalkTo? {} {
 }
 
 
+
+############################################################################
+# Debug ####################################################################
+############################################################################
+
+
+proc ::communicate::debug {msg} {
+  if {[lindex $msg 0] == "wait" } {
+    set ::communicate::debug::wait [lindex $msg 1]
+  }
+}
+
+
 ################################################################################
 # Interaction ##################################################################
 ################################################################################
 
 proc ::communicate::interact::always {} {
   while {1} {
+    after $::communicate::debug::wait
     set msg [::communicate::interact::get [gets $::communicate::chan]]
     #puts "received: $msg"
-    puts "in:  [::see::message $msg]"
+    puts "cmd-in: [::see::command $msg]     msg-in: [::see::message $msg]"
     set sendmsg [::maestro::handle::interpret $msg]
     if {$sendmsg ne ""} { ::communicate::interact::send $sendmsg } \
     else {puts "no message to send."}
@@ -88,7 +104,7 @@ proc ::communicate::interact::get {message} {
 
 proc ::communicate::interact::send {message} {
   if {$message ne ""} {
-    puts "out: [::see::message [lindex $message 0]]"
+    puts "cmdout: [::see::command [lindex $message 0]]     msgout: [::see::message [lindex $message 0]]"
     puts $::communicate::chan $message
     flush $::communicate::chan
   }

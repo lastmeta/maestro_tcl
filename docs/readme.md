@@ -51,6 +51,8 @@ The user can communicate with the running Maestro Bot using the following comman
 
 **from user to s.1 message _** - Using this format the user can send messages to anything on the Maestro network, including, (as in this example) the simulation script.
 
+**debug wait** {milliseconds} - Tells Maestro to wait a minimum of milliseconds in between sending messages.
+
 
 ## User Commands - Parameters ##
 
