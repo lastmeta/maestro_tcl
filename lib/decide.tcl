@@ -75,17 +75,29 @@ proc ::decide::commanded::try msg {
   }
 }
 
+
+
 proc ::decide::commanded::do msg {
   ::decide::commanded::stop
-  if {[llength [::see::message $msg]] == 2} {
-    for {set i 0} {$i < [lindex [::see::message $msg] 1]} {incr i} {
-      lappend ::decide::path [lindex [::see::message $msg] 0]
-    }
-  } elseif {[llength [::see::message $msg]] == 1} {
+  if {[llength [::see::message $msg]] == 1 } {
     set ::decide::path [::see::message $msg]
+  } else {
+    if {[lindex [::see::message $msg] 0] == "list" } {
+      for {set i 0} {$i < [llength [::see::message $msg]]} {incr i} {
+        lappend ::decide::path [lindex [::see::message $msg] $i]
+      }
+    } elseif {[lindex [::see::message $msg] 0] == "repeat"} {
+      for {set i 0} {$i < [lindex [::see::message $msg] 2]} {incr i} {
+        lappend ::decide::path [lindex [::see::message $msg] 1]
+      }
+    } else {
+      puts "unknown command: [::see::message $msg]"
+      set ::decide::path [lindex [::see::message $msg] 0]
+    }
   }
   return [::decide::actions::do]
 }
+
 
 proc ::decide::commanded::can msg {
   set goal [::see::message $msg]

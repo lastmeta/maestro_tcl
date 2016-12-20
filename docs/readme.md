@@ -37,7 +37,11 @@ The user can communicate with the running Maestro Bot using the following comman
 
 **stop** - Indicates that Maestro is to stop all behavior, exploratory or otherwise.
 
-**do** {action} {# of repeats} - Tells Maestro to do a particular action, or list of actions right now. For example: **do 4 27**
+**do** {action} - Tells Maestro to do a particular action right now. For example: **do 2**
+
+**do list** {actions} - Tells Maestro to do a list of actions right now. For example: **do 4 3 2 1 2 4 3**
+
+**do repeat** {action} {number of repeats} - Tells Maestro to do a particular action a specified number of times. For example: **do 4 27**
 
 **sleep acts** - Tells Maestro to determine which of its default 100 actions have produced results. Once the list of viable actions is determined Maestro will only use those actions to affect the environment.
 

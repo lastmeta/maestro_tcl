@@ -21,7 +21,6 @@ proc ::user::run {} {
   puts "what do you want to say?"
   while {1} {
     set input [::user::helpers::getInput]
-
     if {[::see::contents $input] eq ""} {
       set input [list "from" "user" "to" "server" "command" [lindex $input 0] "message" [lrange $input 1 end]]
     }
@@ -116,7 +115,7 @@ proc ::user::helpers::displayHelpForEncode {} { ;# isn't used right now
   puts "limit INT    sets the limit of learning; lower is faster; 1 - 10"
   puts "cells INT    sets the number of cells per node; 1 - 10"
   puts "incre INT    sets the belief increase amount upon verification; 1-100."
-  puts "decre INT    sets the belief decrease amount; 0-100"  
+  puts "decre INT    sets the belief decrease amount; 0-100"
   puts ""
   puts "##################################### end #####################################"
   puts ""
@@ -162,11 +161,14 @@ proc ::user::helpers::displayHelpForDo {} {
   puts ""
   puts "#################################### help do ##################################"
   puts ""
-  puts "do ACT    do a particular action or list of actions right now"
+  puts "do ACT            do a particular action immediately"
+  puts "do list ACTS      do a list of actions immediately"
+  puts "do repeat ACT X   do an action X number of times"
   puts ""
   puts "Examples:"
-  puts "do 1      do action number 1"
-  puts "do 1 2 3  do this list of actions: 1 2 3"
+  puts "do 1            do action number 1"
+  puts "do list 1 2 3   do this list of actions: 1 2 3"
+  puts "do repeat 1 2   do action number 1 two times"
   puts ""
   puts "##################################### end #####################################"
   puts ""
