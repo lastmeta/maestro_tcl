@@ -53,6 +53,7 @@ The user can communicate with the running Maestro Bot using the following comman
 
 **debug wait** {milliseconds} - Tells Maestro to wait a minimum of milliseconds in between sending messages.
 
+**die** - Tells Maestro to shut itself down, to end it's process; to exit.
 
 ## User Commands - Parameters ##
 

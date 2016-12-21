@@ -52,6 +52,8 @@ proc ::user::run {} {
       ::user::helpers::displayHelpForEncode
     } elseif {$input eq "from user to server command help message debug"   } {
       ::user::helpers::displayHelpForDebug
+    } elseif {$input eq "from user to server command help message die"} {
+      ::user::helpers::displayHelpForDie
     } elseif {$input eq "from user to server command help message backdoor"} {
       ::user::helpers::displayHelpForBackdoor
     } else {
@@ -131,6 +133,17 @@ proc ::user::helpers::displayHelpForDebug {} {
   puts "################################# help debug ##################################"
   puts ""
   puts "debug wait MILLISECONDS   tells Maestro to wait in between sending messages"
+  puts ""
+  puts "##################################### end #####################################"
+  puts ""
+}
+
+
+proc ::user::helpers::displayHelpForDie {} {
+  puts ""
+  puts "################################## help die ###################################"
+  puts ""
+  puts "die     tells Maestro to kill its process: to exit"
   puts ""
   puts "##################################### end #####################################"
   puts ""

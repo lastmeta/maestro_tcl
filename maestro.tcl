@@ -80,6 +80,9 @@ proc ::maestro::handle::user msg {
     return [::maestro::format [::decide::commanded::do $msg]]
   } elseif {[::see::command $msg] eq "debug"} {
     ::communicate::debug [::see::message $msg]
+  } elseif {[::see::command $msg] eq "die"} {
+    ::maestro::die
+  # these are part of the encoding system which isn't working right now.s
   } elseif {[::see::command $msg] eq "limit"} {
     ::encode::set::limit [::see::message $msg]
     puts "learning limit: $::encode::limit"
@@ -117,6 +120,16 @@ proc ::maestro::format {{msg ""} {cmd ""} {to ""}} {
   } else {
     return ""
   }
+}
+
+
+################################################################################
+# die ##########################################################################
+################################################################################
+
+
+proc ::maestro::die {} {
+  exit
 }
 
 
