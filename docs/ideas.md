@@ -66,3 +66,18 @@ The agent gets some input, makes a prediction, and gives some output - what shou
 Perhaps in a fully observable environment we don't to break up the state representation into smaller bits. We might instead go with my original hunch and make a stack. I think that is a simpler way to do it, and we still get the functionality I expressed above without the hassle of object oriented pattern recognition (horizontal information synchronization).
 
 So if we had a stack of two agents and the environment was a regular old number-line what would happen?
+
+
+9. ISOLATION OF VARIABLES IN TO 'OBJECTS'
+
+With the rubix cube I had wondered what would happen if I made many maestro's and had each of them look only at one specific cube. I ran into problems when I realized in order for this to work it would have to be able to see everything. So then we have a problem. everything has to see everything and model everything? seems like its unnecessarily redundant. Now, if I could get that to work I'd have a system that could perfectly work together to put each cube in it's place in the absolutely most efficient way possible. That would be nice, but I'm not even that good with the cube. So I had an idea:
+
+Instead of isolating every moving part out in space, why not isolate every moving part out in time. For instance lets say I'm trying to solve the rubik's cube. I might look at one piece and say, 'I need this there.' Then I'm going to try a series of actions that puts every other cube back where it was when I said that. In other words I'm searching for ways to move this cube around without ultimately effecting the rest of the cube. That way I can focus on one thing at a time.
+
+This is how I solve it - now I was shown all the moves that I know - but they basically do this. the first moves I use move one cube into place, not caring what happens to the rest of the cube, but as cubes are in place all the subsequent moves get more and more complex to the point where when I move one cube I have to put all the others back in place during the move.
+
+Thus I'm finding special patterns that have a particular effect. I compile those patterns into a list of patterns and know when to use them. Then I can solve it. But I want Maestro to be able to solve in this or a similar way.
+
+My mind knows a clear distinction between causally linked things. This seems to be a principle, not just a strategy. The system must keep track of how thing are effected, remember my unique design from back in the day? it was only paying attention to what changed, which lacked context, but I keep coming back to that idea. When I see a halfway solved cube I immediately see what moves have to be done, the particular set of moves gets triggered by the input of the current state of the cube since I've done it so many times.
+
+What I really want, bare minimum is for it to create a structure as it learns - slightly abstract. so that it can later say, oh, this new thing has the same structure as that, if not the same details. Then it should be able to act on that new thing nearly just as efficiently as the old thing. in order to do that it needs to be able to isolate 'things' away from their environments. It needs object oriented learning. 

@@ -53,6 +53,10 @@ The user can communicate with the running Maestro Bot using the following comman
 
 **debug wait** {milliseconds} - Tells Maestro to wait a minimum of milliseconds in between sending messages.
 
+**inspect database** - Tells Maestro to display a list of the tables in the database.
+
+**clear** {table} - Tells Maestro to erase the contents of a table in the database.
+
 **die** - Tells Maestro to shut itself down, to end it's process; to exit.
 
 ## User Commands - Parameters ##

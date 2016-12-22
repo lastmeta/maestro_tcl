@@ -52,6 +52,10 @@ proc ::user::run {} {
       ::user::helpers::displayHelpForEncode
     } elseif {$input eq "from user to server command help message debug"   } {
       ::user::helpers::displayHelpForDebug
+    } elseif {$input eq "from user to server command help message clear"   } {
+      ::user::helpers::displayHelpForClear
+    } elseif {$input eq "from user to server command help message inspect" } {
+      ::user::helpers::displayHelpForInspect
     } elseif {$input eq "from user to server command help message die"} {
       ::user::helpers::displayHelpForDie
     } elseif {$input eq "from user to server command help message backdoor"} {
@@ -81,13 +85,16 @@ proc ::user::helpers::displayHelp {} {
   puts ""
   puts "USER COMMANDS - BEHAVIOR"
   puts ""
-  puts "help    ...   Displays a help screen containing a list of commands."
-  puts "explore ...   get aquainted with the environment"
-  puts "stop          stop all behavior, exploratory or otherwise"
-  puts "do      ACTS  do a particular action or list of actions"
-  puts "try     DATA  give Maestro a goal (flat)"
-  puts "can     DATA  ask the system if it can achieve a goal"
-  puts "sleep   ...   stop actions and process memory to generate intuition."
+  puts "help    ...     displays a help screen containing a list of commands."
+  puts "explore ...     get aquainted with the environment"
+  puts "stop            stop all behavior, exploratory or otherwise"
+  puts "do      ACTS    do a particular action or list of actions"
+  puts "try     DATA    give Maestro a goal (flat)"
+  puts "can     DATA    ask the system if it can achieve a goal"
+  puts "sleep   ...     stop actions and process memory to generate intuition."
+  puts "inspect         displays a list of tables in the database."
+  puts "clear   TABLE   clear a table in the database."
+  puts "die             kill maestro process"
   puts ""
   puts "USER COMMANDS - PARAMETERS"
   puts ""
@@ -133,6 +140,31 @@ proc ::user::helpers::displayHelpForDebug {} {
   puts "################################# help debug ##################################"
   puts ""
   puts "debug wait MILLISECONDS   tells Maestro to wait in between sending messages"
+  puts ""
+  puts "##################################### end #####################################"
+  puts ""
+}
+
+
+proc ::user::helpers::displayHelpForInspect {} {
+  puts ""
+  puts "################################ help inspect #################################"
+  puts ""
+  puts "inspect     displays a list of tables int he database"
+  puts ""
+  puts "##################################### end #####################################"
+  puts ""
+}
+
+
+proc ::user::helpers::displayHelpForClear {} {
+  puts ""
+  puts "################################# help clear ##################################"
+  puts ""
+  puts "clear TABLE     erase the contents of a table in the database"
+  puts ""
+  puts "Example:"
+  puts "clear chains    erase the contents of chains table in the database"
   puts ""
   puts "##################################### end #####################################"
   puts ""

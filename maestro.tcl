@@ -82,6 +82,11 @@ proc ::maestro::handle::user msg {
     ::communicate::debug [::see::message $msg]
   } elseif {[::see::command $msg] eq "die"} {
     ::maestro::die
+  } elseif {[::see::command $msg] eq "inspect"} {
+    puts [::repo::get::inspect]
+  } elseif {[::see::command $msg] eq "clear"} {
+    puts [::repo::delete::clear [::see::message $msg]]
+
   # these are part of the encoding system which isn't working right now.s
   } elseif {[::see::command $msg] eq "limit"} {
     ::encode::set::limit [::see::message $msg]
