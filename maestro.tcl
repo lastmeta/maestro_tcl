@@ -70,7 +70,7 @@ proc ::maestro::handle::user msg {
   } elseif {[::see::command $msg] eq "can"} {
     return [::maestro::format [::decide::commanded::can $msg] "" [::see::from $msg]]
   } elseif {[::see::command $msg] eq "sleep"} {
-    return [::maestro::format [::decide::commanded::sleep $msg]]
+    return [::maestro::format [::decide::commanded::sleep $msg] "" user]
   } elseif {[::see::command $msg] eq "learn"} {
     ::memorize::set::learn [::see::message $msg] ;#encode will reference ::memorize::learn
   } elseif {[::see::command $msg] eq "acts"} {
