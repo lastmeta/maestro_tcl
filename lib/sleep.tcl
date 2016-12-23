@@ -25,35 +25,22 @@
 namespace eval ::sleep {}
 namespace eval ::sleep::find {}
 namespace eval ::sleep::find::opposites:: {}
+namespace eval ::sleep::find::effects:: {}
 namespace eval ::sleep::update {}
-
+namespace eval ::sleep::help {}
 ## actions
 #
 # reviews the database bad and main to try to find a limit to the number of
 # actions that do anything. starting at 1 and ending at 999. limit usually < 20.
 #
 proc ::sleep::find::actions {args} {
-  set max [::repo::get::maxAction]
-  set n $max
-  if {$n ne "_"} {
-    incr n
-    for {set i 0} {$i < $n} {incr i} {
-      lappend actions $i
-    }
-    ::sleep::update::actions $actions
-    return $actions
-  } else {
-    return [::repo::get::tableColumnsWhere rules rowid [list type "available actions"]]
-  }
+  return [::sleep::update::actions [::sleep::help::getListOfActionsInMain]]
 }
 
 proc ::sleep::update::actions {actions} {
-  set actionsid [::repo::get::tableColumnsWhere rules rowid [list type "available actions"]]
-  if {$actionsid ne ""} {
-    ::repo::update::onId rules rule $actions $actionsid
-  } else {
-    ::repo::insert rules [list rule $actions type "available actions"]
-  }
+  ::repo::delete::rowsTableColumnValue rules type "available actions"
+  ::repo::insert rules [list rule $actions type "available actions"]
+  return $actions
 }
 
 
@@ -184,6 +171,188 @@ proc ::sleep::find::opposites::extrapolateRule {opps id} {
 
 
 
+
+
+
+
+
+
+# effects
+#
+# searches the database to find which index is affected by each action. If more
+# than one index can be affected by this action, then it references each effect
+# and it's raw input.
+#
+proc ::sleep::find::effects {args} {
+
+
+  ::repo::delete::rowsTableColumnValue rules type "general effects"
+  ::repo::delete::rowsTableColumnValue rules type "special effects"
+  #Done - tested
+
+  # gather a list of actions to examine
+  set actions [::sleep::help::getListOfActionsInMain]
+
+  # loop through list and produce information to put in the effects table.
+  foreach action $actions {
+
+    # try to find the general effect
+    set inputs  [::repo::get::tableColumnsWhere main input  [list action $action]]
+    set results [::repo::get::tableColumnsWhere main result [list action $action]]
+    set rowids  [::repo::get::tableColumnsWhere main rowid  [list action $action]]
+    set dictionary ""
+    foreach input $inputs result $results id $rowids {
+      set n [string length $input]
+      set indexes ""
+      for {set i 0} {$i < $n} {incr i} {
+        if {[string index $input $i] ne [string index $result $i]} {
+          lappend indexes $i
+        }
+      }
+      if {[dict get $dictionary $indexes] eq ""} {
+        dict set dictionary $indexes $id
+      } else {
+        dict append dictionary $indexes $id
+      }
+    }
+  }
+  #dictionary looks like 
+  # list of indexes
+  # and
+  # their rowids
+  # if there is only one make a general rule
+  # if there are more than one
+  #   find the one with the most ids and make that a general rule
+  #   with all the others make a special rule with the ids in the mainid field.
+  # endif
+
+
+
+
+
+
+  #set acts [::sleep::find::opposites::getFullMainSample]
+  #set opps [::sleep::find::opposites::analyzeSample $acts]
+  #set id [::sleep::find::opposites::recordRule $opps]
+  #::sleep::find::opposites::extrapolateRule $opps $id
+  #return $opps
+}
+
+proc ::sleep::find::effects::getFullMainSample {} {
+  #pull everything from database
+  set main [::repo::get::tableColumns main [list input action result]]
+  set i 0
+  #parse into tripplets
+  foreach item $main {
+    if {$i == 3} {
+      lappend tripplets [list $input $action $result]
+      set i 0
+    }
+    if {$i == 0} {
+      set input $item
+    } elseif {$i == 1} {
+      set action $item
+    } elseif {$i == 2} {
+      set result $item
+    }
+    incr i
+  }
+  #look for opposites.
+  foreach tripplet $tripplets {
+    set inp [lindex $tripplet 0]
+    set act [lindex $tripplet 1]
+    set res [lindex $tripplet 2]
+    set opp [lsearch -glob $tripplets "$res * $inp"]
+    if {$opp ne -1} {
+      lappend acts [list $act [lindex [lindex $tripplets $opp] 1]]
+    }
+  }
+  return $acts
+}
+
+
+proc ::sleep::find::effects::analyzeSample {acts} {
+  set opps {}
+  set bad {}
+  foreach actpair $acts {
+    if {![dict exists $opps [lindex $actpair 0]]} {
+      dict set opps [lindex $actpair 0] [lindex $actpair 1]
+    } elseif {[lsearch $bad [lindex $actpair 0]] ne -1} {
+      dict set opps [lindex $actpair 0] {}
+    } elseif {[dict get $opps [lindex $actpair 0]] ne [lindex $actpair 1]} {
+      lappend bad [lindex $actpair 0]
+    }
+  }
+  return $opps
+}
+
+proc ::sleep::find::effects::recordRule {opps} {
+  set id [::repo::get::tableColumnsWhere rules rowid [list type "opposite actions"]]
+  if {$id ne ""} {
+    ::repo::update::onId rules rule $opps $id
+    ::repo::delete::rowsTableColumnValue predictions ruleid $id
+  } else {
+    ::repo::insert rules [list rule $opps type "opposite actions"]
+    set id [::repo::get::tableColumnsWhere rules rowid [list type "opposite actions"]]
+  }
+  return $id
+}
+
+proc ::sleep::find::effects::extrapolateRule {opps id} {
+  #pull everything from database
+  set main [::repo::get::tableColumns main [list input action result]]
+  set i 0
+  #go through everthing one record at a time.
+  foreach item $main {
+    if {$i == 3} {
+      #make a new record in predictions
+      if [dict exists $opps $action] {
+        lappend predictions [list $result [dict get $opps $action] $input]
+        lappend mains [list $input $action $result]
+      }
+      set i 0
+    }
+    if {$i == 0} {
+      set input $item
+    } elseif {$i == 1} {
+      set action $item
+    } elseif {$i == 2} {
+      set result $item
+    }
+    incr i
+  }
+
+  foreach prediction $predictions {
+    set search [lsearch $mains [list [lindex $prediction 0] [lindex $prediction 1] [lindex $prediction 2]]]
+    if {$search eq -1} {
+      puts $search
+      ::repo::insert predictions [list input [lindex $prediction 0] action [lindex $prediction 1] result [lindex $prediction 2] ruleid $id]
+    }
+    #select * from main a Inner Join predictions b on a.input = b.input and a.action = b.action and a.result = b.result
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## monkey
 #
 # Learn by watching. Monkey see monkey do. When in this mode the system watches
@@ -261,4 +430,44 @@ proc ::sleep::find::patterns {args} {
 #
 proc ::sleep::find::anomalies {args} {
 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################################################################################################################################################
+# help #########################################################################################################################################################
+################################################################################################################################################################
+
+
+proc ::sleep::help::getListOfActionsInMain {} {
+  for {set i 1} {$i < 100} {incr i} {
+    if {[::repo::get::tableColumnsWhere main result [list action $i]] ne ""} {
+      lappend actions $i
+    }
+  }
+  return $actions
 }

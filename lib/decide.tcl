@@ -135,19 +135,19 @@ proc ::decide::commanded::sleep msg {
   set subcommand [::see::message $msg]
   if {$subcommand eq "acts"} {
     set ::decide::acts [::sleep::find::actions $::decide::acts]
-  } else {
+  } elseif {$subcommand eq "opps"} {
+    set ::decide::acts [::sleep::find::opposites $::decide::acts]
+  } elseif {$subcommand eq "react"} {
+    return [::decide::commanded::resetActions]
+  } elseif {$subcommand eq "effects"} {
+    return [::sleep::find::effects]
+  } elseif {$subcommand eq "" } {
     for {set i 0} {$i < 100} {incr i} {
       lappend actions $i
     }
     if {$::decide::acts eq $actions} {
       set ::decide::acts [::sleep::find::actions $::decide::acts]
     }
-  }
-  if {$subcommand eq "opps"} {
-    set ::decide::acts [::sleep::find::opposites $::decide::acts]
-  }
-  if {$subcommand eq "react"} {
-    return [::decide::commanded::resetActions]
   }
 }
 
