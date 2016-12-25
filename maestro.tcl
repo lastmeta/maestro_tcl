@@ -74,8 +74,7 @@ proc ::maestro::handle::user msg {
   } elseif {[::see::command $msg] eq "learn"} {
     ::memorize::set::learn [::see::message $msg] ;#encode will reference ::memorize::learn
   } elseif {[::see::command $msg] eq "acts"} {
-    ::sleep::update::actions [::see::message $msg]
-    ::decide::set::actions [::see::message $msg]
+    ::decide::commanded::acts [::see::message $msg]
   } elseif {[::see::command $msg] eq "do"} {
     return [::maestro::format [::decide::commanded::do $msg]]
   } elseif {[::see::command $msg] eq "debug"} {

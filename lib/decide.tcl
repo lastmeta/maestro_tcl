@@ -130,6 +130,14 @@ proc ::decide::commanded::stop {} {
   set ::decide::path    {}
 }
 
+proc ::decide::commanded::acts msg {
+  if {$msg eq ""} {
+    return [::decide::commanded::resetActions]
+  }
+  ::sleep::update::actions $msg
+  ::decide::set::actions $msg
+}
+
 proc ::decide::commanded::sleep msg {
   ::decide::commanded::stop
   set subcommand [::see::message $msg]
@@ -137,8 +145,6 @@ proc ::decide::commanded::sleep msg {
     set ::decide::acts [::sleep::find::actions $::decide::acts]
   } elseif {$subcommand eq "opps"} {
     set ::decide::acts [::sleep::find::opposites $::decide::acts]
-  } elseif {$subcommand eq "react"} {
-    return [::decide::commanded::resetActions]
   } elseif {$subcommand eq "effects"} {
     return [::sleep::find::effects]
   } elseif {$subcommand eq "" } {
