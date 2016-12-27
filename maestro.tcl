@@ -10,7 +10,7 @@ source lib/decide.tcl       ;# when you get new data, decide what to do with it.
 source lib/recall.tcl       ;# get actions and action chains from raw data
 source lib/sleep.tcl        ;# post analyzation of data to discover structure.
 # this is commented out because it don't work well and takes a lot of time during exploration.
-#source lib/encode.tcl       ;# encode raw data into a relative strucutre
+source lib/encode.tcl       ;# encode raw data into a relative strucutre
 #source lib/intuit.tcl       ;# get action chains from relative structure
 #source lib/tracer.tcl      ;# debug.
 #source lib/chain.tcl       ;# code helper used in intuit.tcl Unused.
@@ -34,7 +34,7 @@ proc ::maestro::set::up {} {
   ::decide::set::globals
   ::recall::set::globals
   # this is commented out because it don't work well and takes a lot of time during exploration.
-  #::encode::set::globals
+  ::encode::set::globals
 }
 
 
@@ -55,7 +55,7 @@ proc ::maestro::handle::interpret msg {
 proc ::maestro::handle::environment msg {
   ::memorize::this $msg
   # this is commented out because it don't work well and takes a lot of time during exploration.
-  #::encode::this [::see::message $msg]
+  ::encode::this [::see::message $msg]
   set action [::decide::action $msg]
   return [::maestro::format $action]
 }
