@@ -8,7 +8,11 @@ The learning task of Maestro is simple: learn what each action does in every sit
 
 ## Setup ##
 
-Run each of the following tcl scripts in order from a command line:
+Be sure you have Tcl 8.6 or higher installed on your machine.
+
+For easy setup of Maestro download and install Autoit and run the file in build folder. Otherwise...
+
+Run each of the following tcl scripts in order from a command line (using tclsh):
 
 - **server**.tcl
 	- (must run first)
@@ -20,7 +24,7 @@ Run each of the following tcl scripts in order from a command line:
 
 In this demo Maestro will explore a numberline from 000 to 999 learning how to traverse it using four motor commands.
 
-To use Maestro with systems other than the included simulation one must build an interface to their environment, connecting it to the server on port 9900 (use numberline.tcl as a guide). Maestro will send actions to and get states (or input) from the environment. It has unlimited actions, but defaults at 4. The more actions Maestro has available to it, the less efficient it is at exploring its environment. Actions are mere numbers such as 1 or 2 or 3 or 4.
+To use Maestro with systems other than the included simulation one must build an interface to their environment, connecting it to the server on port 9900 (use numberline.tcl as a guide). Maestro will send actions to and get states (or input) from the environment. It has unlimited actions, but defaults at 20. The more actions Maestro has available to it, the less efficient it is at exploring its environment. Actions are represented by mere numbers such as 1 or 2 or 3 or 4.
 
 
 ## User Commands - Behavior ##
@@ -43,9 +47,15 @@ The user can communicate with the running Maestro Bot using the following comman
 
 **do repeat** {action} {number of repeats} - Tells Maestro to do a particular action a specified number of times. For example: **do 4 27**
 
-**sleep acts** - Tells Maestro to determine which of its default 100 actions have produced results. Once the list of viable actions is determined Maestro will only use those actions to affect the environment.
+**sleep** - Tells Maestro to sleep. That is to do all of the following sub-commands in order: acts, opps, effects, always.
 
-**sleep opps** - Tells Maestro to find behaviors that have consistently produced the opposite result in the change of state of the environment. Once found, Maestro will extrapolate those opposite actions into a list of new, predicted, but not necessarily ever seen before states that it can reference to learn more about its environment.
+**sleep acts** - Tells Maestro to determine which of its default 100 actions have produced results. Once the list of viable actions is determined Maestro will only use those actions to affect the environment. (See Rule Formats below).
+
+**sleep opps** - Tells Maestro to find behaviors that have consistently produced the opposite result in the change of state of the environment. Once found, Maestro will extrapolate those opposite actions into a list of new, predicted, but not necessarily ever seen before states that it can reference to learn more about its environment. (See Rule Formats below).
+
+**sleep effects** - Tells Maestro to discover which indexes are changed by each action. (See Rule Formats below).
+
+**sleep always** - Tells Maestro to discover how indexes are changed by each action. (See Rule Formats below).
 
 **from user to s.1 message _** - Using this format the user can send messages to anything on the Maestro network, including, (as in this example) the simulation script.
 
@@ -59,9 +69,11 @@ The user can communicate with the running Maestro Bot using the following comman
 
 ## User Commands - Parameters ##
 
-**learn** {on/off} - Tells Maestro to memorize and encode data while it interacts with the environment or not. Default is always on. For example: **learn off**
+**learn** {on/off} - Tells Maestro to memorize data while it interacts with the environment or not. Default is always on. For example: **learn off**
 
-**acts** {actions} - Tells Maestro to use this list of actions to affect the environment. This command can be used before Maestro explores the environment and makes its exploration more efficient. The fewer the actions Maestro has to choose from the more efficient Maestro can be. The possible list of acts is 1 through 100. Reset available actions to the entire possible list by not including any list of actions. For example: **acts 1 2 3 4**
+**encode** {on/off} - Tells Maestro to encode data while it interacts with the environment or not. Default is always off. For example: **encode off**
+
+**acts** {actions} - Tells Maestro to use this list of actions to affect the environment. This command can be used before Maestro explores the environment and makes its exploration more efficient. The fewer the actions Maestro has to choose from the more efficient Maestro can be. The possible list of acts is 1 through 100, but default is only 1 through 20. For example: **acts 1 2 3 4**
 
 **cells** {integer} - Tells Maestro to set the number of cells per node in its internal neural network. The higher the number the slower its Maestro is able to process data, but the more subtle relationships it can detect. The rate of change is exponential. This is a parameter of the internal neural network and should not normally be changed. This command can only be run before the Maestro explores the environment as it cannot reorganize its internal neural network so dramatically after it has been created. Default is 4; {integer} may be 1 - 10. For example: **cells 6**
 
@@ -92,9 +104,63 @@ In short Maestro is best equipped to learn and engage in static environments, ev
 The design of the Maestro network allows for multiple Maestro agents to interact, though this is not yet implemented. A hierarchy of Maestro agents may someday work together in to accomplish complex tasks or manage complex environments. For this reason it is conventional to name Maestro agents with numbers as an address. **1.1** is considered the first Maestro agent on the first (bottom) level of a (as of yet theoretical) Maestro Hierarchy. **s.1** or **e.1** then is considered the portion of the simulation or the environment that communicates with Maestro **1.1**. These are naming conventions; not naming rules. As of yet no functional logic relies on these conventions.
 
 
+## Rule Formats ##
+
+Maestro creates rules as it explores the environment it's placed in. These rules are recorded in the rules table in the database. Each rule follows it's own format which may be difficult to discern so here is a list of them:
+
+command: acts # # # ..., sleep acts
+type: available actions
+rule: # # # # ...
+example: 1 2 3 4
+explanation: you may use action 1, 2, 3, or 4. Any others will probably not make a difference.
+This rule lists every action that has shown usefulness in the database main table. It can also be set manually.
+
+command: sleep opps
+type: opposite actions
+rule: action opposite_action action opposite_action...
+example: 4 2 2 4
+explanation: action 4's opposite is action 2, action 2's opposite is action 4.
+This rule lists every action and its opposite_action in numeric form. An opposite_action is one that has always shown a consistently opposite result to the action.
+
+command: sleep effects
+type: general effects
+rule: action index_change
+example: 2 1
+explanation: action 2 only ever changes indexes 1 of the input.
+This rule lists an action and the affect it has on the input. This only shows up if an action consistently only changes the same index(es) in the main table.
+
+command: sleep effects
+type: special effects
+rule: action index_change
+example: 1 {1 2}
+explanation: action 1 changes indexes 1 and 2 of the input.
+This rule lists an action and an affect it has on the input. This shows up if an action consistently changes the same index(es) in the main table, regardless of the other affects it may have. This includes main ids as a citation.
+
+command: sleep always
+type: general always
+rule: generalized_input action generalized_output
+example: \_\_0 1 \_\_1
+explanation: if the input ends in 0 and you do action 1, the result will be the same as the input except it will end in 1.
+This rule expresses a generalized prediction based on the fact that since this has always happened it will always happen.
+
+command: sleep always
+type: special always
+rule: generalized_input action generalized_output
+example: \_\_0 1 \_\_1
+explanation: if the input ends in 0 and you do action 1, one result may be the same as the input except it will end in 1.
+This rule expresses a generalized prediction based on the fact that it's seen this happen before. Should include main ids as a citation but currently doesn't.
+
+
+
+
+
+
+
+
 ## what to do next ##
 
 Curious isn't great, but it works ok.
 found glitch in chain - stops short or something.
 also doesn't save chains in chain table.
 add simple query to intuit.
+we updated user to be totally event driven. We could do that with communicate too...

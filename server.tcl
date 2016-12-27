@@ -68,7 +68,7 @@ proc ::server::handle::user chan {
 		set to [::see::to $msg]
 		puts [lindex [dict get $::clients $to] 0] $msg
 	}
-	puts $chan "Awaiting Command..."
+	#puts $chan "Awaiting Command..."
 	puts done
 }
 

@@ -72,19 +72,25 @@ proc ::maestro::handle::user msg {
   } elseif {[::see::command $msg] eq "sleep"} {
     return [::maestro::format [::decide::commanded::sleep $msg] "" user]
   } elseif {[::see::command $msg] eq "learn"} {
-    ::memorize::set::learn [::see::message $msg] ;#encode will reference ::memorize::learn
+    ::memorize::set::learn [::see::message $msg]
+    return [::maestro::format $::memorize::learn "memorize::learn" user]
+  } elseif {[::see::command $msg] eq "encode"} {
+    ::memorize::set::encode [::see::message $msg]
+    return [::maestro::format $::memorize::encode "memorize::encode" user]
   } elseif {[::see::command $msg] eq "acts"} {
     ::decide::commanded::acts [::see::message $msg]
+    return [::maestro::format $::decide::acts "decide::acts" user]
   } elseif {[::see::command $msg] eq "do"} {
     return [::maestro::format [::decide::commanded::do $msg]]
   } elseif {[::see::command $msg] eq "debug"} {
     ::communicate::debug [::see::message $msg]
+    return [::maestro::format $::communicate::debug::wait "communicate::debug::wait" user]
   } elseif {[::see::command $msg] eq "die"} {
-    ::maestro::die
+    puts "farewell" ; ::maestro::die
   } elseif {[::see::command $msg] eq "inspect"} {
-    puts [::repo::get::inspect]
+    return [::maestro::format [::repo::get::inspect] "" user]
   } elseif {[::see::command $msg] eq "clear"} {
-    puts [::repo::delete::clear [::see::message $msg]]
+    return [::maestro::format [::repo::delete::clear [::see::message $msg]] "" user]
 
   # This is for debugging communication from 1.1 through server to user.
   } elseif {[::see::command $msg] eq "echo"} {

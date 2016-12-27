@@ -60,6 +60,11 @@ proc ::recall::main {input goal} {
     }
   }
 
+  # if we still have not returned a list of viable actions, try using rules:
+  if {[string trim $actions] eq ""} {
+    set actions [::recall::guess $input $::decide::acts]
+  }
+
   # if we still have not returned a list of viable actions, try guessing:
   if {[string trim $actions] eq ""} {
     set actions [::recall::guess $input $::decide::acts]

@@ -26,6 +26,7 @@ namespace eval ::sleep {}
 namespace eval ::sleep::find {}
 namespace eval ::sleep::find::opposites:: {}
 namespace eval ::sleep::find::effects:: {}
+namespace eval ::sleep::find::always:: {}
 namespace eval ::sleep::update {}
 namespace eval ::sleep::help {}
 ## actions
@@ -158,7 +159,6 @@ proc ::sleep::find::opposites::extrapolateRule {opps id} {
   foreach prediction $predictions {
     set search [lsearch $mains [list [lindex $prediction 0] [lindex $prediction 1] [lindex $prediction 2]]]
     if {$search eq -1} {
-      puts $search
       ::repo::insert predictions [list input [lindex $prediction 0] action [lindex $prediction 1] result [lindex $prediction 2] ruleid $id]
     }
     #select * from main a Inner Join predictions b on a.input = b.input and a.action = b.action and a.result = b.result
@@ -187,7 +187,7 @@ proc ::sleep::find::effects {args} {
   ::sleep::find::effects::clear
   set actions [::sleep::help::getListOfActionsInMain]
   ::sleep::find::effects::discover $actions
-  return $actions
+  return "sleep effects finished"
 }
 
 
@@ -241,6 +241,84 @@ proc ::sleep::find::effects::discover {actions} {
 
 
 
+
+
+
+
+
+# always
+#
+# searches the database to find which actions always have the same effect on
+# indexes and what those same affects are. For example: on a numberline action
+# number 3 may always turn the last index to 8 if the last index was 9 and it
+# will not effect the rest. Thus __9 --3--> __8 and concretely:
+#
+#   state   act   newstate  #   state   act   newstate
+#   __0     1     __1       #   _10     3     _09
+#   __1     1     __2       #   __1     3     __0
+#   __2     1     __3       #   __2     3     __1
+#   __3     1     __4       #   __3     3     __2
+#   __4     1     __5       #   __4     3     __3
+#   __5     1     __6       #   __5     3     __4
+#   __6     1     __7       #   __6     3     __5
+#   __7     1     __8       #   __7     3     __6
+#   __8     1     __9       #   __8     3     __7
+#   _09     1     _10       #   __9     3     __8
+#   ...     ...   ...
+#
+
+proc ::sleep::find::always {args} {
+  ::sleep::find::always::clear
+  set actions [::sleep::help::getListOfActionsInMain]
+  ::sleep::find::always::discover $actions
+  return "sleep always finished"
+}
+
+
+proc ::sleep::find::always::clear {} {
+  ::repo::delete::rowsTableColumnValue rules type "general always"
+  ::repo::delete::rowsTableColumnValue rules type "special always"
+}
+
+
+proc ::sleep::find::always::discover actions {
+  foreach action $actions {
+
+    set inputs  [::repo::get::tableColumnsWhere main input  [list action $action]]
+    set results [::repo::get::tableColumnsWhere main result [list action $action]]
+
+    set dictionary ""
+    foreach input $inputs result $results {
+      set n [string length $input]
+      set instr  ""
+      set restr  ""
+      for {set i 0} {$i < $n} {incr i} {
+        if {[string index $input $i] eq [string index $result $i]} {
+          set instr $instr\_
+          set restr $restr\_
+        } else {
+          set instr $instr[string index $input  $i]
+          set restr $restr[string index $result $i]
+        }
+      }
+      if {[dict exists $dictionary $instr] eq "0"} {
+        dict set dictionary $instr $restr
+      } elseif {[lsearch [dict get $dictionary $instr] $restr] eq "-1"} {
+        dict lappend dictionary $instr $restr
+      }
+    }
+    foreach key [dict keys $dictionary] {
+      set value [dict get $dictionary $key]
+      if {[llength $value] == 1} {
+        ::repo::insert rules [list rule [list $key $action $value] type "general always"]
+      } elseif {[llength $value] > 1} {
+        foreach item $value {
+          ::repo::insert rules [list rule [list $key $action $item] type "special always"]
+        }
+      }
+    }
+  }
+}
 
 
 

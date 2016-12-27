@@ -70,7 +70,6 @@ proc ::decide::commanded::try msg {
   } elseif {$::decide::goal eq $::memorize::input} {
     ::decide::commanded::stop
   } else {
-    ::decide::commanded::stop
     return [::decide::commanded::find $msg]
   }
 }
@@ -140,20 +139,36 @@ proc ::decide::commanded::acts msg {
 
 proc ::decide::commanded::sleep msg {
   ::decide::commanded::stop
+  if {[::repo::get::randomSet] eq ""} {
+    return "nothing in database"
+  }
   set subcommand [::see::message $msg]
   if {$subcommand eq "acts"} {
     set ::decide::acts [::sleep::find::actions $::decide::acts]
   } elseif {$subcommand eq "opps"} {
-    set ::decide::acts [::sleep::find::opposites $::decide::acts]
+    return [::sleep::find::opposites $::decide::acts]
   } elseif {$subcommand eq "effects"} {
     return [::sleep::find::effects]
+  } elseif {$subcommand eq "always"} {
+    return [::sleep::find::always]
   } elseif {$subcommand eq "" } {
-    for {set i 0} {$i < 100} {incr i} {
-      lappend actions $i
-    }
-    if {$::decide::acts eq $actions} {
+    #for {set i 0} {$i < 100} {incr i} {
+    #  lappend actions $i
+    #}
+    #if {$::decide::acts eq $actions} {
+      puts "sleeping..."
+      puts "acts"
       set ::decide::acts [::sleep::find::actions $::decide::acts]
-    }
+      puts $::decide::acts
+      puts "opps"
+      puts [::sleep::find::opposites $::decide::acts]
+      puts "effects"
+      puts [::sleep::find::effects]
+      puts "always"
+      puts [::sleep::find::always]
+      puts "awake!"
+      return $::decide::acts
+    #}
   }
 }
 

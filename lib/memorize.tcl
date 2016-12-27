@@ -8,7 +8,8 @@ namespace eval ::memorize::record {}
 
 
 proc ::memorize::set::globals {} {
-  set ::memorize::learn   yes                 ;# if you want to stop learning for whatever reason set to no.
+  set ::memorize::learn   yes                 ;# for memorize
+  set ::memorize::encode  no                  ;# for encoding
   set ::memorize::loc     ""                  ;# current location or latest input
   set ::memorize::act     ""                  ;# last action
   set ::memorize::input   ""                  ;# new input
@@ -24,6 +25,16 @@ proc ::memorize::set::learn {msg} {
   }
 }
 
+
+proc ::memorize::set::encode {msg} {
+  if {$msg eq "on"} {
+    set ::memorize::encode   yes
+  } elseif {$msg eq "off"} {
+    set ::memorize::encode   no
+  } else {
+    set ::memorize::encode   $msg
+  }
+}
 
 ################################################################################################################################################################
 # Make Memory ##################################################################################################################################################

@@ -99,7 +99,7 @@ proc ::encode::set::activation {action} {
 ################################################################################
 
 proc ::encode::this {input} {
-  if {$::memorize::learn eq "no"} { return }
+  if {$::memorize::encode eq "no"} { return }
 
   set action $::encode::lastaction
 
