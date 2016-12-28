@@ -14,7 +14,6 @@ proc ::communicate::set::globals {} {
 
 proc ::communicate::set::up {} {
   ::communicate::set::globals
-
   set msg {}
   set sendmsg {}
   set introduction "from"
@@ -22,9 +21,7 @@ proc ::communicate::set::up {} {
   lappend introduction "to"
   lappend introduction "server"
   lappend introduction "message"
-  lappend introduction [list "up:" [::communicate::helpers::whoDoIHearFrom?] \
-                           "down:" [::communicate::helpers::whoDoITalkTo?  ] ]
-
+  lappend introduction [list "up:" [::communicate::helpers::whoDoIHearFrom?] "down:" [::communicate::helpers::whoDoITalkTo?]]
   puts $::communicate::chan $introduction
   flush $::communicate::chan
   puts "Server responded: [gets $::communicate::chan]"
@@ -77,24 +74,37 @@ proc ::communicate::debug {msg} {
 ################################################################################
 
 proc ::communicate::interact::always {} {
-  fconfigure $::communicate::chan -blocking 0 -buffering line -translation crlf
-  fileevent $::communicate::chan readable [list ::communicate::interact::listen]
-  vwait forever
-}
-
-proc ::communicate::interact::listen {} {
-  if {[gets $::communicate::chan line] >= 0} {
-    puts "IN  cmd: [::see::command $line]     msg: [::see::message $line]"
-    set sendmsg [::maestro::handle::interpret $line]
+  while {1} {
+    after $::communicate::debug::wait
+    set msg [::communicate::interact::get [gets $::communicate::chan]]
+    #puts "received: $msg"
+    puts "cmd-in: [::see::command $msg]     msg-in: [::see::message $msg]"
+    set sendmsg [::maestro::handle::interpret $msg]
     if {$sendmsg ne ""} { ::communicate::interact::send $sendmsg } \
     else {puts "no message to send."}
   }
 }
 
+proc ::communicate::interact::get {message} {
+  set x yes
+  set msg $message
+  while {$x} {
+    fconfigure $::communicate::chan -blocking 0
+    gets $::communicate::chan message
+    if {$message eq ""} {
+      set x no
+    } else {
+      lappend msg $message
+    }
+  }
+  fconfigure $::communicate::chan -blocking 1
+  return $msg
+}
+
+
 proc ::communicate::interact::send {message} {
   if {$message ne ""} {
-    after $::communicate::debug::wait
-    puts "OUT cmd: [::see::command [lindex $message 0]]     msg: [::see::message [lindex $message 0]]"
+    puts "cmdout: [::see::command [lindex $message 0]]     msgout: [::see::message [lindex $message 0]]"
     puts $::communicate::chan $message
     flush $::communicate::chan
   }

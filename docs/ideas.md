@@ -80,4 +80,157 @@ Thus I'm finding special patterns that have a particular effect. I compile those
 
 My mind knows a clear distinction between causally linked things. This seems to be a principle, not just a strategy. The system must keep track of how thing are effected, remember my unique design from back in the day? it was only paying attention to what changed, which lacked context, but I keep coming back to that idea. When I see a halfway solved cube I immediately see what moves have to be done, the particular set of moves gets triggered by the input of the current state of the cube since I've done it so many times.
 
-What I really want, bare minimum is for it to create a structure as it learns - slightly abstract. so that it can later say, oh, this new thing has the same structure as that, if not the same details. Then it should be able to act on that new thing nearly just as efficiently as the old thing. in order to do that it needs to be able to isolate 'things' away from their environments. It needs object oriented learning. 
+What I really want, bare minimum is for it to create a structure as it learns - slightly abstract. so that it can later say, oh, this new thing has the same structure as that, if not the same details. Then it should be able to act on that new thing nearly just as efficiently as the old thing. in order to do that it needs to be able to isolate 'things' away from their environments. It needs object oriented learning.
+
+
+10. HOW TO FIND CORRELATIONS NAIVELY
+
+So I've created three processes that analyze the data. 1. sleep opps - this finds which actions have the opposite effect. 2. sleep effects - this finds which indexes actions consistently change. 3. sleep always - this finds the ways in which the actions change the data. Combining two and three may allow us to generate predictions about underlying structure, and therefore predictions about things we've never seen before. But how? Lets work through it together.
+
+1 2 3 4	        available actions
+
+1 3 3 1 2 4 4 2	opposite actions
+
+1 2	            special effects
+1 {1 2}	        special effects
+1 {0 1 2}	      special effects
+2 1	            special effects
+2 {0 1}	        special effects
+3 2	            special effects
+3 {1 2}	        special effects
+4 1   	        special effects
+4 {0 1}	        special effects
+
+..0 1 ..1	      general always
+..1 1 ..2	      general always
+..2 1 ..3	      general always
+..3 1 ..4	      general always
+..4 1 ..5	      general always
+..5 1 ..6	      general always
+..6 1 ..7	      general always
+..7 1 ..8	      general always
+..8 1 ..9	      general always
+.49 1 .50	      general always
+.39 1 .40	      general always
+.19 1 .20	      general always
+.29 1 .30	      general always
+.59 1 .60	      general always
+.69 1 .70	      general always
+.89 1 .90	      general always
+.79 1 .80	      general always
+399 1 400	      general always
+.09 1 .10	      general always
+.0. 2 .1.	      general always
+.1. 2 .2.	      general always
+.2. 2 .3.	      general always
+.3. 2 .4.	      general always
+.4. 2 .5.	      general always
+.5. 2 .6.	      general always
+.6. 2 .7.	      general always
+.7. 2 .8.	      general always
+.8. 2 .9.	      general always
+09. 2 10.	      general always
+19. 2 20.	      general always
+29. 2 30.	      general always
+39. 2 40.	      general always
+..1 3 ..0	      general always
+..2 3 ..1	      general always
+..3 3 ..2	      general always
+..4 3 ..3	      general always
+..5 3 ..4	      general always
+.50 3 .49	      general always
+.30 3 .29	      general always
+.20 3 .19	      general always
+..8 3 ..7	      general always
+..7 3 ..6	      general always
+..6 3 ..5	      general always
+..9 3 ..8	      general always
+.40 3 .39	      general always
+.70 3 .69	      general always
+.80 3 .79	      general always
+.90 3 .89	      general always
+.10 3 .09	      general always
+.60 3 .59	      general always
+.1. 4 .0.	      general always
+.7. 4 .6.	      general always
+.6. 4 .5.	      general always
+.8. 4 .7.	      general always
+.2. 4 .1.	      general always
+.4. 4 .3.	      general always
+.5. 4 .4.	      general always
+.3. 4 .2.	      general always
+10. 4 09.	      general always
+.9. 4 .8.	      general always
+20. 4 19.	      general always
+30. 4 29.	      general always
+40. 4 39.	      general always
+
+So I've never been over like 500 in this example. So if I wanted to get from 000 to 999 how would I do it? there maybe one more meta analysis I need to do - to see if there are any patterns in this data I can leverage like 0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 9. That might help but for now we'll assume this pattern has not been explicitly recognized.
+
+So what I may do is this. first look at the effects and see what ones have to change. all of them. So now pull out everything in the always rules that has a matching thing in the last digit, and then the middle digit then the first digit in the result.
+
+one's place match:
+..8 1 ..9	      general always
+.50 3 .49	      general always
+.30 3 .29	      general always
+.20 3 .19	      general always
+.40 3 .39	      general always
+.70 3 .69	      general always
+.80 3 .79	      general always
+.90 3 .89	      general always
+.10 3 .09	      general always
+.60 3 .59	      general always
+tens place match:
+.8. 2 .9.	      general always
+.89 1 .90	      general always
+10. 4 09.	      general always
+20. 4 19.	      general always
+30. 4 29.	      general always
+40. 4 39.	      general always
+first place match:
+(none)
+
+Probably the best place to start are the ones that require the least amount of other changes. So ..8 1 ..9 and .8. 2 .9. Put these together and you get .88 2 1 .99. Now ideally we could do the same to find out how to get there.
+
+one's place:
+..7 1 ..8	      general always
+..9 3 ..8	      general always
+ten's place:
+.7. 2 .8.	      general always
+.79 1 .80	      general always
+.9. 4 .8.	      general always
+.90 3 .89	      general always
+..7 1 ..8 + .7. 2 .8. = .77 1 2 .88
+
+repeat...
+..6 1 ..7	      general always
+.6. 2 .7.	      general always
+.66 1 2 .77
+
+..5 1 ..6	      general always
+.5. 2 .6.	      general always
+.55 1 2 .66
+
+..4 1 ..5	      general always
+.4. 2 .5.	      general always
+.44 1 2 .55
+
+..3 1 ..4	      general always
+.3. 2 .4.	      general always
+.33 1 2 .44
+
+..2 1 ..3	      general always
+.2. 2 .3.	      general always
+.22 1 2 .33
+
+..1 1 ..2	      general always
+.1. 2 .2.	      general always
+.11 1 2 .22
+
+..0 1 ..1	      general always
+.0. 2 .1.	      general always
+.00 1 2 .11
+
+ok so now we know how to get from .00 to .99 by using these actions: 1 2 1 2 1 2 1 2 1 2 1 2 1 2 1 2 1 2. not the most efficient path. we could get there by 2 2 2 2 2 2 2 2 2 2 3 much faster. Now, this is a process I could have done without all these sleep analysis modules. mmm. in order to make this useful we need to do a meta analysis on all these general rules. but would that kind of analysis even be useful on an environment that doesn't follow the same patterns on large and small scales? maybe its a fools errand.  
+
+Well lets see. If I want to get somewhere I've never seen before like in this example without any post analysis, that is just the raw data in main what would I do? Well for each index I'd get a list of everything that lead to ..9 for instance. and .9. and .99 and 9.. and 99. and 9.9 and 999 (which isn't in the db). I'd want to figure out what kinds of things lead to these kinds of representations. 

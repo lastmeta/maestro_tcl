@@ -48,12 +48,12 @@ proc ::user::say input {
     ::user::helpers::displayHelpForSleep
   } elseif {$input eq "from user to server command help message learn"   } {
     ::user::helpers::displayHelpForLearn
-  } elseif {$input eq "from user to server command help message encode"   } {
+  } elseif {$input eq "from user to server command help message encode"  } {
     ::user::helpers::displayHelpForEncode
   } elseif {$input eq "from user to server command help message acts"    } {
     ::user::helpers::displayHelpForActs
-  } elseif {$input eq "from user to server command help message encode"  } {
-    ::user::helpers::displayHelpForEncode
+  } elseif {$input eq "from user to server command help message params"  } {
+    ::user::helpers::displayHelpForParams
   } elseif {$input eq "from user to server command help message debug"   } {
     ::user::helpers::displayHelpForDebug
   } elseif {$input eq "from user to server command help message clear"   } {
@@ -138,9 +138,9 @@ proc ::user::helpers::displayHelpForHelp {} {
 }
 
 
-proc ::user::helpers::displayHelpForEncode {} { ;# isn't used right now
+proc ::user::helpers::displayHelpForParams {} { ;# isn't used right now
   puts ""
-  puts "################################## help encode ################################"
+  puts "################################## help params ################################"
   puts ""
   puts "limit INT    sets the limit of learning; lower is faster; 1 - 10"
   puts "cells INT    sets the number of cells per node; 1 - 10"
