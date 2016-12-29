@@ -100,7 +100,7 @@ So I've created three processes that analyze the data. 1. sleep opps - this find
 3 {1 2}	        special effects
 4 1   	        special effects
 4 {0 1}	        special effects
-
+(REORDERED FOR SIMPLICITY)
 ..0 1 ..1	      general always
 ..1 1 ..2	      general always
 ..2 1 ..3	      general always
@@ -110,16 +110,16 @@ So I've created three processes that analyze the data. 1. sleep opps - this find
 ..6 1 ..7	      general always
 ..7 1 ..8	      general always
 ..8 1 ..9	      general always
-.49 1 .50	      general always
-.39 1 .40	      general always
+.09 1 .10	      general always
 .19 1 .20	      general always
 .29 1 .30	      general always
+.39 1 .40	      general always
+.49 1 .50	      general always
 .59 1 .60	      general always
 .69 1 .70	      general always
-.89 1 .90	      general always
 .79 1 .80	      general always
+.89 1 .90	      general always
 399 1 400	      general always
-.09 1 .10	      general always
 .0. 2 .1.	      general always
 .1. 2 .2.	      general always
 .2. 2 .3.	      general always
@@ -138,29 +138,29 @@ So I've created three processes that analyze the data. 1. sleep opps - this find
 ..3 3 ..2	      general always
 ..4 3 ..3	      general always
 ..5 3 ..4	      general always
-.50 3 .49	      general always
-.30 3 .29	      general always
-.20 3 .19	      general always
-..8 3 ..7	      general always
-..7 3 ..6	      general always
 ..6 3 ..5	      general always
+..7 3 ..6	      general always
+..8 3 ..7	      general always
 ..9 3 ..8	      general always
+.10 3 .09	      general always
+.20 3 .19	      general always
+.30 3 .29	      general always
 .40 3 .39	      general always
+.50 3 .49	      general always
+.60 3 .59	      general always
 .70 3 .69	      general always
 .80 3 .79	      general always
 .90 3 .89	      general always
-.10 3 .09	      general always
-.60 3 .59	      general always
 .1. 4 .0.	      general always
-.7. 4 .6.	      general always
-.6. 4 .5.	      general always
-.8. 4 .7.	      general always
 .2. 4 .1.	      general always
+.3. 4 .2.	      general always
 .4. 4 .3.	      general always
 .5. 4 .4.	      general always
-.3. 4 .2.	      general always
-10. 4 09.	      general always
+.6. 4 .5.	      general always
+.7. 4 .6.	      general always
+.8. 4 .7.	      general always
 .9. 4 .8.	      general always
+10. 4 09.	      general always
 20. 4 19.	      general always
 30. 4 29.	      general always
 40. 4 39.	      general always
@@ -233,4 +233,52 @@ repeat...
 
 ok so now we know how to get from .00 to .99 by using these actions: 1 2 1 2 1 2 1 2 1 2 1 2 1 2 1 2 1 2. not the most efficient path. we could get there by 2 2 2 2 2 2 2 2 2 2 3 much faster. Now, this is a process I could have done without all these sleep analysis modules. mmm. in order to make this useful we need to do a meta analysis on all these general rules. but would that kind of analysis even be useful on an environment that doesn't follow the same patterns on large and small scales? maybe its a fools errand.  
 
-Well lets see. If I want to get somewhere I've never seen before like in this example without any post analysis, that is just the raw data in main what would I do? Well for each index I'd get a list of everything that lead to ..9 for instance. and .9. and .99 and 9.. and 99. and 9.9 and 999 (which isn't in the db). I'd want to figure out what kinds of things lead to these kinds of representations. 
+Well lets see. If I want to get somewhere I've never seen before like in this example without any post analysis, that is just the raw data in main what would I do? Well for each index I'd get a list of everything that lead to ..9 for instance. and .9. and .99 and 9.. and 99. and 9.9 and 999 (which isn't in the db). I'd want to figure out what kinds of things lead to these kinds of representations.
+
+So we need to know what is similar amongst all the representations that lead to the instances above. Then since we don't have a way to get from 0.. to 9.. we also need to know how X.. changes. What action do I have to take and what does the rest of the representation have to look like to get it to change? this is an easy question to answer for the number line example. the tens place will be most important and consistently either 9 or 0 for the input to change the hundred's place. So it'll be easy to make that discovery. But this wouldn't necessarily work on complex systems where it could changed based on anything. Anyway I think its worth a try. This approach only works with exact matches - in other words what is the same across all examples (like always).
+
+3 questions: how do I change this index at all? How do I change this index to the right value? how do I change this index to the right value while changing others
+to the right value (or at least not affecting them at all)?
+
+Put in order from shortest fastest path to longest:
+  • how do I change all indexes to the right value (is there already an existing chain)? <--- this is the question I already ask.
+    • If the answer not found in the database (or not found in a timely manner (later we'll find ways to make this fast by producing maps or something so we don't have to search the whole database)) then we ask a different series of questions:
+      • (1) which one of these indexes is most important to getting to the goal?
+        • If I can order the indexes I can start with the most important one, such as changing the 100's place rather than the 1's, But if they can't be ordered or their importance cannot be determined then I simply move onto these next question and ask it for each index:
+          • how do I change this index to the correct value? I look in the database for all instances where that index is the correct value.
+          • I also need to ask: how do I get to that index while getting the other indexes closest to their required values?
+            • (2) This question makes me ask the question: what is the closest value to the one I want to approximate?
+      • And if I can't find a path to fix multiple at once perhaps I can find a path that fixes this one/multiple indexes while putting the rest back where they started - that's a good heuristic for working with many interconnected environments (which is how you can model any environment because each index could be seen as a separate environment) because it works on the rubik's cube.
+
+Ok, so following this line of questioning I need to know certain things:
+  1. (WHAT) On an individual, and collective scale what if any is the **closest representation to the goal?** Now, if this is contextual you wont be able to find an answer things are closer to other things based on the state of the rest of the environment then you're screwed. All you can do at that point is go with the statistically best answer which may be misleading in your particular context, if that turns out to be the case after trial and error, you'll have to not care about whats closest at all for now. for example: 000 -> 123.
+    individually:
+      0.. -> 1.. well 0 or 2 are the closest values to 1
+      .0. -> .2. well 1 or 3 are the closest values to 2
+      ..0 -> ..3 well 2 or 4 are the closest values to 3
+    collectively:
+      00. -> 12. well 11. or 13. are the closest values to 12
+      0.0 -> 1.3 well 1.4 or 1.2 are the closest values to 1.3
+      .00 -> .23 well .22 or .24 are the closest values to .23
+    entirely:
+      000 -> 123 well 122 or 124 are the closest values to 123 (hopefully this can be derived from sleep always data. if not it can be derived from main table, which may be full of holes).
+  2. (WHAT) On an individual, and collective scale what if any most **important representation (index or collection of indexes) to get right?** for example: 000 -> 123 the 0.. (100's place) is most important. it gets you most of the way to your overall goal. How do we "weight" that index as being most important in the context of a numberline? What about in an environment where the most important index (or set of indexes) change based on context?
+    One way to figure this out is to look at all the instances in the database for each index and run some magical analysis on those. I say magical because I don't know what it would entail, perhaps something like counting up how many times it shows up or how many different ways there are to get to that particular index value etc.
+META SIDE NOTE: so far with 1 and 2 we're not looking so good. the conclusion is mostly, I don't know how to accomplish either of these naively let alone in an intelligent way. The hope is that these things naturally happen in the right neural net design or HTM or something.
+  3. (HOW) How do I change all indexes to the right value (is there already an existing chain)? The way I answer this question right now is simple path finding through a state space. It's brute force, which requires maestro to have explored the environment completely to work correctly. that means maestro has not only seen every state of the system but has also seen every (or imagined (sleep opps)) every state to state transition.   
+    Well that's not sustainable so we should re-write this to also take advantage of the sleep data to find what it thinks is a good path to the goal without looking through every state (it could verify if it must, but theoretically it wouldn't have to if sleep data is current). This kind of thing would work on environments that are uniform like a number line or a rubik's cube. but environments that are not a symmetrical, repeating structure, this might not work, well that is to say sleep may not encode enough data or the rules may be too complex for sleep to finish it's analysis in a timely manner. but we're not going to worry about that for this question. Here we're just concerned about how to use the data if its there to produce the same results we would produce if we were using the main table as we are accustomed to doing.
+      It would still be a form of path finding through a state space but it would also include some computation to unpack or interpret the rules into specifics. and it wouldn't simply add up the actions but may need to multiply them too. I guess this is the question I was trying to answer above. 
+
+a few more thoughts on this. is it possible to do it like this: we want something that could be done generally and recursively so its a simple process.
+090 -> 999
+so in this example
+
+1 2	            special effects
+1 {1 2}	        special effects
+1 {0 1 2}	      special effects
+2 1	            special effects
+2 {0 1}	        special effects
+3 2	            special effects
+3 {1 2}	        special effects
+4 1   	        special effects
+4 {0 1}	        special effects
