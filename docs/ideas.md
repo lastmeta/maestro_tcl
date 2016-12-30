@@ -241,17 +241,17 @@ So we need to know what is similar amongst all the representations that lead to 
 to the right value (or at least not affecting them at all)?
 
 Put in order from shortest fastest path to longest:
-  • how do I change all indexes to the right value (is there already an existing chain)? <--- this is the question I already ask.
+  • (3) how do I change all indexes to the right value (is there already an existing chain)? <--- this is the question I already ask.
     • If the answer not found in the database (or not found in a timely manner (later we'll find ways to make this fast by producing maps or something so we don't have to search the whole database)) then we ask a different series of questions:
       • (1) which one of these indexes is most important to getting to the goal?
         • If I can order the indexes I can start with the most important one, such as changing the 100's place rather than the 1's, But if they can't be ordered or their importance cannot be determined then I simply move onto these next question and ask it for each index:
-          • how do I change this index to the correct value? I look in the database for all instances where that index is the correct value.
-          • I also need to ask: how do I get to that index while getting the other indexes closest to their required values?
+          • () how do I change this index to the correct value? I look in the database for all instances where that index is the correct value.
+          • () I also need to ask: how do I get to that index while getting the other indexes closest to their required values?
             • (2) This question makes me ask the question: what is the closest value to the one I want to approximate?
       • And if I can't find a path to fix multiple at once perhaps I can find a path that fixes this one/multiple indexes while putting the rest back where they started - that's a good heuristic for working with many interconnected environments (which is how you can model any environment because each index could be seen as a separate environment) because it works on the rubik's cube.
 
 Ok, so following this line of questioning I need to know certain things:
-  1. (WHAT) On an individual, and collective scale what if any is the **closest representation to the goal?** Now, if this is contextual you wont be able to find an answer things are closer to other things based on the state of the rest of the environment then you're screwed. All you can do at that point is go with the statistically best answer which may be misleading in your particular context, if that turns out to be the case after trial and error, you'll have to not care about whats closest at all for now. for example: 000 -> 123.
+  1. (WHAT) On an individual, and collective scale what if any is the **closest representation to the goal?** Now, if this is contextual you wont be able to find an answer things are closer to other things based on the state of the rest of the environment then you're screwed. All you can do at that point is go with the statistically best answer which may be misleading in your particular context, if that turns out to be the case after trial and error, you'll have to not care about whats closest at all for now. But if you're lucky you can use sleep for example: 000 -> 123.
     individually:
       0.. -> 1.. well 0 or 2 are the closest values to 1
       .0. -> .2. well 1 or 3 are the closest values to 2
@@ -267,18 +267,18 @@ Ok, so following this line of questioning I need to know certain things:
 META SIDE NOTE: so far with 1 and 2 we're not looking so good. the conclusion is mostly, I don't know how to accomplish either of these naively let alone in an intelligent way. The hope is that these things naturally happen in the right neural net design or HTM or something.
   3. (HOW) How do I change all indexes to the right value (is there already an existing chain)? The way I answer this question right now is simple path finding through a state space. It's brute force, which requires maestro to have explored the environment completely to work correctly. that means maestro has not only seen every state of the system but has also seen every (or imagined (sleep opps)) every state to state transition.   
     Well that's not sustainable so we should re-write this to also take advantage of the sleep data to find what it thinks is a good path to the goal without looking through every state (it could verify if it must, but theoretically it wouldn't have to if sleep data is current). This kind of thing would work on environments that are uniform like a number line or a rubik's cube. but environments that are not a symmetrical, repeating structure, this might not work, well that is to say sleep may not encode enough data or the rules may be too complex for sleep to finish it's analysis in a timely manner. but we're not going to worry about that for this question. Here we're just concerned about how to use the data if its there to produce the same results we would produce if we were using the main table as we are accustomed to doing.
-      It would still be a form of path finding through a state space but it would also include some computation to unpack or interpret the rules into specifics. and it wouldn't simply add up the actions but may need to multiply them too. I guess this is the question I was trying to answer above. 
+      It would still be a form of path finding through a state space but it would also include some computation to unpack or interpret the rules into specifics. and it wouldn't simply add up the actions but may need to multiply them too. I guess this is the question I was trying to answer above.
+        I have made a drawing describing this, but I'm not sure if I can write it out yet with words. so I'll try to include that diagram in the docs folder:
+        ![Path Finding](/imgs/rule_path_finding.jpg "rule path findng")
+        basically its path finding on the simplest (most underscores) first, then second most etc. etc. Each time you find a step (a single step, not a full path) you jump down to looking for the simplest again, then work your way up.
 
-a few more thoughts on this. is it possible to do it like this: we want something that could be done generally and recursively so its a simple process.
-090 -> 999
-so in this example
 
-1 2	            special effects
-1 {1 2}	        special effects
-1 {0 1 2}	      special effects
-2 1	            special effects
-2 {0 1}	        special effects
-3 2	            special effects
-3 {1 2}	        special effects
-4 1   	        special effects
-4 {0 1}	        special effects
+11. CONSTRAINTS ON THE SYSTEM CONSIDERING RULE BASED SYSTEM IN 10.
+
+So, considering the above possible solutions we have realized something. We need a new constraint in addition two our two that we already have.
+
+1. Make the environment 'static' or 'deterministic.'
+
+2. Make the environment 'fully observable.'
+
+3. Make the environment 'uniform.' - meaning since we can only condense the data into rules if the rules are always observed we need the environment to be a uniform structure - repeating substructures like a numberline or at least uniform (even if more highly complex) like a rubik's cube - symmetrical. um... Real environments aren't like this but they could possibly be broken down into these kinds of sub environments (contexts). Our brains do an amazing thing by being able to transfer contexts from one framework to another. which would probably, eventually be very useful but until then maybe we can make a pool/stack/hierarchy of maestro bots to all only care about one type of context and route it accordingly. that'd be cool, but that's down the line if we can even get this micro version working.

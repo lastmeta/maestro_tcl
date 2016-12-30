@@ -25,7 +25,7 @@ In the broadest possible terms, we need to start "generalizing;" which, incident
 
 Now, HTM is hot on the trail of solving this problem in biologically inspired ways. And a fully implemented HTM will be able to "generalize" in many if not all the same ways the human brain can "generalize." An audacious goal indeed, but a possible one. Our ultra simplified version of a sensorimotor engine need not be so capable. The aim for the ultra simplified version is to discover and achieve the bare-minimum requirements for a sensorimotor engine to be useful in anyway above the naïve approach expressed above.
 
-The first goal in designing such a system would be to format and simplify the data as much as possible before this agent even gets it. This will place some heavy constraints on the system, but may not make it entirely useless. I've come up with three constraints that may help:
+The first goal in designing such a system would be to format and simplify the data as much as possible before this agent even receives it. This will place some heavy constraints on the system, but may not make it entirely useless. I've come up with three constraints that may help:
 
 1. Make the environment static - that is to say, deterministic. No other actors can be in the environment mucking about unless they too are fully represented in the environment state as being part of the agent's environment. Bottom line: if the agent does an action at a certain state and gets a new state, that behavior must be duplicable to make prediction easy. This also means nothing changes if our agent doesn't act.
 
