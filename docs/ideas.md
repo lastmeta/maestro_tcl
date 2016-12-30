@@ -237,8 +237,7 @@ Well lets see. If I want to get somewhere I've never seen before like in this ex
 
 So we need to know what is similar amongst all the representations that lead to the instances above. Then since we don't have a way to get from 0.. to 9.. we also need to know how X.. changes. What action do I have to take and what does the rest of the representation have to look like to get it to change? this is an easy question to answer for the number line example. the tens place will be most important and consistently either 9 or 0 for the input to change the hundred's place. So it'll be easy to make that discovery. But this wouldn't necessarily work on complex systems where it could changed based on anything. Anyway I think its worth a try. This approach only works with exact matches - in other words what is the same across all examples (like always).
 
-3 questions: how do I change this index at all? How do I change this index to the right value? how do I change this index to the right value while changing others
-to the right value (or at least not affecting them at all)?
+3 questions: how do I change this index at all? How do I change this index to the right value? how do I change this index to the right value while changing others to the right value (or at least not affecting them at all)?
 
 Put in order from shortest fastest path to longest:
   • (3) how do I change all indexes to the right value (is there already an existing chain)? <--- this is the question I already ask.
@@ -248,7 +247,7 @@ Put in order from shortest fastest path to longest:
           • () how do I change this index to the correct value? I look in the database for all instances where that index is the correct value.
           • () I also need to ask: how do I get to that index while getting the other indexes closest to their required values?
             • (2) This question makes me ask the question: what is the closest value to the one I want to approximate?
-      • And if I can't find a path to fix multiple at once perhaps I can find a path that fixes this one/multiple indexes while putting the rest back where they started - that's a good heuristic for working with many interconnected environments (which is how you can model any environment because each index could be seen as a separate environment) because it works on the rubik's cube.
+      • (4) And if I can't find a path to fix multiple at once perhaps I can find a path that fixes this one/multiple indexes while putting the rest back where they started - that's a good heuristic for working with many interconnected environments (which is how you can model any environment because each index could be seen as a separate environment) because it works on the rubik's cube.
 
 Ok, so following this line of questioning I need to know certain things:
   1. (WHAT) On an individual, and collective scale what if any is the **closest representation to the goal?** Now, if this is contextual you wont be able to find an answer things are closer to other things based on the state of the rest of the environment then you're screwed. All you can do at that point is go with the statistically best answer which may be misleading in your particular context, if that turns out to be the case after trial and error, you'll have to not care about whats closest at all for now. But if you're lucky you can use sleep for example: 000 -> 123.
@@ -264,13 +263,36 @@ Ok, so following this line of questioning I need to know certain things:
       000 -> 123 well 122 or 124 are the closest values to 123 (hopefully this can be derived from sleep always data. if not it can be derived from main table, which may be full of holes).
   2. (WHAT) On an individual, and collective scale what if any most **important representation (index or collection of indexes) to get right?** for example: 000 -> 123 the 0.. (100's place) is most important. it gets you most of the way to your overall goal. How do we "weight" that index as being most important in the context of a numberline? What about in an environment where the most important index (or set of indexes) change based on context?
     One way to figure this out is to look at all the instances in the database for each index and run some magical analysis on those. I say magical because I don't know what it would entail, perhaps something like counting up how many times it shows up or how many different ways there are to get to that particular index value etc.
-META SIDE NOTE: so far with 1 and 2 we're not looking so good. the conclusion is mostly, I don't know how to accomplish either of these naively let alone in an intelligent way. The hope is that these things naturally happen in the right neural net design or HTM or something.
+  0. META SIDE NOTE: so far with 1 and 2 we're not looking so good. the conclusion is mostly, I don't know how to accomplish either of these naively let alone in an intelligent way. The hope is that these things naturally happen in the right neural net design or HTM or something.
   3. (HOW) How do I change all indexes to the right value (is there already an existing chain)? The way I answer this question right now is simple path finding through a state space. It's brute force, which requires maestro to have explored the environment completely to work correctly. that means maestro has not only seen every state of the system but has also seen every (or imagined (sleep opps)) every state to state transition.   
     Well that's not sustainable so we should re-write this to also take advantage of the sleep data to find what it thinks is a good path to the goal without looking through every state (it could verify if it must, but theoretically it wouldn't have to if sleep data is current). This kind of thing would work on environments that are uniform like a number line or a rubik's cube. but environments that are not a symmetrical, repeating structure, this might not work, well that is to say sleep may not encode enough data or the rules may be too complex for sleep to finish it's analysis in a timely manner. but we're not going to worry about that for this question. Here we're just concerned about how to use the data if its there to produce the same results we would produce if we were using the main table as we are accustomed to doing.
       It would still be a form of path finding through a state space but it would also include some computation to unpack or interpret the rules into specifics. and it wouldn't simply add up the actions but may need to multiply them too. I guess this is the question I was trying to answer above.
         I have made a drawing describing this, but I'm not sure if I can write it out yet with words. so I'll try to include that diagram in the docs folder:
         ![Path Finding](/imgs/rule_path_finding.jpg "rule path findng")
         basically its path finding on the simplest (most underscores) first, then second most etc. etc. Each time you find a step (a single step, not a full path) you jump down to looking for the simplest again, then work your way up.
+          Lets go through it in detail: env = 00 -> 01 -> 02 -> 10 -> 11 -> 12 -> 20 -> 21 -> 22 -> 00 actions = A
+            entire rules table:             old way of path-find:
+            A         available actions     00 A 01 A 02 A 10 A 11 A 12 A 20 A 21 A 22
+            A 1	      special effects       ---|----|----|----|-><-|----|----|----|---      
+            A {0 1}	  special effects       search from start to finish, and from
+            .0 A .1	  general always        finish to start. then once you find a
+            .1 A .2	  general always        matching representation take each path
+            02 A 10	  general always        to the middle represention and make a list
+            12 A 20	  general always        of actions. This path is eight A's.
+            22 A 00	  general always
+
+            new way of path finding with rules table:
+            find all matching inputs / result respective if we're going forward or backward. keep them in a list just as we do with general path finding. but be sure to substitute for everything that's not exact. Then path-find like above on that data:
+            from start to finish:   from finish to start:
+            .0 (00)   A   .1 (01)   .1 (21)   A   .2 (22)   general (substitution)
+            .1 (01)   A   .2 (02)   .0 (20)   A   .1 (21)   general (substitution)
+            02 (02)   A   10 (10)   12 (12)   A   20 (20)   specific (no substitution)
+            .0 (10)   A   .1 (11)   .1 (11)   A   .2 (12)   MATCH!
+            now, again we end up with 8 A's.
+
+  4. (HOW) How do I come up with a plan for changing one at a time while leaving the rest alone? I need to create a macro plan, that is, this plan has essentially 3 parts, first find behaviors that produce some indexes to be the correct index, directly, not taking into account what happens to the other indexes. perhaps do this with as many as you can without messing things up. Then you need to start looking at larger chains of actions. chains where you fix the most amount of indexes while, during the process, putting most of not all of the original ones you fixed back into place, so on and so forth until the entire thing is fixed.
+    Now, during this process of discovery we're going to want to record chains and see if those behaviors work from any other angles. for instance if one action is the opposite of another action, and we do a combination of the two, does the reverse behaviors produce the reverse result? etc. Perhaps the rules we've created above will discover to the agent all the possible things he can do, but I am unsure.
+      probably the best thing to do is to make an environment that is pretty simple and test it.
 
 
 11. CONSTRAINTS ON THE SYSTEM CONSIDERING RULE BASED SYSTEM IN 10.
