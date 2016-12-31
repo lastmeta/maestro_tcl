@@ -71,10 +71,12 @@ namespace eval ::prepdata {
   # returns:  abc ab_ a_c a__ _bc _b_ __c
   #
   proc combinations input {
+    puts "Input$input"
     set input [split $input ""]
     set x 0
     set goodlist ""
-    while {$x <= [expr 2*([llength $input]+1)-1]} {
+    set len [llength $input]
+    while {$x <= [expr 2**$len]} {
       set bin [::prepdata::helpers::addLeadingZeros [::prepdata::helpers::decimalToBin $x] $input]
       set n 0
       foreach a $input b [split $bin ""] {
@@ -87,6 +89,10 @@ namespace eval ::prepdata {
       set goodlist "$goodlist "
       incr x
     }
+    #remove duplicates:
+    set goodlist [lsort -unique $goodlist]
+    #remove all blanks - not necessary
+
     return [lrange [::prepdata::helpers::reorder [string trim $goodlist]] 0 [expr [llength $goodlist] - 2]]
   }
 

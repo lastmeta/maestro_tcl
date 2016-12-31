@@ -148,9 +148,13 @@ proc ::decide::commanded::sleep msg {
   } elseif {$subcommand eq "opps"} {
     return [::sleep::find::opposites $::decide::acts]
   } elseif {$subcommand eq "effects"} {
-    return [::sleep::find::effects]
+    return [::sleep::find::effects no]
   } elseif {$subcommand eq "always"} {
-    return [::sleep::find::always]
+    return [::sleep::find::always no]
+  } elseif {$subcommand eq "effects predict"} {
+    return [::sleep::find::effects yes]
+  } elseif {$subcommand eq "always predict"} {
+    return [::sleep::find::always yes]
   } elseif {$subcommand eq "" } {
     #for {set i 0} {$i < 100} {incr i} {
     #  lappend actions $i
@@ -158,14 +162,14 @@ proc ::decide::commanded::sleep msg {
     #if {$::decide::acts eq $actions} {
       puts "sleeping..."
       puts "acts"
-      set ::decide::acts [::sleep::find::actions $::decide::acts]
+      ::decide::commanded::sleep acts
       puts $::decide::acts
       puts "opps"
-      puts [::sleep::find::opposites $::decide::acts]
+      ::decide::commanded::sleep opps
       puts "effects"
-      puts [::sleep::find::effects]
+      ::decide::commanded::sleep effects
       puts "always"
-      puts [::sleep::find::always]
+      ::decide::commanded::sleep always
       puts "awake!"
       return $::decide::acts
     #}

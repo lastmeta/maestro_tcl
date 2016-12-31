@@ -40,6 +40,12 @@ proc ::repo::create {id {datas ""} } {
 																											rule char,
 	                                                    type char,
 																											mainids char) }
+	brain eval { create table if not exists generals(
+																											input char,
+																											action char,
+																											result char,
+	                                                    type char,
+																											mainids char) }
 	brain eval { create table if not exists predictions(
 																											input char,
 	                                                    action char,
@@ -63,19 +69,19 @@ proc ::repo::create {id {datas ""} } {
 
 #data is a dictionary - column, data
 proc ::repo::insert {table datas} {
-	if [dict exists $datas action     ] { set action      [dict get $datas action     ]	}
-	if [dict exists $datas time				]	{ set time 				[dict get $datas time				] }
-	if [dict exists $datas type				]	{ set type 				[dict get $datas type				]	}
-	if [dict exists $datas data				] { set data 				[dict get $datas data				]	}
-	if [dict exists $datas input			]	{ set input 			[dict get $datas input			]	}
-	if [dict exists $datas result			]	{ set result 			[dict get $datas result			]	}
-	if [dict exists $datas rule				]	{ set rule 				[dict get $datas rule				]	}
-	if [dict exists $datas ruleid			]	{	set ruleid 			[dict get $datas ruleid			] }
-	if [dict exists $datas mainids		] {	set mainids 		[dict get $datas mainids		] }
-	if [dict exists $datas node				]	{	set node 				[dict get $datas node				] }
-	if [dict exists $datas ix					]	{	set ix 					[dict get $datas ix					] }
-	if [dict exists $datas cellid			]	{	set cellid 			[dict get $datas cellid			] }
-	if [dict exists $datas cell				]	{	set cell	 			[dict get $datas cell				] }
+	if [dict exists $datas time		]	{ set time 		[dict get $datas time		] }
+	if [dict exists $datas action ] { set action  [dict get $datas action ]	}
+	if [dict exists $datas type		]	{ set type 		[dict get $datas type		]	}
+	if [dict exists $datas data		] { set data 		[dict get $datas data		]	}
+	if [dict exists $datas input	]	{ set input 	[dict get $datas input	]	}
+	if [dict exists $datas result	]	{ set result	[dict get $datas result	]	}
+	if [dict exists $datas rule		]	{ set rule 		[dict get $datas rule		]	}
+	if [dict exists $datas ruleid	]	{	set ruleid 	[dict get $datas ruleid	] }
+	if [dict exists $datas mainids] {	set mainids	[dict get $datas mainids] }
+	if [dict exists $datas node		]	{	set node 		[dict get $datas node		] }
+	if [dict exists $datas ix			]	{	set ix 			[dict get $datas ix			] }
+	if [dict exists $datas cellid	]	{	set cellid	[dict get $datas cellid	] }
+	if [dict exists $datas cell		]	{	set cell		[dict get $datas cell		] }
 	switch $table {
 		setup				{ brain eval {INSERT INTO setup 			VALUES ($type,$data)} }
 		main 				{ brain eval {INSERT INTO main 				VALUES ($time,$input,$action,$result)} }
@@ -83,8 +89,9 @@ proc ::repo::insert {table datas} {
 		chains 			{ brain eval {INSERT INTO chains 			VALUES ($time,$input,$action,$result)} }
 		bad 				{ brain eval {INSERT INTO bad 				VALUES ($time,$input,$action,$result)} }
 		rules 			{ brain eval {INSERT INTO rules 			VALUES ($rule,$type,$mainids)} }
+		generals		{ brain eval {INSERT INTO generals		VALUES ($input,$action,$result,$type,$mainids)} }
 		predictions { brain eval {INSERT INTO predictions VALUES ($input,$action,$result,$ruleid)}	}
-		nodes 				{ brain eval {INSERT INTO nodes	 		VALUES ($node,$input,$ix,$type)} }
+		nodes 			{ brain eval {INSERT INTO nodes	 			VALUES ($node,$input,$ix,$type)} }
 		connectom		{ brain eval {INSERT INTO connectom 	VALUES ($node,$cellid,$cell)} }
 		default 		{ return "No data saved, please supply valid table name." }
 	}
@@ -176,6 +183,9 @@ proc ::repo::get::chainMatch {table mod thelist} {
 	foreach item $thelist {
 		if {$newlist ne ""} { set newlist "$newlist OR" }
 		set newlist "$newlist $mod='$item'"
+	}
+	if {$table eq "generals"} {
+		set newlist "$newlist AND type='general always' OR type='special always'"
 	}
 	return [brain eval "SELECT input,action,result FROM $table WHERE $newlist"]
 }

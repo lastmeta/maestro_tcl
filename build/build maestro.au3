@@ -76,8 +76,8 @@ Func startUser()
 	send("acts 1 2 3 4")
   sleep(50)
 	send("{ENTER}")
-	sleep(50)
-	send("explore")
+	;sleep(50)
+	;send("explore")
 EndFunc
 
 

@@ -183,10 +183,10 @@ proc ::sleep::find::opposites::extrapolateRule {opps id} {
 # than one index can be affected by this action, then it references each effect
 # and it's raw input.
 #
-proc ::sleep::find::effects {args} {
+proc ::sleep::find::effects {predict} {
   ::sleep::find::effects::clear
   set actions [::sleep::help::getListOfActionsInMain]
-  ::sleep::find::effects::discover $actions
+  ::sleep::find::effects::discover $actions $predict
   return "sleep effects finished"
 }
 
@@ -197,11 +197,18 @@ proc ::sleep::find::effects::clear {} {
 }
 
 
-proc ::sleep::find::effects::discover {actions} {
+proc ::sleep::find::effects::discover {actions predict} {
   foreach action $actions {
     set inputs  [::repo::get::tableColumnsWhere main input  [list action $action]]
     set results [::repo::get::tableColumnsWhere main result [list action $action]]
     set rowids  [::repo::get::tableColumnsWhere main rowid  [list action $action]]
+
+    if {$predict eq yes} {
+      lappend inputs  [::repo::get::tableColumnsWhere predictions input  [list action $action]]
+      lappend results [::repo::get::tableColumnsWhere predictions result [list action $action]]
+      lappend rowids  [::repo::get::tableColumnsWhere predictions rowid  [list action $action]]
+    }
+
     set dictionary ""
     foreach input $inputs result $results id $rowids {
       set n [string length $input]
@@ -220,7 +227,7 @@ proc ::sleep::find::effects::discover {actions} {
     if {[llength $dictionary] < 2 } {
       puts "something is wrong"
     } elseif {[llength $dictionary] == 2} { ;# if there is only one make a general rule
-      ::repo::insert rules [list rule [list $action [dict keys $dictionary]] type "general effects"]
+      ::repo::insert rules    [list rule [list $action [dict keys $dictionary]] type "general effects"]
     } else {
       # IDEAL:
       # if there are more than one...
@@ -267,25 +274,32 @@ proc ::sleep::find::effects::discover {actions} {
 #   ...     ...   ...
 #
 
-proc ::sleep::find::always {args} {
+proc ::sleep::find::always {predict} {
   ::sleep::find::always::clear
   set actions [::sleep::help::getListOfActionsInMain]
-  ::sleep::find::always::discover $actions
+  ::sleep::find::always::discover $actions $predict
   return "sleep always finished"
 }
 
 
 proc ::sleep::find::always::clear {} {
-  ::repo::delete::rowsTableColumnValue rules type "general always"
-  ::repo::delete::rowsTableColumnValue rules type "special always"
+  # ::repo::delete::rowsTableColumnValue rules  type "general always"
+  # ::repo::delete::rowsTableColumnValue rules  type "special always"
+  ::repo::delete::rowsTableColumnValue generals type "general always"
+  ::repo::delete::rowsTableColumnValue generals type "special always"
 }
 
 
-proc ::sleep::find::always::discover actions {
+proc ::sleep::find::always::discover {actions predict} {
   foreach action $actions {
 
     set inputs  [::repo::get::tableColumnsWhere main input  [list action $action]]
     set results [::repo::get::tableColumnsWhere main result [list action $action]]
+
+    if {$predict eq yes} {
+      lappend inputs  [::repo::get::tableColumnsWhere predictions input  [list action $action]]
+      lappend results [::repo::get::tableColumnsWhere predictions result [list action $action]]
+    }
 
     set dictionary ""
     foreach input $inputs result $results {
@@ -307,13 +321,16 @@ proc ::sleep::find::always::discover actions {
         dict lappend dictionary $instr $restr
       }
     }
+    puts $dictionary
     foreach key [dict keys $dictionary] {
       set value [dict get $dictionary $key]
       if {[llength $value] == 1} {
-        ::repo::insert rules [list rule [list $key $action $value] type "general always"]
+        # ::repo::insert rules  [list rule [list $key        $action        $value] type "general always"]
+        ::repo::insert generals [list input      $key action $action result $value  type "general always"]
       } elseif {[llength $value] > 1} {
         foreach item $value {
-          ::repo::insert rules [list rule [list $key $action $item] type "special always"]
+          # ::repo::insert rules  [list rule [list $key        $action        $item] type "special always"]
+          ::repo::insert generals [list input      $key action $action result $item  type "special always"]
         }
       }
     }

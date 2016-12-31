@@ -133,6 +133,171 @@ proc ::recall::getBestMatch {goal newresults} {
 }
 
 
+## getActionsPathOfRules input as word, goal as word
+#
+# Takes an input and a goal. Searches the rules table for matches in order to
+# find a path from the goal, back to the input, while at the same time it looks
+# for the goal starting at the input. As soon as it finds a place where the two
+# intersect (that is it finds a matching representation) it compiles the list of
+# actions that must be taken to get there. Finds the shortest possible path.
+# Returns the list of actions if one is found. If one is not found it finds the
+# input in the list that is closest to the input passed to it and returns that.
+#
+# example:  000 002
+# returns:  +1 +1
+#
+proc ::recall::getActionsPathWithPrediction {input goal} {
+  set actionslist ""
+  #initialize everything
+  set tiloc "" ;#temporary input location
+  set tiact ""
+  set tires ""
+
+  set tgloc ""
+  set tgact ""
+  set tgres ""
+
+  set iloc "" ;#large list input location
+  set iact ""
+  set ires ""
+
+  set gloc ""
+  set gact ""
+  set gres ""
+
+  set go $goal
+  set in $input
+  set temp ""
+  set match ""
+  set combos_input  [::prepdata::combinations $input]
+  set combos_goal   [::prepdata::combinations $goal]
+
+  while {($go ne "" || $in ne "") && $match eq ""} {
+    #get all the goals
+    set temp ""
+    if {$go ne ""} {
+      #foreach thing_in_go $go {
+      #  set combos_go [::prepdata::combinations $thing_in_go]
+        set combos_go [::prepdata::combinations $go]
+        puts "combos_go $combos_go"
+        set temp [::repo::get::chainMatch generals input $combos_go]
+        puts "gen_temp_go $temp"
+        after 1000
+      #}
+    }
+
+    set c 0
+    set tgloc ""
+    set tgact ""
+    set tgres ""
+    set go ""
+    foreach item $temp {
+      if {$c == 0} {
+        if {[lsearch [concat $gloc $tgloc] $item] == -1} {
+          lappend tgloc $item
+          lappend go $item
+        } else {
+          set c -3
+        }
+      } elseif {$c == 1} {
+        lappend tgact $item
+      } elseif {$c == 2} {
+        lappend tgres $item
+        set c -1
+      }
+      incr c
+    }
+
+    #fill the temporary inputs out.
+    set temp ""
+    if {$in ne ""} {
+      #foreach thing_in_in $in {
+      #  set combos_in [::prepdata::combinations $thing_in_in]
+        set combos_in [::prepdata::combinations $in]
+        puts "combos_in $combos_in"
+        set temp [::repo::get::chainMatch generals input $combos_in]
+        puts "gen_temp_in $temp"
+        after 1000
+      #}
+    }
+
+    set c 0
+    set tiloc ""
+    set tiact ""
+    set tires ""
+    set in ""
+    foreach item $temp {
+      if {$c == 0} {
+        lappend tiloc $item
+      } elseif {$c == 1} {
+        lappend tiact $item
+      } elseif {$c == 2} {
+        if {[lsearch [concat $ires $tires] $item] == -1} {
+          lappend tires $item
+          lappend in $item
+        } else {
+          set tiloc [lrange $tiloc 0 [expr [llength $tiloc]-2]]
+          set tiact [lrange $tiact 0 [expr [llength $tiact]-2]]
+        }
+        set c -1
+      }
+      incr c
+    }
+
+    #fill the long lists with what we found
+    set iloc [concat $iloc $tiloc]
+    set iact [concat $iact $tiact]
+    set ires [concat $ires $tires]
+
+    set gloc [concat $gloc $tgloc]
+    set gact [concat $gact $tgact]
+    set gres [concat $gres $tgres]
+
+    #check for match
+    puts "match finding: [concat $tires $input] || $gloc"
+    set match [::recall::helpers::findMatch [concat $tires $input] $gloc]
+    puts "match is: $match "
+    if {$match eq ""} { set match [::recall::helpers::findMatch $ires [concat $tgloc $goal]] }
+  }
+  puts "match_is: $match"
+
+  #compile actions
+  set actions ""
+  if {$match ne ""} {
+    set tempinput $match
+    while {$tempinput != $input && [lsearch $combos_input $tempinput] == -1} {
+      puts "tempinput $tempinput"
+      after 1000
+      set tiindex [lsearch $ires $tempinput]
+      set actions "[lindex $iact $tiindex] $actions"
+      set tempinput [lindex $iloc $tiindex]
+    }
+    set tempgoal $match
+    while {$tempgoal != $goal && [lsearch $combos_goal $tempgoal] == -1} {
+      set tgindex [lsearch $gloc $tempgoal]
+      lappend actions [lindex $gact $tgindex]
+      set tempgoal [lindex $gres $tgindex]
+    }
+  } else {
+    #If no match, return 3 thingss:
+    #first an idicator saying this is a suggestion
+    #second the action that matches the input the closest to our input.
+    #thridly, the list of inputs that the goal touches directly.
+    return [concat _ [lindex $ires [lsearch $ires [::recall::getBestMatch $goal $ires]]] $ires]
+  }
+  if {[llength $actions] > 1 && $input ne $goal} {
+    ::recall::record::newChain $input $goal $actions
+  }
+  return $actions
+}
+
+
+
+
+
+
+
+
 ## getActionsPathWithPrediction input as word, goal as word
 #
 # Takes an input and a goal. Searches two locations: the main and the prediction
@@ -146,7 +311,7 @@ proc ::recall::getBestMatch {goal newresults} {
 # example:  000 002
 # returns:  +1 +1
 #
-proc ::recall::getActionsPathWithPrediction {input goal} {
+proc ::recall::getActionsPathWithPrediction2 {input goal} {
   set actionslist ""
   #initialize everything
   set tiloc "" ;#temporary input location
