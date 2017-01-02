@@ -35,6 +35,11 @@ namespace eval ::sleep::help {}
 # actions that do anything. starting at 1 and ending at 999. limit usually < 20.
 #
 proc ::sleep::find::actions {args} {
+  # this should look at everthing that's in the list already of available actions
+  # then take that as a pool of actions. if the rule doesn't exist already it should
+  # just consider the pool to be all actions. then it should remove things from the poool
+  # based when it sees they have failed to produce results. that way it doesn't miss anything.
+  # that would be a subtractive rather than an addititve approach.
   return [::sleep::update::actions [::sleep::help::getListOfActionsInMain]]
 }
 

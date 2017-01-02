@@ -143,6 +143,8 @@ proc ::decide::commanded::sleep msg {
     return "nothing in database"
   }
   set subcommand [::see::message $msg]
+  if {$subcommand eq ""} { set subcommand $msg }
+
   if {$subcommand eq "acts"} {
     set ::decide::acts [::sleep::find::actions $::decide::acts]
   } elseif {$subcommand eq "opps"} {
@@ -155,24 +157,20 @@ proc ::decide::commanded::sleep msg {
     return [::sleep::find::effects yes]
   } elseif {$subcommand eq "always predict"} {
     return [::sleep::find::always yes]
-  } elseif {$subcommand eq "" } {
-    #for {set i 0} {$i < 100} {incr i} {
-    #  lappend actions $i
-    #}
-    #if {$::decide::acts eq $actions} {
-      puts "sleeping..."
-      puts "acts"
-      ::decide::commanded::sleep acts
-      puts $::decide::acts
-      puts "opps"
-      ::decide::commanded::sleep opps
-      puts "effects"
-      ::decide::commanded::sleep effects
-      puts "always"
-      ::decide::commanded::sleep always
-      puts "awake!"
-      return $::decide::acts
-    #}
+  } else {
+    puts "sleeping..."
+    puts "acts"
+    after 1000
+    ::decide::commanded::sleep acts
+    puts $::decide::acts
+    puts "opps"
+    ::decide::commanded::sleep opps
+    puts "effects"
+    ::decide::commanded::sleep effects
+    puts "always"
+    ::decide::commanded::sleep always
+    puts "awake!"
+    return $::decide::acts
   }
 }
 

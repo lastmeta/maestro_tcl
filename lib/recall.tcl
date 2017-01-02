@@ -176,14 +176,11 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
     #get all the goals
     set temp ""
     if {$go ne ""} {
-      #foreach thing_in_go $go {
-      #  set combos_go [::prepdata::combinations $thing_in_go]
-        set combos_go [::prepdata::combinations $go]
-        puts "combos_go $combos_go"
-        set temp [::repo::get::chainMatch generals input $combos_go]
-        puts "gen_temp_go $temp"
-        after 1000
-      #}
+      foreach thing_in_go $go {
+        set combos_go [::prepdata::combinations $thing_in_go]
+      #  set combos_go [::prepdata::combinations $go]
+        set temp [concat $temp [::repo::get::chainMatch generals input $combos_go]]
+      }
     }
 
     set c 0
@@ -211,14 +208,11 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
     #fill the temporary inputs out.
     set temp ""
     if {$in ne ""} {
-      #foreach thing_in_in $in {
-      #  set combos_in [::prepdata::combinations $thing_in_in]
-        set combos_in [::prepdata::combinations $in]
-        puts "combos_in $combos_in"
-        set temp [::repo::get::chainMatch generals input $combos_in]
-        puts "gen_temp_in $temp"
-        after 1000
-      #}
+      foreach thing_in_in $in {
+        set combos_in [::prepdata::combinations $thing_in_in]
+      #  set combos_in [::prepdata::combinations $in]
+        set temp [concat $temp [::repo::get::chainMatch generals input $combos_in]]
+      }
     }
 
     set c 0
@@ -254,20 +248,16 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
     set gres [concat $gres $tgres]
 
     #check for match
-    puts "match finding: [concat $tires $input] || $gloc"
     set match [::recall::helpers::findMatch [concat $tires $input] $gloc]
-    puts "match is: $match "
     if {$match eq ""} { set match [::recall::helpers::findMatch $ires [concat $tgloc $goal]] }
   }
-  puts "match_is: $match"
+
 
   #compile actions
   set actions ""
   if {$match ne ""} {
     set tempinput $match
     while {$tempinput != $input && [lsearch $combos_input $tempinput] == -1} {
-      puts "tempinput $tempinput"
-      after 1000
       set tiindex [lsearch $ires $tempinput]
       set actions "[lindex $iact $tiindex] $actions"
       set tempinput [lindex $iloc $tiindex]

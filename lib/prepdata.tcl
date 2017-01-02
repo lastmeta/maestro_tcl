@@ -71,7 +71,6 @@ namespace eval ::prepdata {
   # returns:  abc ab_ a_c a__ _bc _b_ __c
   #
   proc combinations input {
-    puts "Input$input"
     set input [split $input ""]
     set x 0
     set goodlist ""
