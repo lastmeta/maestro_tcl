@@ -185,7 +185,11 @@ proc ::repo::get::chainMatch {table mod thelist} {
 		set newlist "$newlist $mod='$item'"
 	}
 	if {$table eq "generals"} {
-		set newlist "$newlist AND type='general always' OR type='special always'"
+		if {$newlist eq ""} {
+			set newlist "type='general always' OR type='special always'"
+		} else {
+			set newlist "$newlist AND (type='general always' OR type='special always')"
+		}
 	}
 	return [brain eval "SELECT input,action,result FROM $table WHERE $newlist"]
 }
