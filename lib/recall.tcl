@@ -171,21 +171,14 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
   set match ""
   set combos_input  [::prepdata::helpers::reorderByUnderscore [::prepdata::combinations $input]]
   set combos_goal   [::prepdata::helpers::reorderByUnderscore [::prepdata::combinations $goal ]]
-  puts "Init: $go, $in"
   while {($go ne "" || $in ne "") && $match eq ""} {
-    puts "GO/IN: $go, $in"
     #get all the goals
     set temp ""
     if {$go ne ""} {
       foreach thing_in_go $go {
-        puts "thing_in_go: $thing_in_go"
         set combos_go [::prepdata::helpers::reorderByUnderscore [::prepdata::combinations $thing_in_go]]
-        puts "combos_go: $combos_go"
-      #  set combos_go [::prepdata::combinations $go]
         set temp [concat $temp [::repo::get::chainMatch generals result $combos_go]]
-        #puts "temp_go: $temp"
         set temp [::prepdata::lsubstitute $temp $thing_in_go]
-        puts "temp_go_sl: $temp"
       }
     }
 
@@ -210,21 +203,14 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
       }
       incr c
     }
-    puts "tgloc: $tgloc"
-    puts "tgact: $tgact"
-    puts "tgres: $tgres"
 
     #fill the temporary inputs out.
     set temp ""
     if {$in ne ""} {
       foreach thing_in_in $in {
         set combos_in [::prepdata::helpers::reorderByUnderscore [::prepdata::combinations $thing_in_in]]
-        #puts "combos_in: $combos_in"
-      #  set combos_in [::prepdata::combinations $in]
         set temp [concat $temp [::repo::get::chainMatch generals input $combos_in]]
-        #puts "temp_in: $temp"
         set temp [::prepdata::lsubstitute $temp $thing_in_in]
-        #puts "temp_in_sl: $temp"
       }
     }
 
@@ -260,40 +246,23 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
     set gact [concat $gact $tgact]
     set gres [concat $gres $tgres]
 
-    puts "gloc: $gloc"
-    puts "gact: $gact"
-    puts "gres: $gres"
-
     #check for match
     set match [::recall::helpers::findMatch [concat $tires $input] $gloc]
     if {$match eq ""} { set match [::recall::helpers::findMatch $ires [concat $tgloc $goal]] }
     puts "match: $match"
   }
-  puts "iloc $iloc"
-  puts "iact $iact"
-  puts "ires $ires"
 
-  puts "gloc $gloc"
-  puts "gact $gact"
-  puts "gres $gres"
   #compile actions
   set actions ""
   if {$match ne ""} {
     set tempinput $match
     while {$tempinput != $input} { ;# && [lsearch $combos_input $tempinput] == -1
-      puts "tempinput $tempinput"
-      after 1000
       set tiindex [lsearch $ires $tempinput]
       set actions "[lindex $iact $tiindex] $actions"
       set tempinput [lindex $iloc $tiindex]
-      puts "tiindex $tiindex"
-      puts "tempinput $tempinput"
-      after 1000
     }
     set tempgoal $match
     while {$tempgoal != $goal} {
-      puts "tempinput $tempgoal"
-      after 1000
       set tgindex [lsearch $gloc $tempgoal]
       lappend actions [lindex $gact $tgindex]
       set tempgoal [lindex $gres $tgindex]
