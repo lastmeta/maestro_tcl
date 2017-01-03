@@ -28,6 +28,11 @@ proc ::communicate::set::up {} {
   puts $::communicate::chan $introduction
   flush $::communicate::chan
   puts "Server responded: [gets $::communicate::chan]"
+  #puts "Asking for current position..."
+  #set introduction [list from $::communicate::name to $::communicate::to message 0]
+  #puts $::communicate::chan $introduction
+  #flush $::communicate::chan
+  #::maestro::handle::environment [gets $::communicate::chan]
   puts "Awaiting Instructions from Server..."
 }
 

@@ -51,6 +51,9 @@ proc ::decide::commanded::explore msg {
   } else {  ;# default is to explore curiously.
     set ::decide::explore "curious"
   }
+  if {$::memorize::loc eq ""} {
+    return [::decide::commanded::location]
+  }
   return [::decide::commanded::guess]
 }
 
@@ -180,6 +183,11 @@ proc ::decide::commanded::resetActions {} {
   }
   set ::decide::acts $actions
   sleep::update::actions $actions
+}
+
+proc ::decide::commanded::location {} {
+  set ::decide::path [::recall::location]
+  return [::decide::actions::do]
 }
 
 proc ::decide::commanded::guess {} {

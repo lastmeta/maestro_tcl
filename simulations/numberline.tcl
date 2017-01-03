@@ -85,13 +85,11 @@ proc ::simulation::decode {input} {
 
 proc ::simulation::decodeMotor {input} {
   switch -exact $input {
-    0 {return "ERROR"}
+    0 {return 0      }
     1 {return +1     }
     2 {return +10    }
     3 {return -1     }
     4 {return -10    }
-    5 {return 0      }
-    6 {return 0      }
     default {return 0}
   }
 }

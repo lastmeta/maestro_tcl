@@ -2,11 +2,11 @@
 Global $server = Runcmd()
 startServer()
 
-global $m11 = Runcmd()
-startMaestro11()
-
 global $sim = Runcmd()
 startSimulation()
+
+global $m11 = Runcmd()
+startMaestro11()
 
 global $user = Runcmd()
 startUser()

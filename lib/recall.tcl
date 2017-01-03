@@ -146,7 +146,7 @@ proc ::recall::getBestMatch {goal newresults} {
 # example:  000 002
 # returns:  +1 +1
 #
-proc ::recall::getActionsPathWithPrediction {input goal} {
+proc ::recall::getActionsPathWithPredictionNEW {input goal} {
   set actionslist ""
   #initialize everything
   set tiloc "" ;#temporary input location
@@ -169,15 +169,15 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
   set in $input
   set temp ""
   set match ""
-  set combos_input  [::prepdata::combinations $input]
-  set combos_goal   [::prepdata::combinations $goal]
+  set combos_input  [lreverse [lsort [::prepdata::combinations $input]]]
+  set combos_goal   [lreverse [lsort [::prepdata::combinations $goal]]]
 
   while {($go ne "" || $in ne "") && $match eq ""} {
     #get all the goals
     set temp ""
     if {$go ne ""} {
       foreach thing_in_go $go {
-        set combos_go [::prepdata::combinations $thing_in_go]
+        set combos_go [lreverse [lsort [::prepdata::combinations $thing_in_go]]]
       #  set combos_go [::prepdata::combinations $go]
         set temp [concat $temp [::repo::get::chainMatch generals input $combos_go]]
       }
@@ -209,7 +209,7 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
     set temp ""
     if {$in ne ""} {
       foreach thing_in_in $in {
-        set combos_in [::prepdata::combinations $thing_in_in]
+        set combos_in [lreverse [lsort [::prepdata::combinations $thing_in_in]]]
       #  set combos_in [::prepdata::combinations $in]
         set temp [concat $temp [::repo::get::chainMatch generals input $combos_in]]
       }
@@ -301,7 +301,7 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
 # example:  000 002
 # returns:  +1 +1
 #
-proc ::recall::getActionsPathWithPrediction2 {input goal} {
+proc ::recall::getActionsPathWithPrediction {input goal} {
   set actionslist ""
   #initialize everything
   set tiloc "" ;#temporary input location
@@ -467,6 +467,20 @@ proc ::recall::helpers::savedChain {input goal} {
   set actions [::repo::get::chainActions $input $goal]
   return $actions
 }
+
+
+################################################################################################################################################################
+# GetLocation ########################################################################################################################################################
+################################################################################################################################################################
+
+
+proc ::recall::location {} {
+  set ::memorize::act 0
+  return $::memorize::act
+}
+
+
+
 
 
 
