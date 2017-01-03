@@ -178,12 +178,13 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
     set temp ""
     if {$go ne ""} {
       foreach thing_in_go $go {
+        puts "thing_in_go: $thing_in_go"
         set combos_go [::prepdata::helpers::reorderByUnderscore [::prepdata::combinations $thing_in_go]]
-        #puts "combos_go: $combos_go"
+        puts "combos_go: $combos_go"
       #  set combos_go [::prepdata::combinations $go]
         set temp [concat $temp [::repo::get::chainMatch generals result $combos_go]]
         #puts "temp_go: $temp"
-        set temp [::prepdata::lsubstitute $temp $go]
+        set temp [::prepdata::lsubstitute $temp $thing_in_go]
         puts "temp_go_sl: $temp"
       }
     }
@@ -222,7 +223,7 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
       #  set combos_in [::prepdata::combinations $in]
         set temp [concat $temp [::repo::get::chainMatch generals input $combos_in]]
         #puts "temp_in: $temp"
-        set temp [::prepdata::lsubstitute $temp $in]
+        set temp [::prepdata::lsubstitute $temp $thing_in_in]
         #puts "temp_in_sl: $temp"
       }
     }
