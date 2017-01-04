@@ -61,7 +61,9 @@ proc ::sleep::find::opposites {args} {
   set acts [::sleep::find::opposites::getFullMainSample]
   set opps [::sleep::find::opposites::analyzeSample $acts]
   set id [::sleep::find::opposites::recordRule $opps]
-  ::sleep::find::opposites::extrapolateRule $opps $id
+  if {$opps ne ""} {
+    ::sleep::find::opposites::extrapolateRule $opps $id
+  }
   return $opps
 }
 
@@ -106,7 +108,10 @@ proc ::sleep::find::opposites::getFullMainSample {} {
       lappend acts [list $act [lindex [lindex $tripplets $opp] 1]]
     }
   }
-  return $acts
+  if {[info exists acts]} {
+    return $acts
+  }
+
 }
 
 
