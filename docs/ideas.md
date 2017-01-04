@@ -320,3 +320,33 @@ Now that I've slept on this concept I have some more things to say about it. Fir
 So the idea is that every time we run sleep we create other bots to help us organize this data. We take the first level stuff, which, if its general always stuff has no constraints on it. Then we spin up a new bot that deals with special always and constraints, but since it only deals with data within those constraints it considers them general always. Then if it fines more nuanced patterns within it's stuff it spins up another one and the pattern repeats. So we get a stack of bots (they all share the same main though, that's in a separate db, but their rules are their own). The idea is that when given a path 1.1 looks for it in general always stuff first. if it can't find a path to it, it comes up with a union of plans to find it with the help of number 2, if they can't find it two will recruit the help of the bot 3rd up in the stack. For more and more complex and convoluted ways of finding the solution. Its really just an efficient way to split up the search space into appropriate domains. Like google's search engine. And by having a stack architecture I'm trying to distribute the load of finding a path amongst many bots who can all try to find a path or partial path to the target in their specific domain.
 
 So anyway, this is a naive approach but I'll also have to learn how to define the 'constraints' or parameters for each rule. General always is easy, there are no constraints, but when .09 could lead to .10 or .ab well I'll have to find what all of those have in common and then I'll have a domain that works then I can appropriately graph it out in a tree structure. So in the end the tree structure is one of assumptions about the data that may or may not be true in every case. When they are violated we need to have a process of detection and reconstruction.
+
+so in the case of
+00
+01
+02
+10
+11
+12
+20
+21
+33 <--outlier
+22
+
+we get the
+.0   .1
+.2   .0
+02   10 ---
+12   20   |
+21   33   |-- no compression happening here. Maybe we pass all this up. idk. 
+33   22   |
+22   00 ---
+
+but instead of seeing:
+.1   .2   when not
+
+we see 1 can lead to 2 or it can lead to 3 so this is something we'd pass up if not the 02 10 and so on as well. so it would look maybe like this:
+.1   .2   (Special) when not 2.
+.1   .3   (Special) when     2.
+
+Thus we may take .1 .2 (Special) when not 2. as the general case, and pass the .1 .3 up, or just pass it all up. Maybe we take it as the general case in the event that we have no general cases.
