@@ -338,15 +338,38 @@ we get the
 .2   .0
 02   10 ---
 12   20   |
-21   33   |-- no compression happening here. Maybe we pass all this up. idk. 
+21   33   |-- no compression happening here. Maybe we pass all this up. idk.
 33   22   |
 22   00 ---
 
 but instead of seeing:
-.1   .2   when not
+.1   .2
 
 we see 1 can lead to 2 or it can lead to 3 so this is something we'd pass up if not the 02 10 and so on as well. so it would look maybe like this:
 .1   .2   (Special) when not 2.
 .1   .3   (Special) when     2.
 
+or we could list them all out - but since there is a repeated pattern in the first two instances, maybe not.
+01    02
+11    12
+21    33
 Thus we may take .1 .2 (Special) when not 2. as the general case, and pass the .1 .3 up, or just pass it all up. Maybe we take it as the general case in the event that we have no general cases.
+
+
+13. STACK / TREE RECIPE
+
+I'm not sure what is directly above works well. But I think I can delineate a recipe more generally.
+  1. I need a repeatable way to define more and more complex patterns. My strategy so far is to find what's common amongst every observable entry and write those down - what I call my 'general always' rules. Then pass everything else up, being sure to specify their use cases. They way, theoretically, the next level can do the same since it only sees things within it's particular context and thus should be able to find things that are generally always the same.
+  2. I need a way to define the patterns and or contexts that these patterns are found in. (regex? or the above notation?)
+  3. I need a way that new maestro bots are created and in charge of their respective databases or its all done recursively in the same program.
+  4. Lastly, I need a way to path find through this tree structure, asking for this or that.
+  5. plus I need meta heuristics: strategies that will probably work on path-finding in many different environments. The one and only strategy I have for this (other than regular breadth-first-search, which will also need to be modified to work withing a tree structure of nodes) is the 'Rubix Cube Heuristic' (at least thats what I call it). The heuristic works like this - you have a complex system of interconnected parts, theres no clear way to get from one state of the entire system to another state of the entire system so you don't try to. You break that down into a series of series of behaviors that tend to be concerned with fixing only one or a few portions of the cube. Thus when you start, you care not what consequences your behaviors have except on just a few cubes, trying to make the cross, for example. Then you're faced with the problem of solving the next cubes. this is something you can only do if you mess up what you already fixed, so you must find ways to mess them up, then fix and solve for the new cubes simultaneously. which increases the problem, but so only as you can find series of moves that have a particular effect (namely, they solve the pieces you need to solve while putting everything (that you've already fixed) back into place). Eventually you end up with a situation where nothing is messed up but the particular set of cubes you can fix all at once, if you know the appropriate set of behaviors, which incidentally is complex, but not exponentially more complex that the other sets of behaviors we've found and used.   
+
+
+14. BACK BURNER NEXT STEPS
+
+I'm going to put this project on the back burner or just do it on my free time at home while I focus on catching up on my Andrew Ng ai class. So Here are the notes of things I have to do once I come back to this project. I have to make a rich environment to test out and develop the generalizing algorithm. that generalized algorithm must take a run through all the raw data, then pull out the obvious patterns, then pass the rest to the next ai bot, which does the same thing with the smaller amount of data, which, hopefully doesn't have contradictions with simple patterns because stuff has been removed from this data set. So by rich environment I mean not as uniform as a number line, but not entirely chaotic. I want something I can generalize a bit about, but certainly has different contexts, which may be hard to define. speaking of contexts, along with the generalizing algorithm we need to be able to determine the context and represent it some how, a problem I've not tackled at all. lets see...
+
+John coulter said I should learn data structures because data structures help define algorithms. he says if the data structure is right the algorithm will fall into place, it'll be natural. His brother suggested I continue to look into compression, because that's a big part of what the generalizing algorithm is, and he said "Anyway, about trees: they're great for performance, but they're very context-sensitive. It may be a good choice to make them ephemeral: generate them as needed for algorithmic efficiency, but discard them as needed for systemic performance. And use a more flexible format for the underlying durable storage"
+
+if I can get a repeatable generalizing process that takes a list of data and returns a smaller list of data plus rules for the stuff it took out I then have opened the door to be able to make a stack/tree/hierarchy of deeper and deeper understanding of the data. I have compression, generalization and dramatically reduced search space capabilities when path finding. It is the key and so far I've only been able to come up with "what is common amongst everything? ok now generalize that in to a rule." 
