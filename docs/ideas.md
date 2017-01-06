@@ -372,4 +372,50 @@ I'm going to put this project on the back burner or just do it on my free time a
 
 John coulter said I should learn data structures because data structures help define algorithms. he says if the data structure is right the algorithm will fall into place, it'll be natural. His brother suggested I continue to look into compression, because that's a big part of what the generalizing algorithm is, and he said "Anyway, about trees: they're great for performance, but they're very context-sensitive. It may be a good choice to make them ephemeral: generate them as needed for algorithmic efficiency, but discard them as needed for systemic performance. And use a more flexible format for the underlying durable storage"
 
-if I can get a repeatable generalizing process that takes a list of data and returns a smaller list of data plus rules for the stuff it took out I then have opened the door to be able to make a stack/tree/hierarchy of deeper and deeper understanding of the data. I have compression, generalization and dramatically reduced search space capabilities when path finding. It is the key and so far I've only been able to come up with "what is common amongst everything? ok now generalize that in to a rule." 
+if I can get a repeatable generalizing process that takes a list of data and returns a smaller list of data plus rules for the stuff it took out I then have opened the door to be able to make a stack/tree/hierarchy of deeper and deeper understanding of the data. I have compression, generalization and dramatically reduced search space capabilities when path finding. It is the key and so far I've only been able to come up with "what is common amongst everything? ok now generalize that in to a rule."
+
+turns out I have more to say. Context is contextual, its multilevel and inter-level. in other words things are effected, and behave differently based on the big picture, small details, or other details of nearly the same import or reach. Why is this important to consider? idk. Well I think its because I wondered above if I should strictly only take the generalizable for each level, or if I should take the most common patterns and generalize those. I think this is the answer: If I can determine the context then I make the rule in the node I'm at. and push the other contexts down. But because contexts are contextual we may have transitions that are express multiple rules so, not passing them up maybe a problem because the next level may need to see it to come up with a rule. Its more like every transition needs to have a list of rules it matches. Also because contexts are contextual I don't think there is a way to fully generalize without some complex structure like a nearly net that can suss out all these interactions and contexts. but lets see how far this can go anyway.
+
+Example of Generalizing:
+
+state to state transition (only one action in this environment)
+
+CA  ->  AC  ->  CB  ->  AA  ->  AB  ->  BB  ->  JK  ->  JJ  ->  JB  ->  JA  -┐
+                                ^--------------------------------------------┘
+
+Node 1 sees:
+CA  AC
+AC  CB
+CB  AA
+AA  AB
+AB  BB
+BB  JK
+JK  JJ
+JJ  JB
+JB  JA
+JA  AB
+
+Node 1 rules:
+C-  A-
+-A  A-
+A-  -B
+(notice we can't make any rules about J even though there are more than one example of this)
+
+Node 2 sees:
+BB  JK
+JK  JJ
+JJ  JB
+JB  JA
+(notice it doesn't see JA  AB because that transition already conforms to a rule -A  A-)
+
+Node 2 rules:
+J-  J-
+
+Underscore Assumptions / Requirements Defined:
+1. This is true for the entire data set we see.
+2. it could be anything (could we find a way to delineate what it could be specifically? regex?)
+3. It doesn't change from input to result (THIS IS A PROBLEM! take the above example: I didn't even notice that I wasn't making the rules correctly. CA AC and its rule: C- A- isn't correct. this implies CA -> AA. SO this number three may be inaccurate. we may want to introduce one more reserved character that indicates that its not necessarily the same blank digit. like a Dash that says C- means CA -> A[SOMETHING, but I'm not sure what it is]. Not sure if that's helpful or useful. kinda seems like its not. How do I make predictions on that?? well combining multiple rules at once I might be able to make predictions on that. Well Shit. I'm leaving in the errors above because I think this is an important concept to remember. truthfully as I contemplate it I think the dash is the more general case and the underscore, that is including 3 as a requirement is really just a shortcut. I need to probably rely most heavily on the dash concept. but what do I know?)
+4. Unilateral from left to right. (C-  A- does not mean any result that starts with A is going to have an input that starts with in C).
+5. There is more than one example of this rule.
+
+The theory is that the rules in the lower nodes, nodes that get the data first, supersede the rules created by the higher nodes. Thus consider this portion of the graph: JB  ->  JA  ->  AB. you may assume, if you only looked at the rule from node 2 that if you start with J as in JA you must get J something and therefore theres no way to go from JA to AB. BUT  this is not the case if you consider the rules from node 1 first because -A A- supersedes it. so JA must go to A something, thus AB may be a possibility.
