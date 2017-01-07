@@ -419,3 +419,30 @@ Underscore Assumptions / Requirements Defined:
 5. There is more than one example of this rule.
 
 The theory is that the rules in the lower nodes, nodes that get the data first, supersede the rules created by the higher nodes. Thus consider this portion of the graph: JB  ->  JA  ->  AB. you may assume, if you only looked at the rule from node 2 that if you start with J as in JA you must get J something and therefore theres no way to go from JA to AB. BUT  this is not the case if you consider the rules from node 1 first because -A A- supersedes it. so JA must go to A something, thus AB may be a possibility.
+
+So omitting assumption 3 above lets imagine what would happen if we saw any combination of things we've seen as input. Here are all the combinations and the ones we haven't seen:
+
+AA      BA X    CA      JA      KA X
+AB      BB      CB      JB      KB X
+AC      BC X    CC X    JC X    KC X
+AJ X    BJ X    CJ X    JJ      KJ X
+AK X    BK X    CK X    JK      KK X
+
+given:  1st rule    2nd Rule      purposed result
+AJ      A- -B                     -B  
+AK      A- -B                     -B
+BA                  -A A-         A-
+BC
+BJ
+BK
+CC      C- A-                     A-  
+CJ      C- A-                     A-
+CK      C- A-                     A-
+JC      J- J-                     J-
+KA                  -A A-         A-  
+KB                  -B J-         J-
+KC
+KJ
+KK
+
+Thus we have a generalization process. This does mean if we ever see something that goes against the rules we've created we have to reconstruct everything it touches. Notice JC and KB. It didn't find any rule in level 1 so it moved onto level 2 and found rules corresponding to those letters in those places. This, to my mind suggests there is indeed a theoretical upper limit to how many levels there can be. as many different values for each index as you can have. This upper limit suggests to my mind that it cannot encode past a certain complexity. Because if you could encode to infinite complexity, would you not need infinite levels of more and more detailed and niche rules? but anyway its a start. will this help with path finding? idk but who cares. I don't even use join tables at this point and maybe that's all I need practically speaking for any environment that I have time to explore, but for finding paths to states when needing to intuitively feel my way through, this may help because this is generalization and that's what we care about right now.
