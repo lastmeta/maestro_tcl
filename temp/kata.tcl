@@ -28,14 +28,6 @@ proc convert {arb roman} {
   }
 }
 
-
-if { $argc != 1 } {
-  puts "tclsh kata.tcl 123"
-} else {
-  puts "$argv -->"
-  puts [string map {" " ""} [convert $argv ""]]
-}
-
 # iiii -> iv
 proc simplify1 {romans} {
   lappend romans "end"
@@ -49,48 +41,48 @@ proc simplify1 {romans} {
       incr same
     }
     if {$same == 3} {
-      puts "rome will be [lrange $rome 0 [expr [llength $rome] - 4]]"
       set rome [concat [lrange $rome 0 [expr [llength $rome] - 4]] $roman [next $roman]]
       set same -1
     } else {
       lappend rome $roman
     }
-    puts $rome
     incr count
   }
-  #if {[concat $rome "end"] ne $romans} {
-  #  simplify1 $rome
-  #} else {
-    #return [simplify2 $rome]
-  #  puts $rome
-  #}
-  return [lrange $rome 0 end-1]
+  if {$rome ne $romans} {
+    set rome [lrange $rome 0 end-1]
+    simplify1 $rome
+  } else {
+    set rome [lrange $rome 0 end-1]
+    return [simplify2 $rome]
+  }
 }
-
 
 # viv -> ix
 proc simplify2 {romans} {
   lappend romans "end"
   set rome ""
-  set count 1
-  set nextroman ""
-  set last  ""
+  set oneback ""
+  set count 0
+  set twoback ""
   foreach roman $romans {
-    set nextroman [lindex $romans $count]
-    if {$nextroman eq "end"} {
-      break
-    }
-    if {$last eq $nextroman && [last $last] eq $roman} {
-      lappend rome $nextroman
-      set rome [concat [lrange $rome 0 [expr [llength $rome] - 3]] $roman [next $nextroman]]
+    set twoback [lindex $romans $count-2]
+    set oneback [lindex $romans $count-1]
+    if {$twoback       eq $roman
+    && [last $twoback] eq $oneback
+    &&  $twoback       ne ""
+    } then {
+      set rome [concat [lrange $rome 0 end-2] $oneback [next $twoback]]
     } else {
-      lappend rome $nextroman
+      lappend rome $roman
     }
+    puts "rome is $rome"
     incr count
   }
-  if {[concat $rome "end"] ne $romans} {
+  if {$rome ne $romans} {
+    set rome [string map {" end" ""} $rome]
     simplify1 $rome
   } else {
+    set rome [string map {" end" ""} $rome]
     return $rome
   }
 }
@@ -122,5 +114,10 @@ proc last {letter} {
   }
 }
 
-puts [simplify1 "I I I I I I I I I I I I I I I I I I I I"]
-puts [simplify1 "I I I I "]
+
+if { $argc != 1 } {
+  puts "tclsh kata.tcl 123"
+} else {
+  puts "$argv -->"
+  puts [string map {" " ""} [simplify1 [convert $argv ""]]]
+}
