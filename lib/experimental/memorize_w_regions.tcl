@@ -93,10 +93,11 @@ proc ::memorize::record::newMain {when input action result} {
   	# roots(state,level,region)
 
     #first:
-    #if input is a root.
-      #do notihng
+    #if input is a root
+      #do notihng for input
+      #move onto the result portion
     #else
-      #if input ins't listed in main as input or result previously (other than mainids) (if inputid == mainid)
+      #if input isn't listed in main as input or result previously (other than mainids) (if inputid == mainid)
         #for set i 1 to levels
           #make a new root
           #if you need to make a new level do so
