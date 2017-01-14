@@ -60,6 +60,15 @@ proc ::repo::create {id {datas ""} } {
 																											node int,
 																											cellid char,
 																											cell char) }
+	brain eval { create table if not exists regions(
+																											level int,
+																											region char,
+																											mainid int,
+																											reg_to char) }
+	brain eval { create table if not exists roots(
+																											state char,
+																											level int,
+																											region char) }
 }
 
 ################################################################################################################################################################
@@ -82,6 +91,11 @@ proc ::repo::insert {table datas} {
 	if [dict exists $datas ix			]	{	set ix 			[dict get $datas ix			] }
 	if [dict exists $datas cellid	]	{	set cellid	[dict get $datas cellid	] }
 	if [dict exists $datas cell		]	{	set cell		[dict get $datas cell		] }
+	if [dict exists $datas level	]	{	set level		[dict get $datas level  ] }
+	if [dict exists $datas region ]	{	set region	[dict get $datas region ] }
+	if [dict exists $datas mainid ]	{	set mainid	[dict get $datas mainid ] }
+	if [dict exists $datas reg_to ]	{	set reg_to	[dict get $datas reg_to ] }
+	if [dict exists $datas state  ]	{	set state		[dict get $datas state	] }
 	switch $table {
 		setup				{ brain eval {INSERT INTO setup 			VALUES ($type,$data)} }
 		main 				{ brain eval {INSERT INTO main 				VALUES ($time,$input,$action,$result)} }
@@ -93,6 +107,8 @@ proc ::repo::insert {table datas} {
 		predictions { brain eval {INSERT INTO predictions VALUES ($input,$action,$result,$ruleid)}	}
 		nodes 			{ brain eval {INSERT INTO nodes	 			VALUES ($node,$input,$ix,$type)} }
 		connectom		{ brain eval {INSERT INTO connectom 	VALUES ($node,$cellid,$cell)} }
+		regions			{ brain eval {INSERT INTO regions		  VALUES ($level,$region,$mainid,$reg_to)}	}
+		roots				{ brain eval {INSERT INTO roots				VALUES ($state,$level,$region)}	}
 		default 		{ return "No data saved, please supply valid table name." }
 	}
 }
