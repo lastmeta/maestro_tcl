@@ -219,15 +219,6 @@ proc ::repo::get::chainMatchResults {table mod thelist} {
 	return [brain eval "SELECT result FROM $table WHERE $newlist"]
 }
 
-proc ::repo::get::chainMatchInputs {table mod thelist} {
-	set newlist ""
-	foreach item $thelist {
-		if {$newlist ne ""} { set newlist "$newlist OR" }
-		set newlist "$newlist $mod='$item'"
-	}
-	return [brain eval "SELECT input FROM $table WHERE $newlist"]
-}
-
 
 proc ::repo::get::chainActions {input result} {
 	return [brain eval "SELECT action FROM chains WHERE input='$input' AND result='$result'"]

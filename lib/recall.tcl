@@ -249,7 +249,7 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
     #check for match
     set match [::recall::helpers::findMatch [concat $tires $input] $gloc]
     if {$match eq ""} { set match [::recall::helpers::findMatch $ires [concat $tgloc $goal]] }
-    puts "match: $match"
+    #puts "match: $match"
   }
 
   #compile actions

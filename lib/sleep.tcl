@@ -484,6 +484,7 @@ proc ::sleep::find::regions::discover {thislevel} {
           }
         }
       }
+      set oldresults [concat $oldresults $results $seconds]
     }
     incr next
     set root [::sleep::find::regions::roots $next]
