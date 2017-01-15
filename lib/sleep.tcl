@@ -27,6 +27,7 @@ namespace eval ::sleep::find {}
 namespace eval ::sleep::find::opposites:: {}
 namespace eval ::sleep::find::effects:: {}
 namespace eval ::sleep::find::always:: {}
+namespace eval ::sleep::find::regions:: {}
 namespace eval ::sleep::update {}
 namespace eval ::sleep::help {}
 ## actions
@@ -48,6 +49,24 @@ proc ::sleep::update::actions {actions} {
   ::repo::insert rules [list rule $actions type "available actions"]
   return $actions
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################################################################################################################################################
+# opps #########################################################################################################################################################
+################################################################################################################################################################
+
 
 
 ## opposites
@@ -181,6 +200,12 @@ proc ::sleep::find::opposites::extrapolateRule {opps id} {
 
 
 
+################################################################################################################################################################
+# effets #########################################################################################################################################################
+################################################################################################################################################################
+
+
+
 
 
 
@@ -256,6 +281,12 @@ proc ::sleep::find::effects::discover {actions predict} {
 
 
 
+
+
+
+################################################################################################################################################################
+# always #########################################################################################################################################################
+################################################################################################################################################################
 
 
 
@@ -348,6 +379,129 @@ proc ::sleep::find::always::discover {actions predict} {
 }
 
 
+
+
+
+
+
+
+
+
+################################################################################################################################################################
+# regions #########################################################################################################################################################
+################################################################################################################################################################
+
+
+
+
+
+
+
+# regions
+#
+# creates regions and levels according to the data.
+#
+#   state   act   newstate  #   state   act   newstate
+#   __0     1     __1       #   _10     3     _09
+#   __1     1     __2       #   __1     3     __0
+#   __2     1     __3       #   __2     3     __1
+#   __3     1     __4       #   __3     3     __2
+#   __4     1     __5       #   __4     3     __3
+#   __5     1     __6       #   __5     3     __4
+#   __6     1     __7       #   __6     3     __5
+#   __7     1     __8       #   __7     3     __6
+#   __8     1     __9       #   __8     3     __7
+#   _09     1     _10       #   __9     3     __8
+#   ...     ...   ...
+#
+
+proc ::sleep::find::regions {} {
+  ::sleep::find::regions::clear
+  ::sleep::find::regions::discover 0
+  return "sleep regions finished"
+}
+
+
+proc ::sleep::find::regions::clear {} {
+  ::repo::delete::clear regions
+  ::repo::delete::clear roots
+}
+
+
+proc ::sleep::find::regions::discover {thislevel} {
+  #init vars
+  set mainid 1
+  set origin [::repo::get::tableColumnsWhere main input [list rowid $mainid]]
+  set oldresults origin
+  set next 1
+  set rcount 0
+
+  #put origin in roots table
+  ::repo::insert roots [list level $thislevel region $rcount state $origin ]
+  incr rcount
+
+  set root [::sleep::find::regions::roots $next]
+
+  #for each item in roots table
+  while {$root ne "none left"} {
+    set level  [lindex $root 0]
+    set region [lindex $root 1]
+    set state  [lindex $root 2]
+
+    #get a list of results from main concerning the state.
+    set results [::repo::get::tableColumnsWhere main result [list input $state]]
+
+    #get a list of results from main concerning the each result in results
+    set seconds [::repo::get::chainMatchResults main input $results]
+
+    foreach item $seconds {
+      if {[lsearch $results    $item] eq "-1"
+      &&  [lsearch $oldresults $item] eq "-1"
+      } then {
+        #put in roots
+        ::repo::insert roots [list level $level region $rcount state $origin ]
+        incr rcount
+
+        #make a region to region with main id in middle
+        ::repo::insert regions [list level $level region $region mainid $mainid reg_to $rcount]
+
+      } elseif {[lsearch $results $item] eq "-1"} {
+        #find correct region of for reg_to
+        set findroot [::repo::get::tableColumnsWhere roots region [list state $item]]
+        if {$findroot ne ""} {
+          #make a region to region with main id in middle
+          ::repo::insert regions [list level $level region $region mainid $mainid reg_to $findroot]
+
+        #if its not a root of a region
+        } else {
+          #its possible to belong to more than one region so we have to make connections between all of them.
+          set inputs [::repo::get::tableColumnsWhere main input [list result $item]]
+          foreach thing $inputs {
+            set findroot [::repo::get::tableColumnsWhere roots region [list state $thing]]
+            if {$findroot ne ""} {
+              ::repo::insert regions [list level $level region $region mainid $mainid reg_to $findroot]
+            }
+          }
+        }
+      }
+    }
+    incr next
+    set root [::sleep::find::regions::roots $next]
+  }
+}
+
+proc ::sleep::find::regions::roots {next} {
+  set return [::repo::get::tableColumnsWhere roots [list level region state] [list rowid $next]]
+  if {$return eq ""} {
+    set return "none left"
+  }
+  return $return
+}
+
+
+################################################################################################################################################################
+# others #########################################################################################################################################################
+################################################################################################################################################################
 
 
 
