@@ -66,9 +66,9 @@ proc ::repo::create {id {datas ""} } {
 																											mainid int,
 																											reg_to char) }
 	brain eval { create table if not exists roots(
-																											state char,
 																											level int,
-																											region char) }
+																											region char,
+																											state char) }
 }
 
 ################################################################################################################################################################
@@ -108,7 +108,7 @@ proc ::repo::insert {table datas} {
 		nodes 			{ brain eval {INSERT INTO nodes	 			VALUES ($node,$input,$ix,$type)} }
 		connectom		{ brain eval {INSERT INTO connectom 	VALUES ($node,$cellid,$cell)} }
 		regions			{ brain eval {INSERT INTO regions		  VALUES ($level,$region,$mainid,$reg_to)}	}
-		roots				{ brain eval {INSERT INTO roots				VALUES ($state,$level,$region)}	}
+		roots				{ brain eval {INSERT INTO roots				VALUES ($level,$region,$state)}	}
 		default 		{ return "No data saved, please supply valid table name." }
 	}
 }

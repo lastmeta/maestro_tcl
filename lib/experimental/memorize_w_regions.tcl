@@ -92,19 +92,33 @@ proc ::memorize::record::newMain {when input action result} {
     # regions(level,region,mainid,reg_to)
   	# roots(state,level,region)
 
-    #first:
+    #first: do input portion
     #if input is a root
       #do notihng for input
-      #move onto the result portion
     #else
-      #if input isn't listed in main as input or result previously (other than mainids) (if inputid == mainid)
+      #if input isn't listed in main as a result previously (other than mainids) (if inputid == mainid)
         #for set i 1 to levels
           #make a new root
-          #if you need to make a new level do so
+        #if you need to make a new level do so
       #else
-        #if you need to make a new region do so.
-        #make a region
+        #find out what region input is in. (what root leads to it? searn main for it in result, then search in roots for that input. if its not in there then it would be a root.)
     #endif
+
+    #Second: move on to the result portion:
+    #if result is a root
+      #find out what region its in set region_to to that.
+    #else
+      #if result isn't listed in main as a result previously (other than mainids) (if resultid == mainid)
+        #for set i 1 to levels
+          #make a new root
+        #if you need to make a new level do so
+      #else
+        #find out what region result is in. (what root leads to it? searn main for it in result, then search in roots for that input. if its not in there then it would be a root.)
+    #endif
+
+    #thridly: pass everything to make_regions
+    #if any are blank forget it.
+    #else pass in the regions mainid regions to data to make new regions all the way up the levels.
 
 
 
