@@ -160,6 +160,8 @@ proc ::decide::commanded::sleep msg {
     return [::sleep::find::effects yes]
   } elseif {$subcommand eq "always predict"} {
     return [::sleep::find::always yes]
+  } elseif {$subcommand eq "regions"} {
+    return [::sleep::find::regions]
   } else {
     puts "sleeping..."
     puts "acts"
