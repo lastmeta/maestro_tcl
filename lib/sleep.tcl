@@ -435,6 +435,7 @@ proc ::sleep::find::regions::discover {thislevel} {
   set oldresults $origin
   set next 1
   set rcount 0
+  set tempseconds ""
 
   #put origin in roots table
   ::repo::insert roots [list level $thislevel region $rcount state $origin ]
@@ -454,13 +455,16 @@ proc ::sleep::find::regions::discover {thislevel} {
     puts "results: $results"
 
     #get a list of results from main concerning the each result in results
-    set seconds [::repo::get::chainMatchResults main input $results true]
+    set seconds [::repo::get::chainMatchResults main input $results]
+    set mainids [::repo::get::chainMatchIDs     main input $results]
     puts "seconds: $seconds"
+    puts "mainids: $mainids"
 
-    foreach item $seconds {
+    foreach item $seconds mainid $mainids {
       puts "current ITEM: $item"
-      if {[lsearch $results    $item] eq "-1"
-      &&  [lsearch $oldresults $item] eq "-1"
+      if {[lsearch $results     $item] eq "-1"
+      &&  [lsearch $oldresults  $item] eq "-1"
+      &&  [lsearch $tempseconds $item] eq "-1"
       } then {
         #put in roots
         ::repo::insert roots [list level $level region $rcount state $item]
@@ -471,6 +475,7 @@ proc ::sleep::find::regions::discover {thislevel} {
         puts "insert2:  [list level $level region $region mainid $mainid reg_to $rcount]"
 
         incr rcount
+        lappend tempseconds $item
 #      } elseif {[lsearch $results $item] eq "-1"} {
 #        #find correct region of for reg_to
 #        set findroot [::repo::get::tableColumnsWhere roots region [list state $item]]
@@ -512,7 +517,7 @@ proc ::sleep::find::regions::discover {thislevel} {
   #if {$thislevel > 0} {
     #don't look at main table at all. just look at relationships between regions
   #}
-  
+
 }
 
 proc ::sleep::find::regions::roots {next} {
