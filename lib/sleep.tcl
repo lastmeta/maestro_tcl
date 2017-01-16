@@ -432,7 +432,7 @@ proc ::sleep::find::regions::discover {thislevel} {
   #init vars
   set mainid 1
   set origin [::repo::get::tableColumnsWhere main input [list rowid $mainid]]
-  set oldresults origin
+  set oldresults $origin
   set next 1
   set rcount 0
 
@@ -444,51 +444,75 @@ proc ::sleep::find::regions::discover {thislevel} {
 
   #for each item in roots table
   while {$root ne "none left"} {
+    puts "Root: $root"
     set level  [lindex $root 0]
     set region [lindex $root 1]
     set state  [lindex $root 2]
 
     #get a list of results from main concerning the state.
     set results [::repo::get::tableColumnsWhere main result [list input $state]]
+    puts "results: $results"
 
     #get a list of results from main concerning the each result in results
-    set seconds [::repo::get::chainMatchResults main input $results]
+    set seconds [::repo::get::chainMatchResults main input $results true]
+    puts "seconds: $seconds"
 
     foreach item $seconds {
+      puts "current ITEM: $item"
       if {[lsearch $results    $item] eq "-1"
       &&  [lsearch $oldresults $item] eq "-1"
       } then {
         #put in roots
-        ::repo::insert roots [list level $level region $rcount state $origin ]
-        incr rcount
+        ::repo::insert roots [list level $level region $rcount state $item]
+        puts "insert1:  [list level $level region $rcount state $item]"
 
         #make a region to region with main id in middle
         ::repo::insert regions [list level $level region $region mainid $mainid reg_to $rcount]
+        puts "insert2:  [list level $level region $region mainid $mainid reg_to $rcount]"
 
-      } elseif {[lsearch $results $item] eq "-1"} {
-        #find correct region of for reg_to
-        set findroot [::repo::get::tableColumnsWhere roots region [list state $item]]
-        if {$findroot ne ""} {
-          #make a region to region with main id in middle
-          ::repo::insert regions [list level $level region $region mainid $mainid reg_to $findroot]
-
-        #if its not a root of a region
-        } else {
-          #its possible to belong to more than one region so we have to make connections between all of them.
-          set inputs [::repo::get::tableColumnsWhere main input [list result $item]]
-          foreach thing $inputs {
-            set findroot [::repo::get::tableColumnsWhere roots region [list state $thing]]
-            if {$findroot ne ""} {
-              ::repo::insert regions [list level $level region $region mainid $mainid reg_to $findroot]
-            }
-          }
-        }
+        incr rcount
+#      } elseif {[lsearch $results $item] eq "-1"} {
+#        #find correct region of for reg_to
+#        set findroot [::repo::get::tableColumnsWhere roots region [list state $item]]
+#        puts "findroot1: $findroot"
+#
+#        if {$findroot ne ""} {
+#          #make a region to region with main id in middle
+#          ::repo::insert regions [list level $level region $region mainid $mainid reg_to $findroot]
+#          puts "insert3:  [list level $level region $region mainid $mainid reg_to $findroot]"
+#
+#        #if its not a root of a region
+#        } else {
+#          #its possible to belong to more than one region so we have to make connections between all of them.
+#          set inputs [::repo::get::tableColumnsWhere main input [list result $item]]
+#          puts "insert3:  [list level $level region $region mainid $mainid reg_to $findroot]"
+#
+#          foreach thing $inputs {
+#            set findroot [::repo::get::tableColumnsWhere roots region [list state $thing]]
+#            puts "findroot2: $findroot"
+#
+#            if {$findroot ne ""} {
+#              ::repo::insert regions [list level $level region $region mainid $mainid reg_to $findroot]
+#              puts "insert4: [list level $level region $region mainid $mainid reg_to $findroot]"
+#
+#            }
+#          }
+#        }
       }
-      set oldresults [concat $oldresults $results $seconds]
     }
+    set oldresults [concat $oldresults $results $seconds]
+    puts "oldresults: $oldresults"
     incr next
     set root [::sleep::find::regions::roots $next]
   }
+
+  #once we succeeded in making new roots on this level we call this proc again with higher level
+  #::sleep::find::regions::discover {[incr thislevel]}
+  #then up above we need to say
+  #if {$thislevel > 0} {
+    #don't look at main table at all. just look at relationships between regions
+  #}
+  
 }
 
 proc ::sleep::find::regions::roots {next} {
