@@ -257,7 +257,7 @@ proc ::repo::get::levelMatchResults {table mod thelist level} {
 		if {$newlist ne ""} { set newlist "$newlist OR" }
 		set newlist "$newlist $mod='$item'"
 	}
-	return [brain eval "SELECT result FROM $table WHERE level='$level' AND ($newlist)"]
+	return [brain eval "SELECT reg_to FROM $table WHERE level='$level' AND ($newlist)"]
 }
 proc ::repo::get::levelMatchIDs {table mod thelist level} {
 	set newlist ""
