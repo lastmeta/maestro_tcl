@@ -227,6 +227,10 @@ proc ::repo::get::chainMatchIDs {table mod thelist} {
 	}
 	return [brain eval "SELECT rowid FROM $table WHERE $newlist"]
 }
+proc ::repo::get::firstInstance {table getcolumn column value} {
+	#SELECT input FROM main WHERE result='011' ORDER BY ROWID ASC LIMIT 1
+	return [brain eval "SELECT $getcolumn FROM $table WHERE $column='$value' ORDER BY ROWID ASC LIMIT 1"]
+}
 
 proc ::repo::get::chainActions {input result} {
 	return [brain eval "SELECT action FROM chains WHERE input='$input' AND result='$result'"]
