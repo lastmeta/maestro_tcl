@@ -227,13 +227,20 @@ proc ::repo::get::chainMatchIDs {table mod thelist} {
 	}
 	return [brain eval "SELECT rowid FROM $table WHERE $newlist"]
 }
-#proc ::repo::get::firstInstance {table getcolumn column value} {
-	#SELECT input FROM main WHERE result='011' ORDER BY ROWID ASC LIMIT 1
-	#return [brain eval "SELECT $getcolumn FROM $table WHERE $column='$value' ORDER BY ROWID ASC LIMIT 1"]
-#}
 
-proc ::repo::get::rootStates {} {
-	return [brain eval "SELECT state FROM roots ORDER BY ROWID ASC"]
+proc ::repo::get::firstInstance {table getcolumn column value} {
+	#SELECT input FROM main WHERE result='011' ORDER BY ROWID ASC LIMIT 1
+	return [brain eval "SELECT $getcolumn FROM $table WHERE $column='$value' ORDER BY ROWID ASC LIMIT 1"]
+}
+
+proc ::repo::get::firstInstanceLevel {table getcolumn column value level} {
+	#SELECT input FROM main WHERE result='011' ORDER BY ROWID ASC LIMIT 1
+	return [brain eval "SELECT $getcolumn FROM $table WHERE ($column='$value' AND level='$level') ORDER BY ROWID ASC LIMIT 1"]
+}
+
+
+proc ::repo::get::rootStates {{level 0}} {
+	return [brain eval "SELECT state FROM roots WHERE level='$level' ORDER BY ROWID ASC"]
 }
 proc ::repo::get::rootRegions {} {
 	return [brain eval "SELECT region FROM roots ORDER BY ROWID ASC"]
@@ -242,6 +249,24 @@ proc ::repo::get::rootLevels {} {
 	return [brain eval "SELECT level FROM roots ORDER BY ROWID ASC"]
 }
 
+
+
+proc ::repo::get::levelMatchResults {table mod thelist level} {
+	set newlist ""
+	foreach item $thelist {
+		if {$newlist ne ""} { set newlist "$newlist OR" }
+		set newlist "$newlist $mod='$item'"
+	}
+	return [brain eval "SELECT result FROM $table WHERE level='$level' AND ($newlist)"]
+}
+proc ::repo::get::levelMatchIDs {table mod thelist level} {
+	set newlist ""
+	foreach item $thelist {
+		if {$newlist ne ""} { set newlist "$newlist OR" }
+		set newlist "$newlist $mod='$item'"
+	}
+	return [brain eval "SELECT rowid FROM $table WHERE level='$level' AND ($newlist)"]
+}
 
 proc ::repo::get::chainActions {input result} {
 	return [brain eval "SELECT action FROM chains WHERE input='$input' AND result='$result'"]
