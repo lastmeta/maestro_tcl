@@ -537,13 +537,13 @@ proc ::sleep::find::regions::levels {thislevel} {
     puts "Root: $root"
     set region [lindex $root 1]
     set state  [lindex $root 2]
-
+    puts "state: $state region: $region"
     #get a list of results from main concerning the state.
     set results   [::repo::get::tableColumnsWhere regions reg_to [list region $state level $level]]
-    set resultids [::repo::get::tableColumnsWhere regions reg_to [list region $state level $level]]
+    set resultids [::repo::get::tableColumnsWhere regions rowid  [list region $state level $level]]
     puts "results: $results"
     puts "resultids: $resultids"
-    
+
     foreach result $results resultid $resultids {
       puts "current result: $result"
 
@@ -664,10 +664,12 @@ proc ::sleep::find::regions::from {state region {level 0}} {
 
 
 proc ::sleep::find::regions::makeRegion {level region mainid reg_to} {
-  if {$region ne $reg_to} {
-    if {[::repo::get::tableColumnsWhere regions region [list level $level region $region mainid $mainid reg_to $reg_to]] eq ""} {
-      ::repo::insert regions [list level $level region $region mainid $mainid reg_to $reg_to]
-      puts "insert3:  [list level $level region $region mainid $mainid reg_to $reg_to]"
+  if {$level ne "" && $region ne "" && $mainid ne "" && $reg_to ne ""} {
+    if {$region ne $reg_to} {
+      if {[::repo::get::tableColumnsWhere regions region [list level $level region $region mainid $mainid reg_to $reg_to]] eq ""} {
+        ::repo::insert regions [list level $level region $region mainid $mainid reg_to $reg_to]
+        puts "insert3:  [list level $level region $region mainid $mainid reg_to $reg_to]"
+      }
     }
   }
 }
