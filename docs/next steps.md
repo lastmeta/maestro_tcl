@@ -25,3 +25,10 @@ GENERAL:
 4. tried to fix above, problem persists, so maybe its a problem with the order anyway.
 5. noticed it doesn't record chains correctly.
 6. lsort seems to sort things differently for numbers vs letters vs underscore could this be the problem? I could sort manually.
+
+
+--------------------------------------------------------------------------------
+
+REGIONS:
+
+1. Sizes and Signatures for each region. - dependent on nodes and connections working in post process (sleep).
