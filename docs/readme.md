@@ -57,6 +57,8 @@ The user can communicate with the running Maestro Bot using the following comman
 
 **sleep always** - Tells Maestro to discover how indexes are changed by each action. (See Rule Formats below).
 
+**sleep regions** - Tells Maestro to organize every state-to-state transition into large scale regions indexed by average signatures of average representations for each region.
+
 **from user to s.1 message _** - Using this format the user can send messages to anything on the Maestro network, including, (as in this example) the simulation script.
 
 **debug wait** {milliseconds} - Tells Maestro to wait a minimum of milliseconds in between sending messages.

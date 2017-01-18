@@ -299,6 +299,8 @@ proc ::user::helpers::displayHelpForSleep {} {
   puts "                inspecting which index changes when each action is taken"
   puts "sleep always    discover how actions consistently have the same affect on"
   puts "                the result considering how it differs from the input"
+  puts "sleep regions   organize every state-to-state transition into successively"
+  puts "                more large scale regions indexed by average signatures"
   puts ""
   puts "##################################### end #####################################"
   puts ""
@@ -343,6 +345,7 @@ proc ::user::helpers::displayHelpForActs {} {
   puts "##################################### end #####################################"
   puts ""
 }
+
 
 
 

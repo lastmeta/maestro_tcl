@@ -89,8 +89,8 @@ proc ::communicate::interact::always {} {
 
 proc ::communicate::interact::listen {} {
   if {[gets $::communicate::chan line] >= 0} {
-    puts "IN  cmd: [::see::command $line]"
-    puts "IN  msg: [::see::message $line]"
+    puts "<-- cmd: [::see::command $line]"
+    puts "<-- msg: [::see::message $line]"
     set sendmsg [::maestro::handle::interpret $line]
     if {$sendmsg ne ""} { ::communicate::interact::send $sendmsg } \
     else {puts "no message to send."}
@@ -100,8 +100,8 @@ proc ::communicate::interact::listen {} {
 proc ::communicate::interact::send {message} {
   if {$message ne ""} {
     after $::communicate::debug::wait
-    puts "OUT cmd: [::see::command [lindex $message 0]]"
-    puts "OUT msg: [::see::message [lindex $message 0]]"
+    puts "--> cmd: [::see::command [lindex $message 0]]"
+    puts "--> msg: [::see::message [lindex $message 0]]"
     puts $::communicate::chan $message
     flush $::communicate::chan
   }
