@@ -146,7 +146,7 @@ proc ::recall::getBestMatch {goal newresults} {
 # example:  000 002
 # returns:  +1 +1
 #
-proc ::recall::getActionsPathWithPrediction {input goal} {
+proc ::recall::getActionsPathWithPredictionOfRules {input goal} {
   set actionslist ""
   #initialize everything
   set tiloc "" ;#temporary input location
@@ -300,7 +300,7 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
 # example:  000 002
 # returns:  +1 +1
 #
-proc ::recall::getActionsPathWithPrediction2 {input goal} {
+proc ::recall::getActionsPathWithPrediction {input goal} {
   set actionslist ""
   #initialize everything
   set tiloc "" ;#temporary input location

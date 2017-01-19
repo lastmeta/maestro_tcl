@@ -18,9 +18,27 @@ namespace eval ::repo::helpers {}
 proc ::repo::create {id {datas ""} } {
 	file mkdir brain
 	sqlite3 brain "./brain/$id.sqlite" -create true
+	# not used
   brain eval { create table if not exists setup(
                                                       type char,
                                                       data char) }
+	# not currently used
+	brain eval { create table if not exists rules(
+																											rule char,
+	                                                    type char,
+																											mainids char) }
+  # not currently used
+  brain eval { create table if not exists generals(
+																											input char,
+																											action char,
+																											result char,
+	                                                    type char,
+																											mainids char) }
+	# not currently used
+  brain eval { create table if not exists connectom(
+																											node int,
+																											cellid char,
+																											cell char) }
   brain eval { create table if not exists main(
 																											time char,
                                                       input char,
@@ -36,16 +54,6 @@ proc ::repo::create {id {datas ""} } {
                                                       input char,
                                                       action char,
                                                       result char) }
-	brain eval { create table if not exists rules(
-																											rule char,
-	                                                    type char,
-																											mainids char) }
-	brain eval { create table if not exists generals(
-																											input char,
-																											action char,
-																											result char,
-	                                                    type char,
-																											mainids char) }
 	brain eval { create table if not exists predictions(
 																											input char,
 	                                                    action char,
@@ -56,10 +64,6 @@ proc ::repo::create {id {datas ""} } {
 																											input char,
 																											ix char,
 																											type char) }
-	brain eval { create table if not exists connectom(
-																											node int,
-																											cellid char,
-																											cell char) }
 	brain eval { create table if not exists regions(
 																											level int,
 																											region char,

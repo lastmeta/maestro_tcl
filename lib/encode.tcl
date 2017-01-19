@@ -1,6 +1,14 @@
+# encode is being used now in a prost processing (sleep) manner
+# thus we've commented out, or never call, much of it's functionality.
+# it doens't use cells at all, just nodes, to help us later create a
+# sparsely distributed binary vector for states, used to
+# evaluate and create a list of signature representations for regions
+# as a generalization / context approximation tool
+
 namespace eval ::encode {}
 namespace eval ::encode::set {}
 namespace eval ::encode::map {}
+namespace eval ::encode::sleep {}
 namespace eval ::encode::prune {}
 namespace eval ::encode::update {}
 namespace eval ::encode::connections {}
@@ -20,7 +28,7 @@ proc ::encode::set::globals {} {
   set ::encode::decre         1
   set ::encode::limit         20
   set ::encode::lastaction    {}
-  ::encode::set::actions
+  #::encode::set::actions
 }
 
 proc ::encode::set::actions {} {
@@ -114,6 +122,17 @@ proc ::encode::this {input} {
   ::encode::connections::structure
 }
 
+proc ::encode::sleep::this {input} {
+  set max [::repo::get::maxNode]
+  if {$max eq "{}"} { set max 0 }
+  puts "max $max"
+  for {set i 0} {$i < [string length $input]} {incr i} {
+    if {[::repo::get::nodeMatch [string index $input $i] $i state ] eq ""} { ;# alternatively, get all of node and search through it manually.
+      incr max
+      ::repo::insert nodes [list node $max input [string index $input $i] ix $i type state]
+    }
+  }
+}
 
 ################################################################################
 # map ##########################################################################

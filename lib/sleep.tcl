@@ -28,6 +28,7 @@ namespace eval ::sleep::find::opposites:: {}
 namespace eval ::sleep::find::effects:: {}
 namespace eval ::sleep::find::always:: {}
 namespace eval ::sleep::find::regions:: {}
+namespace eval ::sleep::find::regions::signatures {}
 namespace eval ::sleep::update {}
 namespace eval ::sleep::help {}
 ## actions
@@ -409,7 +410,7 @@ proc ::sleep::find::regions {} {
   ::sleep::find::regions::clear
   ::sleep::find::regions::discover    ;# create level 0 regions from main table
   ::sleep::find::regions::levels 1    ;# create levels 1+ regions from regions table
-  #::sleep::find::regions::signatures  ;# signatures and sizes for each region put in the roots table
+  ::sleep::find::regions::signatures  ;# signatures and sizes for each region put in the roots table
   return "sleep regions finished"
 }
 
@@ -420,6 +421,7 @@ proc ::sleep::find::regions::clear {} {
 }
 
 proc ::sleep::find::regions::discover {} {
+  puts "level: 0"
   #init vars
   set mainid 1
   set origin [::repo::get::tableColumnsWhere main input [list rowid $mainid]]
@@ -437,7 +439,7 @@ proc ::sleep::find::regions::discover {} {
 
   #for each item in roots table
   while {$root ne "none left"} {
-    puts "Root: $root"
+    puts "root: $root"
     set level  [lindex $root 0]
     set region [lindex $root 1]
     set state  [lindex $root 2]
@@ -447,7 +449,6 @@ proc ::sleep::find::regions::discover {} {
     set resultids [::repo::get::tableColumnsWhere main rowid  [list input $state]]
 
     foreach result $results resultid $resultids {
-      puts "current result: $result"
 
       set resultregion [::sleep::find::regions::from $result $region]
 
@@ -460,7 +461,6 @@ proc ::sleep::find::regions::discover {} {
       set mainids [::repo::get::chainMatchIDs     main input $result]
 
       foreach second $seconds mainid $mainids {
-        puts "current second: $second"
         if {[lsearch $results     $second] eq "-1"
         &&  [lsearch $oldresults  $second] eq "-1"
         &&  [lsearch $tempseconds $second] eq "-1"
@@ -520,7 +520,7 @@ proc ::sleep::find::regions::levels {thislevel} {
 
   #for each item in roots table
   while {$root ne "none left"} {
-    puts "Root: $root"
+    puts "root: $root"
     set region [lindex $root 1]
     set state  [lindex $root 2]
     #get a list of results from main concerning the state.
@@ -646,6 +646,35 @@ proc ::sleep::find::regions::makeRegion {level region mainid reg_to} {
   }
 }
 
+
+
+proc ::sleep::find::regions::signatures {} {
+  set allstates [::sleep::find::regions::signatures::getStates]
+  ::sleep::find::regions::signatures::createNodes $allstates
+  #::sleep::find::regions::evaluate
+}
+
+proc ::sleep::find::regions::signatures::createNodes {allstates} {
+  foreach state $allstates {
+    ::encode::sleep::this $state
+  }
+}
+
+proc ::sleep::find::regions::signatures::getStates {} {
+  set allinputs   [::repo::get::tableColumns main input]
+  puts $allinputs
+  set lastresult  [::repo::get::tableColumnsWhere main result [list rowid [llength $allinputs]]]
+  puts $lastresult
+  set allstates [concat $allinputs $lastresult]
+  return [lsort -unique $allstates]
+}
+
+#proc get all states in a given regions
+  #get all representations of each state by list of turned on nodes
+  #average all states into a signature for that regions
+  #count all the states
+  #save signature and count in roots table
+#end
 
 ################################################################################################################################################################
 # others #########################################################################################################################################################
