@@ -125,13 +125,21 @@ proc ::encode::this {input} {
 proc ::encode::sleep::this {input} {
   set max [::repo::get::maxNode]
   if {$max eq "{}"} { set max 0 }
-  puts "max $max"
   for {set i 0} {$i < [string length $input]} {incr i} {
     if {[::repo::get::nodeMatch [string index $input $i] $i state ] eq ""} { ;# alternatively, get all of node and search through it manually.
       incr max
       ::repo::insert nodes [list node $max input [string index $input $i] ix $i type state]
     }
   }
+}
+
+proc ::encode::sleep::SDR {input} {
+  set max   [::repo::get::maxNode]
+  set nodes ""
+  for {set i 0} {$i < [string length $input]} {incr i} {
+    lappend nodes [::repo::get::nodeMatch [string index $input $i] $i state]
+  }
+  return $nodes
 }
 
 ################################################################################

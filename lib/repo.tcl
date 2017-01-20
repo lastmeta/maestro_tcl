@@ -72,7 +72,9 @@ proc ::repo::create {id {datas ""} } {
 	brain eval { create table if not exists roots(
 																											level int,
 																											region char,
-																											state char) }
+																											state char,
+																											sig char,
+																											size int) }
 }
 
 ################################################################################################################################################################
@@ -100,6 +102,8 @@ proc ::repo::insert {table datas} {
 	if [dict exists $datas mainid ]	{	set mainid	[dict get $datas mainid ] }
 	if [dict exists $datas reg_to ]	{	set reg_to	[dict get $datas reg_to ] }
 	if [dict exists $datas state  ]	{	set state		[dict get $datas state	] }
+	if [dict exists $datas sig  	]	{	set sig			[dict get $datas sig		] }
+	if [dict exists $datas size  	]	{	set size		[dict get $datas size		] }
 	switch $table {
 		setup				{ brain eval {INSERT INTO setup 			VALUES ($type,$data)} }
 		main 				{ brain eval {INSERT INTO main 				VALUES ($time,$input,$action,$result)} }
@@ -112,7 +116,7 @@ proc ::repo::insert {table datas} {
 		nodes 			{ brain eval {INSERT INTO nodes	 			VALUES ($node,$input,$ix,$type)} }
 		connectom		{ brain eval {INSERT INTO connectom 	VALUES ($node,$cellid,$cell)} }
 		regions			{ brain eval {INSERT INTO regions		  VALUES ($level,$region,$mainid,$reg_to)}	}
-		roots				{ brain eval {INSERT INTO roots				VALUES ($level,$region,$state)}	}
+		roots				{ brain eval {INSERT INTO roots				VALUES ($level,$region,$state,'','')}	}
 		default 		{ return "No data saved, please supply valid table name." }
 	}
 }
@@ -136,6 +140,11 @@ proc ::repo::update::cellid {newid id} {
 }
 proc ::repo::update::node {column data id} {
 	brain eval "UPDATE nodes SET '$column'='$data' WHERE node='$id'"
+}
+
+proc ::repo::update::root {id sig size} {
+	brain eval "UPDATE roots SET 'sig'='$sig' WHERE rowid='$id'"
+	brain eval "UPDATE roots SET 'size'='$size' WHERE rowid='$id'"
 }
 
 ################################################################################################################################################################

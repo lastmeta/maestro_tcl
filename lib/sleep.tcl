@@ -649,15 +649,26 @@ proc ::sleep::find::regions::makeRegion {level region mainid reg_to} {
 
 
 proc ::sleep::find::regions::signatures {} {
-  set allstates [::sleep::find::regions::signatures::getStates]
-  ::sleep::find::regions::signatures::createNodes $allstates
-  #::sleep::find::regions::evaluate
-}
+  set allstates   [::sleep::find::regions::signatures::getStates]
 
-proc ::sleep::find::regions::signatures::createNodes {allstates} {
-  foreach state $allstates {
-    ::encode::sleep::this $state
+  ::sleep::find::regions::signatures::createNodes $allstates
+
+  set statesigs   [::sleep::find::regions::signatures::evaluateStates $allstates]
+
+  ###temp
+  foreach state $allstates sig $statesigs {
+    puts "state: $state sig: $sig"
   }
+  ### WORKS
+
+  set max [::repo::get::maxNode]
+  ::sleep::find::regions::signatures::evaluateRoots $allstates $statesigs $max
+
+  set allroots    [::repo::get::tableColumnsWhere roots state   [list level 1]]
+  set allrootregs [::repo::get::tableColumnsWhere roots region  [list level 1]]
+  set allrootids  [::repo::get::tableColumnsWhere roots rowid   [list level 1]]
+  puts "allroots $allroots allrootregs $allrootregs allrootids $allrootids"
+  ::sleep::find::regions::signatures::evaluateRegions 1 $allroots $allrootregs $allrootids $max
 }
 
 proc ::sleep::find::regions::signatures::getStates {} {
@@ -669,13 +680,134 @@ proc ::sleep::find::regions::signatures::getStates {} {
   return [lsort -unique $allstates]
 }
 
-#proc get all states in a given regions
-  #get all representations of each state by list of turned on nodes
-  #average all states into a signature for that regions
-  #count all the states
-  #save signature and count in roots table
-#end
+proc ::sleep::find::regions::signatures::createNodes {allstates} {
+  foreach state $allstates {
+    ::encode::sleep::this $state
+  }
+}
 
+proc ::sleep::find::regions::signatures::evaluateStates {allstates} {
+  set statesigs ""
+  foreach state $allstates {
+    lappend statesigs [::encode::sleep::SDR $state]
+  }
+  return $statesigs
+}
+
+proc ::sleep::find::regions::signatures::evaluateRoots {allstates statesigs max} {
+  set allids      [::repo::get::tableColumnsWhere roots rowid   [list level 0]]
+  set allrootregs [::repo::get::tableColumnsWhere roots region  [list level 0]]
+  set allroots    [::repo::get::tableColumnsWhere roots state   [list level 0]]
+  set resultsigs ""
+  set tempsig ""
+  foreach root $allroots id $allids region $allrootregs {
+    set resultsigs ""
+    #get a list of results from main concerning the state.
+    set results        [::repo::get::tableColumnsWhere main result [list input $root]]
+    set index          [lsearch $allstates $root ]
+    lappend resultsigs [lindex  $statesigs $index]
+
+    foreach result $results {
+      set resultregion [::sleep::find::regions::from $result $region]
+      puts "root: $root id: $id region: $region result: $result resultregion: $resultregion"
+      if {$resultregion eq $region} {
+        set index          [lsearch $allstates $result]
+        lappend resultsigs [lindex  $statesigs $index ]
+      }
+    }
+    puts "resultsigs $resultsigs"
+    set tempsig [::sleep::find::regions::signatures::makeSignature $resultsigs [llength $resultsigs] $max]
+    ::repo::update::root $id $tempsig [llength $resultsigs]
+    set index ""
+    set resultsigs ""
+  }
+}
+
+proc ::sleep::find::regions::signatures::evaluateRegions {level allroots allrootregs allrootids maxnode} {
+  set resultsigs ""
+  set lastlevel [expr $level - 1]
+  set tempsigs ""
+  set tempsize ""
+  set tempmany ""
+  foreach root $allroots region $allrootregs id $allrootids {
+    set resultsigs ""
+    puts "root: $root region $region id $id"
+    #get a list of results from regions concerning the root.
+    set results   [::repo::get::tableColumnsWhere regions reg_to [list region $root level $lastlevel]]
+    set resultids [::repo::get::tableColumnsWhere regions rowid  [list region $root level $lastlevel]]
+    puts "results: $results resultids: $resultids"
+
+    #put this root in there first.
+    lappend tempsigs [::repo::get::tableColumnsWhere roots sig  [list region $root level $lastlevel]]
+    set tempmany     [::repo::get::tableColumnsWhere roots size [list region $root level $lastlevel]]
+    lappend tempsize $tempmany
+
+    foreach result $results resultid $resultids {
+      puts "result $result resultid $resultid"
+      set resultregion [::sleep::find::regions::from $result $region $lastlevel]
+      puts "resultregion $resultregion"
+      if {$resultregion eq $region} {
+        #get the signature and size region in roots table for the lastlevel
+        lappend tempsigs [::repo::get::tableColumnsWhere roots sig  [list region $result level $lastlevel]]
+        set     thissize [::repo::get::tableColumnsWhere roots size [list region $result level $lastlevel]]
+        lappend tempsize $thissize
+        set     tempmany [expr $tempmany + $thissize]
+        puts "tempsigs $tempsigs thissize $thissize tempsize $tempsize tempmany $tempmany"
+      }
+    }
+
+    #once its done getting all that combine it approapriately and save:
+    #for size we just add up all the sizes -ez
+    #for result sigs we take the average according to size.
+    if {$tempmany ne ""} {
+      set resultsigs [::sleep::find::regions::signatures::makeRegionSignature $tempsigs $tempsize $maxnode $tempmany]
+      ::repo::update::root $id $resultsigs $tempmany
+    }
+    set tempsigs ""
+    set tempsize ""
+  }
+  incr level
+  set allroots    [::repo::get::tableColumnsWhere roots state   [list level $level]]
+  set allrootregs [::repo::get::tableColumnsWhere roots region  [list level $level]]
+  set allrootids  [::repo::get::tableColumnsWhere roots rowid   [list level $level]]
+  if {$allroots ne "" && $allroots ne "{}"} {
+    ::sleep::find::regions::signatures::evaluateRegions $level $allroots $allrootregs $allrootids $maxnode
+  }
+}
+
+proc ::sleep::find::regions::signatures::makeSignature {lists size maxnode} {
+  set signature ""
+  set instance 0
+  for {set i 1} {$i <= $maxnode} {incr i} {
+    set instance 0
+    foreach list $lists {
+      if {[lsearch $list $i] ne "-1"} {
+        incr instance
+      }
+    }
+    lappend signature [expr $instance / ($size + 0.0)]
+  }
+  return $signature
+
+}
+
+proc ::sleep::find::regions::signatures::makeRegionSignature {lists sizes maxnode total} {
+  set signature ""
+  set instance 0
+  for {set i 1} {$i <= $maxnode} {incr i} {
+    set instance 0
+    puts "lists $lists"
+    puts "sizes $sizes"
+    puts "maxnode $maxnode"
+    foreach list $lists size $sizes {
+      puts "i $i list length [llength {*}$list]"
+      puts "list $list"
+      set instance [expr $instance + ([lindex {*}$list [expr $i-1]] * $size)]
+    }
+    lappend signature [expr $instance / ($total + 0.0)]
+  }
+  return $signature
+}
 ################################################################################################################################################################
 # others #########################################################################################################################################################
 ################################################################################################################################################################
