@@ -138,7 +138,7 @@ proc ::encode::sleep::SDR {input} {
   set nodes ""
   for {set i 0} {$i < [string length $input]} {incr i} {
     set match [::repo::get::nodeMatch [string index $input $i] $i state]
-    if {$match eq "" || "{}"} {
+    if {$match eq "" || $match eq "{}"} {
       return "" ;# redo sleep regions
     }
     lappend nodes $match
