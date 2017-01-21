@@ -171,7 +171,7 @@ proc ::repo::get::tableColumns {table cols} {
 	return [brain eval "SELECT $csv FROM $table"]
 }
 
-proc ::repo::get::tableColumnsWhere {table cols where} {
+proc ::repo::get::tableColumnsWhere {table cols where {type "AND"}} {
 	set csv ""
 	foreach col $cols {
 		if {$csv eq ""} {
@@ -185,7 +185,7 @@ proc ::repo::get::tableColumnsWhere {table cols where} {
 		if {$csv2 eq ""} {
 			set csv2 "$key='[dict get $where $key]'"
 		} else {
-			set csv2 "$csv2 AND $key='[dict get $where $key]'"
+			set csv2 "$csv2 $type $key='[dict get $where $key]'"
 		}
 	}
 	return [brain eval "SELECT $csv FROM $table WHERE $csv2"]

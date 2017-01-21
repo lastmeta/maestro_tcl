@@ -170,10 +170,13 @@ proc ::decide::commanded::sleep msg {
     puts $::decide::acts
     puts "opps"
     ::decide::commanded::sleep opps
-    puts "effects"
-    ::decide::commanded::sleep effects
-    puts "always"
-    ::decide::commanded::sleep always
+    #might be useful but not currently used.
+    #puts "effects"
+    #::decide::commanded::sleep effects
+    #puts "always"
+    #::decide::commanded::sleep always
+    puts "regions"
+    ::decide::commanded::sleep regions
     puts "awake!"
     return $::decide::acts
   }

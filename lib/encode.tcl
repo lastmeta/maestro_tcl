@@ -137,7 +137,11 @@ proc ::encode::sleep::SDR {input} {
   set max   [::repo::get::maxNode]
   set nodes ""
   for {set i 0} {$i < [string length $input]} {incr i} {
-    lappend nodes [::repo::get::nodeMatch [string index $input $i] $i state]
+    set match [::repo::get::nodeMatch [string index $input $i] $i state]
+    if {$match eq "" || "{}"} {
+      return "" ;# redo sleep regions
+    }
+    lappend nodes $match
   }
   return $nodes
 }

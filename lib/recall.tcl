@@ -2,7 +2,7 @@ namespace eval ::recall {}
 namespace eval ::recall::set {}
 namespace eval ::recall::record {}
 namespace eval ::recall::helpers {}
-
+namespace eval ::recall::roots {}
 
 proc ::recall::set::globals {} {
   set ::recall::goal  {}
@@ -547,3 +547,125 @@ proc ::recall::curious {input acts} {
 # 2. pick two from the list at random.
 # 3. compute the distance to both.
 # 4. the one with the shorter distance wins, set that actionlist as my path and go there.
+
+
+
+
+################################################################################################################################################################
+# ROOTS ########################################################################################################################################################
+################################################################################################################################################################
+
+
+## roots input as word, acts as list.
+#
+# generalize path finding using what we've learned during sleep (that is the
+# hierarchical informational structure of data we've produced while sleeping)
+# order from chaos.
+#
+proc ::recall::roots {goalstate} {
+  #convert goalstate to a binary SDR
+  set goalstate [::encode::sleep::SDR $goalstate]
+  if {$goalstate eq ""} {
+    puts "I must sleep"
+    return "do candle method instead"
+  }
+  #get a list of all the signatures from every region in every level
+  set allsigs     [::repo::get::tableColumns roots sig]
+  set allsize     [::repo::get::tableColumns roots size]
+  #compare to every signature and get a list of distances corresponding to the regions by closest match (smallest divergence)
+  set distsances  [::recall::roots::getDistances $goalstate $allsigs]
+  #go to and explore that region in more detail
+  ::recall::roots::explore $goalstate $allsigs $distances 0
+
+}
+
+proc ::recall::roots::getDistances {goalstate sigs} {
+  set distance  0
+  set distances ""
+  foreach list $sigs {
+    for {set i 1} {$i <= [llength $goalstate]} {incr i} {
+      set distance [expr $distance + [expr abs([lindex $goalstate $i]-[lindex {*}$list $i])]
+    }
+    lappend distances $distance
+  }
+  return $distances
+}
+
+proc ::recall::roots::explore {goalstate sigs distances lasttry} {
+  set smallest 1000000
+  set i 0
+  foreach distance $distances {
+    if {$distance < $smallest && $distance > $lasttry} {
+      set smallest $distance
+      set index    $i
+    }
+    incr i
+  }
+
+  #use index to get the approapriate region.
+  set thing  [::repo::get::tableColumnsWhere roots [list level region state] [list sig [lindex $sigs $index]]]
+  set level  [lindex $thing 0]
+  set region [lindex $thing 1]
+  set root   [lindex $thing 2]
+  #see if we've explored everything in every child of that root. if so
+  ::recall::roots::explore $goalstate $sigs $distances $smallest
+  #else
+    #go there and explore to region - which is a curious search:
+    #everything that hasn't been tried already, within a region.
+
+}
+
+
+proc ::recall::roots::curious {input acts region level} {
+  #get all the states in a region.
+
+  set main      [::repo::get::tableColumnsWhere main result [list input $input] "OR"]
+  set bad       [::repo::get::tableColumnsWhere bad  result [list input $input] "OR"]
+  set all       [concat $main $bad]
+  set uncommon  [::prepdata::leastcommon $all]
+  set random1   [::prepdata::randompick $uncommon]
+  set random2   [::prepdata::randompick $uncommon]
+  set acts1     [::recall::getActionsPathWithPrediction $input $random1]
+  set acts2     [::recall::getActionsPathWithPrediction $input $random2]
+  set lacts1    [llength $acts1]
+  set lacts2    [llength $acts2]
+  if {$lacts1 < $lacts2 && [lindex $acts1 0] ne "_"} {
+    set ::decide::goal $random1
+    return $acts1
+  } elseif {[lindex $acts2 0] ne "_"} {
+    set ::decide::goal $random2
+    return $acts2
+  } else {
+    return "_"
+  }
+}
+
+
+proc ::recall::roots::getStates {level region root} {
+  #this means
+  set subregion   $region
+  set smallregion ""
+  for {set i $level} {$i >= 0} {incr i -1} {
+    set subregion [::repo::get::tableColumnsWhere roots state [list region $subregion level $i]]
+    if {$i == 1} { set smallregion $subregion }
+
+  }
+  #subregion is now the root on zero level or the state
+  set results $subregion
+  set candidates $subregion
+  #go to main and get every result within a 2^(level+1) radius
+  set n [expr 2**[expr $level+1]]
+  for {set i 0} {$i < $n} {incr i} {
+    set results [::rep::get::tableColumnsWhere main result [list input $state]]
+    lappend candidates [::recall::roots::getStates2 $results]
+    set candidates [lsort -unique $candidates]
+  }
+}
+proc ::recall::roots::getStates2 {states} {
+  foreach state $states {
+    set results [::rep::get::tableColumnsWhere main result [list input $state]]
+    lappend candidates $results
+    set candidates [lsort -unique $candidates]
+  }
+  return candidates
+}
