@@ -655,19 +655,12 @@ proc ::sleep::find::regions::signatures {} {
 
   set statesigs   [::sleep::find::regions::signatures::evaluateStates $allstates]
 
-  ###temp
-  foreach state $allstates sig $statesigs {
-    puts "state: $state sig: $sig"
-  }
-  ### WORKS
-
   set max [::repo::get::maxNode]
   ::sleep::find::regions::signatures::evaluateRoots $allstates $statesigs $max
 
   set allroots    [::repo::get::tableColumnsWhere roots state   [list level 1]]
   set allrootregs [::repo::get::tableColumnsWhere roots region  [list level 1]]
   set allrootids  [::repo::get::tableColumnsWhere roots rowid   [list level 1]]
-  puts "allroots $allroots allrootregs $allrootregs allrootids $allrootids"
   ::sleep::find::regions::signatures::evaluateRegions 1 $allroots $allrootregs $allrootids $max
 }
 
@@ -709,13 +702,11 @@ proc ::sleep::find::regions::signatures::evaluateRoots {allstates statesigs max}
 
     foreach result $results {
       set resultregion [::sleep::find::regions::from $result $region]
-      puts "root: $root id: $id region: $region result: $result resultregion: $resultregion"
       if {$resultregion eq $region} {
         set index          [lsearch $allstates $result]
         lappend resultsigs [lindex  $statesigs $index ]
       }
     }
-    puts "resultsigs $resultsigs"
     set tempsig [::sleep::find::regions::signatures::makeSignature $resultsigs [llength $resultsigs] $max]
     ::repo::update::root $id $tempsig [llength $resultsigs]
     set index ""
@@ -731,11 +722,9 @@ proc ::sleep::find::regions::signatures::evaluateRegions {level allroots allroot
   set tempmany ""
   foreach root $allroots region $allrootregs id $allrootids {
     set resultsigs ""
-    puts "root: $root region $region id $id"
     #get a list of results from regions concerning the root.
     set results   [::repo::get::tableColumnsWhere regions reg_to [list region $root level $lastlevel]]
     set resultids [::repo::get::tableColumnsWhere regions rowid  [list region $root level $lastlevel]]
-    puts "results: $results resultids: $resultids"
 
     #put this root in there first.
     lappend tempsigs [::repo::get::tableColumnsWhere roots sig  [list region $root level $lastlevel]]
@@ -743,16 +732,13 @@ proc ::sleep::find::regions::signatures::evaluateRegions {level allroots allroot
     lappend tempsize $tempmany
 
     foreach result $results resultid $resultids {
-      puts "result $result resultid $resultid"
       set resultregion [::sleep::find::regions::from $result $region $lastlevel]
-      puts "resultregion $resultregion"
       if {$resultregion eq $region} {
         #get the signature and size region in roots table for the lastlevel
         lappend tempsigs [::repo::get::tableColumnsWhere roots sig  [list region $result level $lastlevel]]
         set     thissize [::repo::get::tableColumnsWhere roots size [list region $result level $lastlevel]]
         lappend tempsize $thissize
         set     tempmany [expr $tempmany + $thissize]
-        puts "tempsigs $tempsigs thissize $thissize tempsize $tempsize tempmany $tempmany"
       }
     }
 
@@ -796,12 +782,7 @@ proc ::sleep::find::regions::signatures::makeRegionSignature {lists sizes maxnod
   set instance 0
   for {set i 1} {$i <= $maxnode} {incr i} {
     set instance 0
-    puts "lists $lists"
-    puts "sizes $sizes"
-    puts "maxnode $maxnode"
     foreach list $lists size $sizes {
-      puts "i $i list length [llength {*}$list]"
-      puts "list $list"
       set instance [expr $instance + ([lindex {*}$list [expr $i-1]] * $size)]
     }
     lappend signature [expr $instance / ($total + 0.0)]

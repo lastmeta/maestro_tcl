@@ -575,7 +575,7 @@ proc ::recall::roots {goalstate} {
   #compare to every signature and get a list of distances corresponding to the regions by closest match (smallest divergence)
   set distsances  [::recall::roots::getDistances $goalstate $allsigs]
   #go to and explore that region in more detail
-  ::recall::roots::explore $goalstate $allsigs $distances 0
+  ::recall::roots::explore $goalstate $allsigs $distances
 
 }
 
@@ -591,7 +591,7 @@ proc ::recall::roots::getDistances {goalstate sigs} {
   return $distances
 }
 
-proc ::recall::roots::explore {goalstate sigs distances lasttry} {
+proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
   set smallest 1000000
   set i 0
   foreach distance $distances {
@@ -607,28 +607,50 @@ proc ::recall::roots::explore {goalstate sigs distances lasttry} {
   set level  [lindex $thing 0]
   set region [lindex $thing 1]
   set root   [lindex $thing 2]
+
+  #get all the states of that region
+  set states [::recall::roots::getStates $level $region $root]
+
   #see if we've explored everything in every child of that root. if so
-  ::recall::roots::explore $goalstate $sigs $distances $smallest
-  #else
-    #go there and explore to region - which is a curious search:
-    #everything that hasn't been tried already, within a region.
+  set stateacts [::recall::roots::actions $states]
+  if {$stateacts eq ""} {
+    ::recall::roots::explore $goalstate $sigs $distances $smallest
+  } else {
+    #travel to each of states in the keys of stateacts
+    #and do each action in the values of stateacts for that key.
 
+  }
 }
+proc ::recall::roots::actions {states} {
+  set stateacts ""
 
+  foreach state $states {
+    #get all the actions done by this state in the main and bad.
+    set myacts [concat [::repo::get::tableColumnsWhere main        action [list input $state]] \
+                       [::repo::get::tableColumnsWhere bad         action [list input $state]] \
+                       [::repo::get::tableColumnsWhere predictions action [list input $state]] ]
+    foreach act $::decide::acts {
+      if {[lsearch $myacts $act] eq "-1"} {
+        dict lappend stateacts $state $act
+      }
+    }
+  }
+  return $stateacts
+}
 
 proc ::recall::roots::curious {input acts region level} {
   #get all the states in a region.
 
-  set main      [::repo::get::tableColumnsWhere main result [list input $input] "OR"]
-  set bad       [::repo::get::tableColumnsWhere bad  result [list input $input] "OR"]
-  set all       [concat $main $bad]
-  set uncommon  [::prepdata::leastcommon $all]
-  set random1   [::prepdata::randompick $uncommon]
-  set random2   [::prepdata::randompick $uncommon]
-  set acts1     [::recall::getActionsPathWithPrediction $input $random1]
-  set acts2     [::recall::getActionsPathWithPrediction $input $random2]
-  set lacts1    [llength $acts1]
-  set lacts2    [llength $acts2]
+  set main     [::repo::get::tableColumnsWhere main result [list input $input]]
+  set bad      [::repo::get::tableColumnsWhere bad  result [list input $input]]
+  set all      [concat $main $bad]
+  set uncommon [::prepdata::leastcommon $all]
+  set random1  [::prepdata::randompick $uncommon]
+  set random2  [::prepdata::randompick $uncommon]
+  set acts1    [::recall::getActionsPathWithPrediction $input $random1]
+  set acts2    [::recall::getActionsPathWithPrediction $input $random2]
+  set lacts1   [llength $acts1]
+  set lacts2   [llength $acts2]
   if {$lacts1 < $lacts2 && [lindex $acts1 0] ne "_"} {
     set ::decide::goal $random1
     return $acts1
@@ -648,7 +670,6 @@ proc ::recall::roots::getStates {level region root} {
   for {set i $level} {$i >= 0} {incr i -1} {
     set subregion [::repo::get::tableColumnsWhere roots state [list region $subregion level $i]]
     if {$i == 1} { set smallregion $subregion }
-
   }
   #subregion is now the root on zero level or the state
   set results $subregion
@@ -656,16 +677,20 @@ proc ::recall::roots::getStates {level region root} {
   #go to main and get every result within a 2^(level+1) radius
   set n [expr 2**[expr $level+1]]
   for {set i 0} {$i < $n} {incr i} {
-    set results [::rep::get::tableColumnsWhere main result [list input $state]]
-    lappend candidates [::recall::roots::getStates2 $results]
-    set candidates [lsort -unique $candidates]
-  }
-}
-proc ::recall::roots::getStates2 {states} {
-  foreach state $states {
-    set results [::rep::get::tableColumnsWhere main result [list input $state]]
+    set results [concat [::repo::get::chainMatchResults main        input $results] \
+                        [::repo::get::chainMatchResults predictions input $results] ]
     lappend candidates $results
-    set candidates [lsort -unique $candidates]
   }
-  return candidates
+  set candidates [lsort -unique $candidates]
+  #now that you have a list of states make sure each of them are in the approapriate region
+  foreach candidate $candidates {
+    for {set i 0} {$i < $level} {incr i} {
+      set resultregion [::sleep::find::regions::from $candidate $region $level]
+    }
+    if {$resultregion ne $region} {
+      set idx [lsearch $candidates $candidate]
+      set candidates [lreplace $candidates $idx $idx]
+    }
+  }
+  return $candidates
 }
