@@ -3,6 +3,7 @@ namespace eval ::recall::set {}
 namespace eval ::recall::record {}
 namespace eval ::recall::helpers {}
 namespace eval ::recall::roots {}
+namespace eval ::recall::roots::path {}
 
 proc ::recall::set::globals {} {
   set ::recall::goal  {}
@@ -621,6 +622,8 @@ proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
 
   }
 }
+
+
 proc ::recall::roots::actions {states} {
   set stateacts ""
 
@@ -636,30 +639,6 @@ proc ::recall::roots::actions {states} {
     }
   }
   return $stateacts
-}
-
-proc ::recall::roots::curious {input acts region level} {
-  #get all the states in a region.
-
-  set main     [::repo::get::tableColumnsWhere main result [list input $input]]
-  set bad      [::repo::get::tableColumnsWhere bad  result [list input $input]]
-  set all      [concat $main $bad]
-  set uncommon [::prepdata::leastcommon $all]
-  set random1  [::prepdata::randompick $uncommon]
-  set random2  [::prepdata::randompick $uncommon]
-  set acts1    [::recall::getActionsPathWithPrediction $input $random1]
-  set acts2    [::recall::getActionsPathWithPrediction $input $random2]
-  set lacts1   [llength $acts1]
-  set lacts2   [llength $acts2]
-  if {$lacts1 < $lacts2 && [lindex $acts1 0] ne "_"} {
-    set ::decide::goal $random1
-    return $acts1
-  } elseif {[lindex $acts2 0] ne "_"} {
-    set ::decide::goal $random2
-    return $acts2
-  } else {
-    return "_"
-  }
 }
 
 
@@ -693,4 +672,23 @@ proc ::recall::roots::getStates {level region root} {
     }
   }
   return $candidates
+}
+
+
+
+
+
+
+
+
+
+proc ::recall::roots::path::finding {currentstate goalstate} {
+  # find the region on the lowest level for both.
+  # then find the next highest region for both, etc. etc.
+  # do this until it becomes the same region, then stop,
+  # go back down a level, findout how to get from the first region to the second
+  # if there is no direct connection use candle at both ends to try to find an indirect path
+  # if this fails go to the edges of both regions and search everything that hasn't been searched before
+  # in order to try to find a link between the two regions.
+    
 }
