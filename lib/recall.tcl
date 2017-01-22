@@ -677,6 +677,9 @@ proc ::recall::roots::getStates {level region root} {
 
 
 
+################################################################################################################################################################
+# ROOTS PATH ########################################################################################################################################################
+################################################################################################################################################################
 
 
 
@@ -686,9 +689,21 @@ proc ::recall::roots::path::finding {currentstate goalstate} {
   # find the region on the lowest level for both.
   # then find the next highest region for both, etc. etc.
   # do this until it becomes the same region, then stop,
+  set level -1
+  set cregion ""
+  set gregion "_"
+  while {$cregion ne $gregion} {
+    set cregion [::sleep::find::regions::from $currentstate]
+    set gregion [::sleep::find::regions::from $currentstate]
+    incr level
+  }
+
   # go back down a level, findout how to get from the first region to the second
   # if there is no direct connection use candle at both ends to try to find an indirect path
+    # call sometihng like this ::recall::getActionsPathWithPrediction {input goal} but for regions table etc. unless level eq -1
+
   # if this fails go to the edges of both regions and search everything that hasn't been searched before
+
   # in order to try to find a link between the two regions.
-    
+
 }

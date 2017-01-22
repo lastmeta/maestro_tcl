@@ -609,7 +609,7 @@ proc ::sleep::find::regions::roots {next {level ""}} {
 
 
 
-proc ::sleep::find::regions::from {state region {level 0}} {
+proc ::sleep::find::regions::from {state {region ""} {level 0}} {
   # is the state a root itself?
   set resultregion [::repo::get::tableColumnsWhere roots region [list state $state level $level]]
 
