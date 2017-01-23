@@ -689,14 +689,15 @@ proc ::recall::roots::path::finding {currentstate goalstate} {
   # find the region on the lowest level for both.
   # then find the next highest region for both, etc. etc.
   # do this until it becomes the same region, then stop,
-  set level -1
+  set level 0
   set cregion ""
   set gregion "_"
   while {$cregion ne $gregion} {
-    set cregion [::sleep::find::regions::from $currentstate]
-    set gregion [::sleep::find::regions::from $currentstate]
+    set cregion [::sleep::find::regions::from $currentstate $cregion $level]
+    set gregion [::sleep::find::regions::from $currentstate $gregion $level]
     incr level
   }
+  incr level -1
 
   # go back down a level, findout how to get from the first region to the second
   # if there is no direct connection use candle at both ends to try to find an indirect path
