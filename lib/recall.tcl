@@ -564,28 +564,36 @@ proc ::recall::curious {input acts} {
 # order from chaos.
 #
 proc ::recall::roots {goalstate} {
-  #convert goalstate to a binary SDR
-  set goalstate [::encode::sleep::SDR $goalstate]
+  #convert goalstate to a binary sdr
+  lassign [::encode::sleep::sdr $goalstate] goalnodes goalsdr
+  puts "goalstate $goalstate"
+  puts "goalnodes $goalnodes"
+  puts "goalsdr $goalsdr"
+
   if {$goalstate eq ""} {
     puts "I must sleep"
     return "do candle method instead"
   }
   #get a list of all the signatures from every region in every level
   set allsigs     [::repo::get::tableColumns roots sig]
+  puts "allsigs $allsigs"
   set allsize     [::repo::get::tableColumns roots size]
+  puts "allsize $allsize"
   #compare to every signature and get a list of distances corresponding to the regions by closest match (smallest divergence)
-  set distsances  [::recall::roots::getDistances $goalstate $allsigs]
+  set distances  [::recall::roots::getDistances $goalsdr $allsigs]
+  puts "distances $distances"
   #go to and explore that region in more detail
   ::recall::roots::explore $goalstate $allsigs $distances
 
 }
 
-proc ::recall::roots::getDistances {goalstate sigs} {
+proc ::recall::roots::getDistances {goalsdr sigs} {
   set distance  0
   set distances ""
   foreach list $sigs {
-    for {set i 1} {$i <= [llength $goalstate]} {incr i} {
-      set distance [expr $distance + [expr abs([lindex $goalstate $i]-[lindex {*}$list $i])]
+    set distance  0
+    for {set i 0} {$i < [llength $goalsdr]} {incr i} {
+      set distance [expr $distance + abs([expr [lindex $goalsdr $i] - [lindex $list $i]])]
     }
     lappend distances $distance
   }
@@ -602,18 +610,26 @@ proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
     }
     incr i
   }
-
+  puts "smallest $smallest"
+  puts "index $index"
   #use index to get the approapriate region.
   set thing  [::repo::get::tableColumnsWhere roots [list level region state] [list sig [lindex $sigs $index]]]
   set level  [lindex $thing 0]
   set region [lindex $thing 1]
   set root   [lindex $thing 2]
+  puts "thing $thing"
+  puts "level $level"
+  puts "region $region"
+  puts "root $root"
 
   #get all the states of that region
   set states [::recall::roots::getStates $level $region $root]
-
+  puts "states $states"
   #see if we've explored everything in every child of that root. if so
   set stateacts [::recall::roots::actions $states]
+  puts "stateacts $stateacts"
+
+
   if {$stateacts eq ""} {
     ::recall::roots::explore $goalstate $sigs $distances $smallest
   } else {
@@ -663,7 +679,7 @@ proc ::recall::roots::getStates {level region root} {
   set candidates [lsort -unique $candidates]
   #now that you have a list of states make sure each of them are in the approapriate region
   foreach candidate $candidates {
-    for {set i 0} {$i < $level} {incr i} {
+    for {set i 0} {$i <= $level} {incr i} {
       set resultregion [::sleep::find::regions::from $candidate $region $level]
     }
     if {$resultregion ne $region} {

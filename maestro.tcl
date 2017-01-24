@@ -96,6 +96,12 @@ proc ::maestro::handle::user msg {
   } elseif {[::see::command $msg] eq "echo"} {
     puts [::maestro::format user hello user]
     return [::maestro::format user hello user]
+  # This is for debugging communication from 1.1 through server to user.
+  } elseif {[::see::command $msg] eq "test"} {
+    puts [::recall::roots 021]
+
+
+
 
   # these are part of the encoding system which isn't working right now.s
   } elseif {[::see::command $msg] eq "limit"} {

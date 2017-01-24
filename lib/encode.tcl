@@ -133,9 +133,10 @@ proc ::encode::sleep::this {input} {
   }
 }
 
-proc ::encode::sleep::SDR {input} {
+proc ::encode::sleep::sdr {input} {
   set max   [::repo::get::maxNode]
   set nodes ""
+  set sdr ""
   for {set i 0} {$i < [string length $input]} {incr i} {
     set match [::repo::get::nodeMatch [string index $input $i] $i state]
     if {$match eq "" || $match eq "{}"} {
@@ -143,7 +144,15 @@ proc ::encode::sleep::SDR {input} {
     }
     lappend nodes $match
   }
-  return $nodes
+
+  for {set i 0} {$i < $max} {incr i} {
+    if {[lsearch $nodes $i] eq "-1"} {
+      lappend sdr 0.0
+    } else {
+      lappend sdr 1.0
+    }
+  }
+  return [list $nodes $sdr]
 }
 
 ################################################################################
