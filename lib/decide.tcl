@@ -253,6 +253,10 @@ proc ::decide::action {msg} {
 
     set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
     return [::decide::actions::do]
+  } elseif {$::decide::explore eq "roots"} {
+
+    set ::decide::path [::recall::roots::path::finding $::memorize::input [::recall::roots::nextCandidate]]
+    return [::decide::actions::do]
   } elseif {$::decide::path ne ""} {
 
     if {$::memorize::input eq $::decide::goal} {

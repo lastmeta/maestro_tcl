@@ -8,6 +8,7 @@ namespace eval ::recall::roots::path {}
 proc ::recall::set::globals {} {
   set ::recall::goal  {}
   set ::recall::tried {}
+  set ::recall::stateacts {}
 }
 
 proc ::recall::set::goal {goal} {
@@ -630,12 +631,16 @@ proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
   puts "stateacts $stateacts"
 
 
+
   if {$stateacts eq ""} {
     ::recall::roots::explore $goalstate $sigs $distances $smallest
   } else {
     #travel to each of states in the keys of stateacts
     #and do each action in the values of stateacts for that key.
-
+    set ::decide::explore   roots
+    set ::recall::stateacts $stateacts
+    ::recall::set::goal     [::recall::roots::nextCandidate]
+    ::recall::roots::path::finding $::memorize::input $::recall::goal
   }
 }
 
@@ -664,6 +669,7 @@ proc ::recall::roots::getStates {level region root} {
   set smallregion ""
   for {set i $level} {$i >= 0} {incr i -1} {
     set subregion [::repo::get::tableColumnsWhere roots state [list region $subregion level $i]]
+    puts "subregion $subregion"
     if {$i == 1} { set smallregion $subregion }
   }
   #subregion is now the root on zero level or the state
@@ -671,23 +677,30 @@ proc ::recall::roots::getStates {level region root} {
   set candidates $subregion
   #go to main and get every result within a 2^(level+1) radius
   set n [expr 2**[expr $level+1]]
-  for {set i 0} {$i < $n} {incr i} {
+  for {set i 1} {$i < $n} {incr i} {
     set results [concat [::repo::get::chainMatchResults main        input $results] \
                         [::repo::get::chainMatchResults predictions input $results] ]
+    puts "results $results"
     lappend candidates $results
   }
   set candidates [lsort -unique $candidates]
+  puts "candidates $candidates"
   #now that you have a list of states make sure each of them are in the approapriate region
   foreach candidate $candidates {
     for {set i 0} {$i <= $level} {incr i} {
       set resultregion [::sleep::find::regions::from $candidate $region $level]
+      puts "resultregion $resultregion"
+
     }
     if {$resultregion ne $region} {
       set idx [lsearch $candidates $candidate]
       set candidates [lreplace $candidates $idx $idx]
+      puts "idx $idx"
+      puts "candidates $candidates"
     }
   }
-  return $candidates
+
+  return [string map {\} "" \{ ""} $candidates]
 }
 
 
@@ -697,7 +710,20 @@ proc ::recall::roots::getStates {level region root} {
 # ROOTS PATH ########################################################################################################################################################
 ################################################################################################################################################################
 
-
+proc ::recall::roots::nextCandidate {} {
+  #pop off the front of $::recall::stateacts and then set $::recall::actions to the actions and return the goal
+  if {[llength $::recall::stateacts] > 1} {
+    set stateacts           $::recall::stateacts
+    set ::recall::stateacts [lrange $stateacts 2 end]
+    set ::recall::actions   [lindex $stateacts 1    ]
+    set ::recall::goal      [lindex $stateacts 0    ]
+    return                  $::recall::goal
+  } else {
+    set ::recall::stateacts ""
+    set ::decide::explore   "" ;# be sure to stop trying to explore roots when we've exhausted all options.
+    return                  ""
+  }
+}
 
 
 
@@ -715,6 +741,9 @@ proc ::recall::roots::path::finding {currentstate goalstate} {
   }
   incr level -1
 
+  # by the way, if the level is 0 and we're currently in the same region as the goal state,
+  # then use traditional candle path finding to get to it fastest. 
+
   # go back down a level, findout how to get from the first region to the second
   # if there is no direct connection use candle at both ends to try to find an indirect path
     # call sometihng like this ::recall::getActionsPathWithPrediction {input goal} but for regions table etc. unless level eq -1
@@ -723,4 +752,12 @@ proc ::recall::roots::path::finding {currentstate goalstate} {
 
   # in order to try to find a link between the two regions.
 
+  #you're returning a list of actions to get to the goal states
+
+  #pop off one action and add to the list of actions that are returned. then...
+  if {[llength $::recall::actions] > 0} {
+    # add the goal state back onto the front of ::recall::stateacts as a key, along with the remaining actions as the value
+  } else {
+    # don't worry about it then.
+  }
 }
