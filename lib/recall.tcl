@@ -285,10 +285,6 @@ proc ::recall::getActionsPathWithPredictionOfRules {input goal} {
 
 
 
-
-
-
-
 ## getActionsPathWithPrediction input as word, goal as word
 #
 # Takes an input and a goal. Searches two locations: the main and the prediction
@@ -397,10 +393,10 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
     set match [::recall::helpers::findMatch [concat $tires $input] $gloc]
     if {$match eq ""} { set match [::recall::helpers::findMatch $ires [concat $tgloc $goal]] }
   }
-
   #compile actions
   set actions ""
   if {$match ne ""} {
+    puts "found match $match"
     set tempinput $match
     while {$tempinput != $input} {
       set tiindex [lsearch $ires $tempinput]
@@ -408,7 +404,12 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
       set tempinput [lindex $iloc $tiindex]
     }
     set tempgoal $match
-    while {$tempgoal != $goal} {
+    puts "tempgoal $tempgoal"
+    puts "goal $goal"
+    while {[lsearch $goal $tempgoal] eq "-1"} {
+      puts "tempgoal $tempgoal"
+      puts "goal $goal"
+      after 200
       set tgindex [lsearch $gloc $tempgoal]
       lappend actions [lindex $gact $tgindex]
       set tempgoal [lindex $gres $tgindex]
@@ -728,6 +729,11 @@ proc ::recall::roots::nextCandidate {} {
 
 
 proc ::recall::roots::path::finding {currentstate goalstate} {
+  # BEFORE we can complete this we need to go back to sleep and include the predictions table too.
+  # the predictions table only works because it has proven to work in every case so far, so it has a pretty high degree of predictibility
+  # thus I think its best to make the regions with the opposites in mind.
+
+
   # find the region on the lowest level for both.
   # then find the next highest region for both, etc. etc.
   # do this until it becomes the same region, then stop,
@@ -742,7 +748,7 @@ proc ::recall::roots::path::finding {currentstate goalstate} {
   incr level -1
 
   # by the way, if the level is 0 and we're currently in the same region as the goal state,
-  # then use traditional candle path finding to get to it fastest. 
+  # then use traditional candle path finding to get to it fastest.
 
   # go back down a level, findout how to get from the first region to the second
   # if there is no direct connection use candle at both ends to try to find an indirect path

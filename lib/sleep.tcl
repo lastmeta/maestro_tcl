@@ -682,7 +682,7 @@ proc ::sleep::find::regions::signatures::createNodes {allstates} {
 proc ::sleep::find::regions::signatures::evaluateStates {allstates} {
   set statesigs ""
   foreach state $allstates {
-    lappend statesigs [::encode::sleep::SDR $state]
+    lappend statesigs [::encode::sleep::sdr $state]
   }
   return $statesigs
 }

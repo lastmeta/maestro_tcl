@@ -99,6 +99,11 @@ proc ::maestro::handle::user msg {
   # This is for debugging communication from 1.1 through server to user.
   } elseif {[::see::command $msg] eq "test"} {
     puts [::recall::roots 021]
+  } elseif {[::see::command $msg] eq "test2"} {
+    puts [::recall::getActionsPathWithPrediction 000 [list 003 009]]
+  } elseif {[::see::command $msg] eq "test3"} {
+    puts [::recall::getActionsPathWithPrediction 000 002]
+
 
 
 
