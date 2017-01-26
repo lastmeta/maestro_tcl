@@ -650,7 +650,6 @@ proc ::sleep::find::regions::makeRegion {level region mainid reg_to} {
 
 proc ::sleep::find::regions::signatures {} {
   set allstates   [::sleep::find::regions::signatures::getStates]
-
   ::sleep::find::regions::signatures::createNodes $allstates
 
   set statesigs   [::sleep::find::regions::signatures::evaluateStates $allstates]
@@ -682,7 +681,11 @@ proc ::sleep::find::regions::signatures::createNodes {allstates} {
 proc ::sleep::find::regions::signatures::evaluateStates {allstates} {
   set statesigs ""
   foreach state $allstates {
-    lappend statesigs [::encode::sleep::sdr $state]
+    #if {$justsdr} {
+      lappend statesigs [lindex [::encode::sleep::sdr $state] 0]
+    #} else {
+    #  lappend statesigs [::encode::sleep::sdr $state]
+    #}
   }
   return $statesigs
 }

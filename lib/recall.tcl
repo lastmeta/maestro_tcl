@@ -396,7 +396,6 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
   #compile actions
   set actions ""
   if {$match ne ""} {
-    puts "found match $match"
     set tempinput $match
     while {$tempinput != $input} {
       set tiindex [lsearch $ires $tempinput]
@@ -404,11 +403,7 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
       set tempinput [lindex $iloc $tiindex]
     }
     set tempgoal $match
-    puts "tempgoal $tempgoal"
-    puts "goal $goal"
     while {[lsearch $goal $tempgoal] eq "-1"} {
-      puts "tempgoal $tempgoal"
-      puts "goal $goal"
       after 200
       set tgindex [lsearch $gloc $tempgoal]
       lappend actions [lindex $gact $tgindex]
@@ -729,9 +724,7 @@ proc ::recall::roots::nextCandidate {} {
 
 
 proc ::recall::roots::path::finding {currentstate goalstate} {
-  # BEFORE we can complete this we need to go back to sleep and include the predictions table too.
-  # the predictions table only works because it has proven to work in every case so far, so it has a pretty high degree of predictibility
-  # thus I think its best to make the regions with the opposites in mind.
+  #
 
 
   # find the region on the lowest level for both.
@@ -743,6 +736,34 @@ proc ::recall::roots::path::finding {currentstate goalstate} {
   while {$cregion ne $gregion} {
     set cregion [::sleep::find::regions::from $currentstate $cregion $level]
     set gregion [::sleep::find::regions::from $currentstate $gregion $level]
+    # search for a path from c to g
+      # if there is one set the variable to good
+        # that way we know pretty immediately that there is a way to get there.
+        # we don't know how exactly but there is a way.
+        # what we also know is its via a connection between the two regions...
+        # so we can take a list of all states in c, and a list of all states in g
+        # look in the main table for input = c-states and result = g-states.
+        # then we can take the list that is returned and for each:
+          # try to find a path from our current state to that input
+          # and to find a path from the result to the goal state.
+        # the first one that finds a viable path is good to go.
+
+      # There may be an alternative way to do this:
+      # if there is one set the variable to good
+        # that way we know pretty immediately that there is a way to get there.
+        # we don't know how exactly but there is a way.
+        # what we also know is its via a connection between the two regions...
+        # so we can take a list of all states in c, and a list of all states in g
+        # look in the main table for input = c-states and result = g-states.
+        # then we can take the list that is returned and for each:
+          # Find out what the region for C-state is (in the level below this one)
+          # Find out what the region for G-state is (in the level below this one)
+          # (by the way that essentially means to call this again recurssively.)
+        # the first one in the list that gets down to level 0 successfully is the winner.
+        # For each of the states in compiled list of states
+          # go to main and grab the action that must be taken
+          # there's your list of actions.
+
     incr level
   }
   incr level -1
