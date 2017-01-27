@@ -103,10 +103,18 @@ proc ::maestro::handle::user msg {
     puts [::recall::getActionsPathWithPrediction 000 [list 003 009]]
   } elseif {[::see::command $msg] eq "test3"} {
     puts [::recall::getActionsPathWithPrediction 000 002]
-
-
-
-
+  } elseif {[::see::command $msg] eq "test4"} {
+    puts [::recall::roots::path::findingRECURSIVE 000 002]
+  } elseif {[::see::command $msg] eq "test5"} {
+    puts [::recall::roots::path::findingRECURSIVE 007 008]
+  } elseif {[::see::command $msg] eq "test6"} {
+    puts [::recall::roots::path::findingRECURSIVE 007 018]
+  } elseif {[::see::command $msg] eq "test7"} {
+    puts [::recall::roots::path::findingRECURSIVE 000 059]
+  } elseif {[::see::command $msg] eq "test8"} {
+    puts [::recall::roots::path::findingRECURSIVE 000 060]
+  } elseif {[::see::command $msg] eq "test9"} {
+    puts [::recall::roots::path::findRegion 059 2]
 
   # these are part of the encoding system which isn't working right now.s
   } elseif {[::see::command $msg] eq "limit"} {

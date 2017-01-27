@@ -312,6 +312,9 @@ proc ::repo::get::nodeMatch {input index type} {
 proc ::repo::get::maxNode {} {
 	return [brain eval "SELECT max(node) FROM nodes"]
 }
+proc ::repo::get::maxLevel {} {
+	return [brain eval "SELECT max(level) FROM roots"]
+}
 
 proc ::repo::get::nodeTable {} {
 	return [brain eval "SELECT node,input,ix,type FROM nodes"]

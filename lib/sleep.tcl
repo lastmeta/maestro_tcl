@@ -608,7 +608,9 @@ proc ::sleep::find::regions::roots {next {level ""}} {
 
 
 
-
+# I think state here has to be the state you  would look for in regions table
+# so if you want to send in a 'state representation' like those in main you'll have to use
+# ::recall::roots::path::findRegion {state {level 0}} {
 proc ::sleep::find::regions::from {state {region ""} {level 0}} {
   # is the state a root itself?
   set resultregion [::repo::get::tableColumnsWhere roots region [list state $state level $level]]
