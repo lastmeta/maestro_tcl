@@ -12,6 +12,7 @@ proc ::recall::set::globals {} {
 }
 
 proc ::recall::set::goal {goal} {
+  set ::recall::roots::actionspath ""
   if {$goal ne $::recall::goal} {
     set ::recall::goal $goal
     set ::recall::tried {}
@@ -636,7 +637,10 @@ proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
     set ::decide::explore   roots
     set ::recall::stateacts $stateacts
     ::recall::set::goal     [::recall::roots::nextCandidate]
-    ::recall::roots::path::finding $::memorize::input $::recall::goal
+
+    # go to that specific place
+    set ::recall::roots::actionspath ""
+    ::recall::roots::path::findingRECURSIVE $::memorize::input $::recall::goal ""
   }
 }
 
@@ -792,45 +796,58 @@ proc ::recall::roots::path::finding {currentstate goalstate} {
 
 
 proc ::recall::roots::path::findingRECURSIVE {currentstate goalstate actionslist} {
+  # be sure to do this before we start calling this recurssively
+  # set ::recall::roots::actionspath ""
   set level     0
-  set cregion   ""
-  set gregion   "_"
+  set c_region  ""
+  set g_region  "_"
   set lowerids  ""
-  while {$cregion ne $gregion} {
-    set cregion [::sleep::find::regions::from $currentstate $cregion $level]
-    set gregion [::sleep::find::regions::from $currentstate $gregion $level]
-    set atoms   [::repo::get::tableColumnsWhere regions [list region mainid reg_to] [list level $level region $cregion reg_to $gregion]]
-    if {$atoms ne ""} { ;# there's a path from c to g on this level in regions
-      set lowerids to mainid
+  set inputs    ""
+  set actions   ""
+  set results   ""
+  #don't go down multiple paths
+  if {$currentstate eq $goalstate} {
+    set ::recall::roots::actionspath $actionslist
+    return
+  }
+  while {$c_region ne $g_region} {
+    set c_region [::sleep::find::regions::from $currentstate $c_region $level]
+    set g_region [::sleep::find::regions::from $currentstate $g_region $level]
+    #set atom_ins [::repo::get::tableColumnsWhere regions region [list level $level region $c_region reg_to $g_region]]
+    set atom_ids [::repo::get::tableColumnsWhere regions mainid [list level $level region $c_region reg_to $g_region]]
+    #set atom_res [::repo::get::tableColumnsWhere regions reg_to [list level $level region $c_region reg_to $g_region]]
+    if {$atom_ids ne ""} { ;# there's a path from c to g on this level in regions # could be many.
+      foreach lower_id $atom_ids {
+        for {set i $level} {$i > 0} {incr i -1} {
+          # look for this row in region and get the c and g and m for it.
+          set lower_id [::repo::get::tableColumnsWhere regions mainid [list rowid $lower_id]]
+        }
+        #now i = 0 which means level = 0 which means we need to look at the main table
+        #look in main for this rowid (m), record input action result in lists
+        lappend inputs  [::repo::get::tableColumnsWhere main input  [list rowid $lower_id]]
+        lappend actions [::repo::get::tableColumnsWhere main action [list rowid $lower_id]]
+        lappend results [::repo::get::tableColumnsWhere main result [list rowid $lower_id]]
+      }
+      foreach input $inputs action $actions result $results {
+        if {$::recall::roots::actionspath ne ""} { return } ;# if we found an actions path break the recursion process
+        if {$input ne $currentstate} {
+          #try to find a way to get there - call this recurssively
+          ::recall::roots::path::findingRECURSIVE $currentstate $input $actionslist
+        }
+        if {$::recall::roots::actionspath ne ""} { return } ;# if we found an actions path break the recursion process
+        if {$result ne $goalstate} {
+          #try to find a way to get there - call this recurssively
+          ::recall::roots::path::findingRECURSIVE $result $goalstate $actionslist
+        }
+        lappend actionslist $action
+      }
       break
     }
-    else
     incr level
   }
-  if {c is g then} {
-    look in main to find exact match and save action
-  } elseif {id ne ""} {
-    set l $level
-    foreach lowerid {
-      set l $level
-      for {set i l} {$i > 0} {incr i -1} {
-        look for this row in region and get the c and g and m for it.
-      }
-      #now i = 0
-      look in main for this rowid (m), record input action result in lists
-    }
-    foreach input action result {
-      if {$input ne $currentstate} {
-        #try to find a way to get there - call this recurssively
-        ::recall::roots::path::findingRECURSIVE $currentstate $input $actionslist
-      }
-      if {$result ne $goalstate} {
-        #try to find a way to get there - call this recurssively
-        ::recall::roots::path::findingRECURSIVE $result $goalstate $actionslist
-      }
-      add action to actions list
-    }
+  if {$::recall::roots::actionspath ne ""} { return } ;# if we found an actions path break the recursion process
+  if {$c_region eq $g_region} {
+    #look in main to find exact match and save action
+    lappend actionslist [::repo::get::tableColumnsWhere main action [list input $currentstate result $goalstate]]
   }
-
-
 }
