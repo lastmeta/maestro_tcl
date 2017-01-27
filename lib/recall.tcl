@@ -788,3 +788,49 @@ proc ::recall::roots::path::finding {currentstate goalstate} {
     # don't worry about it then.
   }
 }
+
+
+
+proc ::recall::roots::path::findingRECURSIVE {currentstate goalstate actionslist} {
+  set level     0
+  set cregion   ""
+  set gregion   "_"
+  set lowerids  ""
+  while {$cregion ne $gregion} {
+    set cregion [::sleep::find::regions::from $currentstate $cregion $level]
+    set gregion [::sleep::find::regions::from $currentstate $gregion $level]
+    set atoms   [::repo::get::tableColumnsWhere regions [list region mainid reg_to] [list level $level region $cregion reg_to $gregion]]
+    if {$atoms ne ""} { ;# there's a path from c to g on this level in regions
+      set lowerids to mainid
+      break
+    }
+    else
+    incr level
+  }
+  if {c is g then} {
+    look in main to find exact match and save action
+  } elseif {id ne ""} {
+    set l $level
+    foreach lowerid {
+      set l $level
+      for {set i l} {$i > 0} {incr i -1} {
+        look for this row in region and get the c and g and m for it.
+      }
+      #now i = 0
+      look in main for this rowid (m), record input action result in lists
+    }
+    foreach input action result {
+      if {$input ne $currentstate} {
+        #try to find a way to get there - call this recurssively
+        ::recall::roots::path::findingRECURSIVE $currentstate $input $actionslist
+      }
+      if {$result ne $goalstate} {
+        #try to find a way to get there - call this recurssively
+        ::recall::roots::path::findingRECURSIVE $result $goalstate $actionslist
+      }
+      add action to actions list
+    }
+  }
+
+
+}
