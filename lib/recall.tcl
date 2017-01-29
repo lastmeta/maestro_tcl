@@ -640,8 +640,7 @@ proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
     ::recall::set::goal     [::recall::roots::nextCandidate]
 
     # go to that specific place
-    set ::recall::roots::actionspath ""
-    ::recall::roots::path::findingRECURSIVE $::memorize::input $::recall::goal
+    ::recall::roots::path::find $::memorize::input $::recall::goal
   }
 }
 
@@ -797,40 +796,17 @@ proc ::recall::roots::path::finding {currentstate goalstate} {
 # so if you want to send in a 'state representation' like those in main you'll have to use
 proc ::recall::roots::path::findRegion {state {level 0}} {
   set zerostate [::sleep::find::regions::from $state]
-  puts "zerostate $zerostate"
-  set zerostate [::sleep::find::regions::from 8 "" 1]
-  puts "zerostate $zerostate"
-  set zerostate [::sleep::find::regions::from 7 "" 1]
-  puts "zerostate $zerostate"
-  set zerostate [::sleep::find::regions::from 6 "" 1]
-  puts "zerostate $zerostate"
-  set zerostate [::sleep::find::regions::from 5 "" 1]
-  puts "zerostate $zerostate"
-  set zerostate [::sleep::find::regions::from 4 "" 1]
-  puts "zerostate $zerostate"
-  set zerostate [::sleep::find::regions::from 3 "" 1]
-  puts "zerostate $zerostate"
-  set zerostate [::sleep::find::regions::from 2 "" 1]
-  puts "zerostate $zerostate"
-  set zerostate [::sleep::find::regions::from 1 "" 1]
-  puts "zerostate $zerostate"
-  set zerostate [::sleep::find::regions::from 0 "" 1]
-  puts "zerostate $zerostate"
-  set zerostate [::sleep::find::regions::from 3 "" 2]
-  puts "zerostate $zerostate"
-  set zerostate [::sleep::find::regions::from 2 "" 2]
-  puts "zerostate $zerostate"
-  set zerostate [::sleep::find::regions::from 1 "" 2]
-  puts "zerostate $zerostate"
-  set zerostate [::sleep::find::regions::from 0 "" 2]
-  puts "zerostate $zerostate"
-  for {set i 0} {$i <= $level} {incr i} {
+  for {set i 1} {$i <= $level} {incr i} {
     set zerostate [::sleep::find::regions::from $zerostate "" $i]
-    puts "zerostate: $zerostate"
   }
   return $zerostate
 }
 
+proc ::recall::roots::path::find {currentstate goalstate} {
+  # clear actions path first.
+  set ::recall::roots::actionspath ""
+  return [::recall::roots::path::findingRECURSIVE $currentstate $goalstate]
+}
 
 proc ::recall::roots::path::findingRECURSIVE {currentstate goalstate} {
   # be sure to do this before we start calling this recurssively
@@ -849,8 +825,8 @@ proc ::recall::roots::path::findingRECURSIVE {currentstate goalstate} {
   }
   while {$c_region ne $g_region} {
     puts "level $level"
-    set c_region [::sleep::find::regions::from $currentstate $c_region $level]
-    set g_region [::sleep::find::regions::from $goalstate    $g_region $level]
+    set c_region [::recall::roots::path::findRegion $currentstate $level]
+    set g_region [::recall::roots::path::findRegion $goalstate $level]
     puts "c_region $c_region g_region $g_region"
     #set atom_ins [::repo::get::tableColumnsWhere regions region [list level $level region $c_region reg_to $g_region]]
     set atom_ids [::repo::get::tableColumnsWhere regions mainid [list level $level region $c_region reg_to $g_region]]
@@ -882,12 +858,12 @@ proc ::recall::roots::path::findingRECURSIVE {currentstate goalstate} {
         }
         if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
         puts "result $result goalstate $goalstate"
+        lappend ::recall::roots::actionspath [list $action $currentstate $goalstate]
         if {$result ne $goalstate} {
           #try to find a way to get there - call this recurssively
           ::recall::roots::path::findingRECURSIVE $result $goalstate
         }
         if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
-        lappend ::recall::roots::actionspath $action
       }
       break
     }
@@ -899,7 +875,7 @@ proc ::recall::roots::path::findingRECURSIVE {currentstate goalstate} {
   if {$c_region eq $g_region} {
     puts "c_region $c_region g_region $g_region"
     #look in main to find exact match and save action
-    lappend ::recall::roots::actionspath [::repo::get::tableColumnsWhere main action [list input $currentstate result $goalstate]]
+    lappend ::recall::roots::actionspath [list [::repo::get::tableColumnsWhere main action [list input $currentstate result $goalstate]] $currentstate $goalstate]
   }
   return $::recall::roots::actionspath
 }

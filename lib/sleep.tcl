@@ -622,7 +622,7 @@ proc ::sleep::find::regions::from {state {region ""} {level 0}} {
     set allroots [::repo::get::rootStates $level]
     foreach root $allroots {
       if {$level > 0} {
-        set rootresults [::repo::get::tableColumnsWhere regions reg_to [list region $root level $level]]
+        set rootresults [::repo::get::tableColumnsWhere regions reg_to [list region $root level [expr $level - 1]]]
       } else {
         set rootresults [::repo::get::tableColumnsWhere main result [list input $root]]
       }
