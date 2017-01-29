@@ -215,11 +215,13 @@ proc ::decide::commanded::find msg {
 }
 
 proc ::decide::commanded::single msg {
-  set path [::recall::main $::memorize::input $::decide::goal]
-  if {[lindex $path 0] eq "_"} {
-    set newgoal [lindex $path 1]
-    set path [::recall::main $::memorize::input $newgoal]
-  }
+  # old way
+  #set path [::recall::main $::memorize::input $::decide::goal]
+
+  # new way - calls the old way when necessary
+  #set path [::recall::roots::path::find $::memorize::input $::decide::goal] # not this one, this one is if we know the goal is in main, but we may have to generalize first...
+  set path [::recall::roots $::decide::goal]
+
   set ::decide::path $path
   return [::decide::commanded::goal $msg]
 }

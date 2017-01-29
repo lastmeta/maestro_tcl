@@ -300,7 +300,7 @@ proc ::recall::getActionsPathWithPredictionOfRules {input goal} {
 # example:  000 002
 # returns:  +1 +1
 #
-proc ::recall::getActionsPathWithPrediction {input goal} {
+proc ::recall::getActionsPathWithPrediction {input goal {retinput ""} {retgoal ""}} {
   set actionslist ""
   #initialize everything
   set tiloc "" ;#temporary input location
@@ -399,11 +399,13 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
   set actions ""
   if {$match ne ""} {
     set tempinput $match
-    while {$tempinput != $input} {
+    while {[lsearch $input $tempinput] eq "-1"} {
       set tiindex [lsearch $ires $tempinput]
       set actions "[lindex $iact $tiindex] $actions"
       set tempinput [lindex $iloc $tiindex]
     }
+    upvar $retinput reti
+    set reti $tempinput
     set tempgoal $match
     while {[lsearch $goal $tempgoal] eq "-1"} {
       after 200
@@ -411,6 +413,8 @@ proc ::recall::getActionsPathWithPrediction {input goal} {
       lappend actions [lindex $gact $tgindex]
       set tempgoal [lindex $gres $tgindex]
     }
+    upvar $retgoal retg
+    set retg $tempgoal
   } else {
     #If no match, return 3 thingss:
     #first an idicator saying this is a suggestion
@@ -565,22 +569,15 @@ proc ::recall::curious {input acts} {
 proc ::recall::roots {goalstate} {
   #convert goalstate to a binary sdr
   lassign [::encode::sleep::sdr $goalstate] goalnodes goalsdr
-  puts "goalstate $goalstate"
-  puts "goalnodes $goalnodes"
-  puts "goalsdr $goalsdr"
 
-  if {$goalstate eq ""} {
+  if {$goalsdr eq ""} {
     puts "I must sleep"
-    return "do candle method instead"
   }
   #get a list of all the signatures from every region in every level
   set allsigs     [::repo::get::tableColumns roots sig]
-  puts "allsigs $allsigs"
   set allsize     [::repo::get::tableColumns roots size]
-  puts "allsize $allsize"
   #compare to every signature and get a list of distances corresponding to the regions by closest match (smallest divergence)
   set distances  [::recall::roots::getDistances $goalsdr $allsigs]
-  puts "distances $distances"
   #go to and explore that region in more detail
   ::recall::roots::explore $goalstate $allsigs $distances
 
@@ -609,24 +606,16 @@ proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
     }
     incr i
   }
-  puts "smallest $smallest"
-  puts "index $index"
   #use index to get the approapriate region.
   set thing  [::repo::get::tableColumnsWhere roots [list level region state] [list sig [lindex $sigs $index]]]
   set level  [lindex $thing 0]
   set region [lindex $thing 1]
   set root   [lindex $thing 2]
-  puts "thing $thing"
-  puts "level $level"
-  puts "region $region"
-  puts "root $root"
 
   #get all the states of that region
   set states [::recall::roots::getStates $level $region $root]
-  puts "states $states"
   #see if we've explored everything in every child of that root. if so
   set stateacts [::recall::roots::actions $states]
-  puts "stateacts $stateacts"
 
 
 
@@ -669,38 +658,35 @@ proc ::recall::roots::getStates {level region root} {
   set smallregion ""
   for {set i $level} {$i >= 0} {incr i -1} {
     set subregion [::repo::get::tableColumnsWhere roots state [list region $subregion level $i]]
-    puts "subregion $subregion"
     if {$i == 1} { set smallregion $subregion }
   }
-  #subregion is now the root on zero level or the state
-  set results $subregion
-  set candidates $subregion
-  #go to main and get every result within a 2^(level+1) radius
-  set n [expr 2**[expr $level+1]]
-  for {set i 1} {$i < $n} {incr i} {
-    set results [concat [::repo::get::chainMatchResults main        input $results] \
-                        [::repo::get::chainMatchResults predictions input $results] ]
-    puts "results $results"
-    lappend candidates $results
-  }
-  set candidates [lsort -unique $candidates]
-  puts "candidates $candidates"
+  set candidates [string map {"\{" "" "\}" ""} [::recall::roots::findAllStates $subregion $level]]
   #now that you have a list of states make sure each of them are in the approapriate region
   foreach candidate $candidates {
     for {set i 0} {$i <= $level} {incr i} {
-      set resultregion [::sleep::find::regions::from $candidate $region $level]
-      puts "resultregion $resultregion"
+      set resultregion [::recall::roots::path::findRegion $candidate $level]
 
     }
     if {$resultregion ne $region} {
       set idx [lsearch $candidates $candidate]
       set candidates [lreplace $candidates $idx $idx]
-      puts "idx $idx"
-      puts "candidates $candidates"
     }
   }
 
   return [string map {\} "" \{ ""} $candidates]
+}
+proc ::recall::roots::findAllStates {state level} {
+  set results $state
+  set candidates $state
+  #go to main and get every result within a 2^(level+1) radius
+  set n [expr 2**[expr $level+1]]
+  for {set i 1} {$i < $n} {incr i} {
+    set results [concat [::repo::get::chainMatchResults main        input $results] \
+                        [::repo::get::chainMatchResults predictions input $results] ]
+    lappend candidates $results
+  }
+  set candidates [lsort -unique $candidates]
+  return $candidates
 }
 
 
@@ -725,74 +711,6 @@ proc ::recall::roots::nextCandidate {} {
   }
 }
 
-
-
-proc ::recall::roots::path::finding {currentstate goalstate} {
-  #
-
-
-  # find the region on the lowest level for both.
-  # then find the next highest region for both, etc. etc.
-  # do this until it becomes the same region, then stop,
-  set level 0
-  set cregion ""
-  set gregion "_"
-  while {$cregion ne $gregion} {
-    set cregion [::sleep::find::regions::from $currentstate $cregion $level]
-    set gregion [::sleep::find::regions::from $currentstate $gregion $level]
-    # search for a path from c to g
-      # if there is one set the variable to good
-        # that way we know pretty immediately that there is a way to get there.
-        # we don't know how exactly but there is a way.
-        # what we also know is its via a connection between the two regions...
-        # so we can take a list of all states in c, and a list of all states in g
-        # look in the main table for input = c-states and result = g-states.
-        # then we can take the list that is returned and for each:
-          # try to find a path from our current state to that input
-          # and to find a path from the result to the goal state.
-        # the first one that finds a viable path is good to go.
-
-      # There may be an alternative way to do this:
-      # if there is one set the variable to good
-        # that way we know pretty immediately that there is a way to get there.
-        # we don't know how exactly but there is a way.
-        # what we also know is its via a connection between the two regions...
-        # so we can take a list of all states in c, and a list of all states in g
-        # look in the main table for input = c-states and result = g-states.
-        # then we can take the list that is returned and for each:
-          # Find out what the region for C-state is (in the level below this one)
-          # Find out what the region for G-state is (in the level below this one)
-          # (by the way that essentially means to call this again recurssively.)
-        # the first one in the list that gets down to level 0 successfully is the winner.
-        # For each of the states in compiled list of states
-          # go to main and grab the action that must be taken
-          # there's your list of actions.
-
-    incr level
-  }
-  incr level -1
-
-  # by the way, if the level is 0 and we're currently in the same region as the goal state,
-  # then use traditional candle path finding to get to it fastest.
-
-  # go back down a level, findout how to get from the first region to the second
-  # if there is no direct connection use candle at both ends to try to find an indirect path
-    # call sometihng like this ::recall::getActionsPathWithPrediction {input goal} but for regions table etc. unless level eq -1
-
-  # if this fails go to the edges of both regions and search everything that hasn't been searched before
-
-  # in order to try to find a link between the two regions.
-
-  #you're returning a list of actions to get to the goal states
-
-  #pop off one action and add to the list of actions that are returned. then...
-  if {[llength $::recall::actions] > 0} {
-    # add the goal state back onto the front of ::recall::stateacts as a key, along with the remaining actions as the value
-  } else {
-    # don't worry about it then.
-  }
-}
-
 # so if you want to send in a 'state representation' like those in main you'll have to use
 proc ::recall::roots::path::findRegion {state {level 0}} {
   set zerostate [::sleep::find::regions::from $state]
@@ -802,13 +720,44 @@ proc ::recall::roots::path::findRegion {state {level 0}} {
   return $zerostate
 }
 
+
+
 proc ::recall::roots::path::find {currentstate goalstate} {
   # clear actions path first.
   set ::recall::roots::actionspath ""
-  return [::recall::roots::path::findingRECURSIVE $currentstate $goalstate]
+  if {[lsearch [::recall::roots::path::finding $currentstate $goalstate] ""] ne "-1"} {
+    set ::recall::roots::actionspath ""
+    set n [::repo::get::maxLevel]
+    for {set i 0} {$i <= $n} {incr i} {
+      set c_region [::recall::roots::path::findRegion $currentstate $i]
+      set g_region [::recall::roots::path::findRegion $goalstate    $i]
+      #get all states in cregion and all states in g region
+      set c_list [::recall::roots::getStates $i $c_region $currentstate]
+      set g_list [::recall::roots::getStates $i $g_region $goalstate   ]
+      # try with those lists
+      set actions [::recall::getActionsPathWithPrediction $c_list $g_list return_c return_g]
+      if {$actions eq "" || $actions eq "_" || [lindex $actions 0] eq "_"} {
+        # repeat at higherlevel - continue forloop
+      } else {
+        if {$return_c ne $currentstate} {
+          #find a path to current state
+          set littleactions [::recall::getActionsPathWithPrediction $currentstate $return_c]
+          set ::recall::roots::actionspath $littleactions
+        }
+        set ::recall::roots::actionspath [concat $::recall::roots::actionspath $actions]
+        if {$return_g ne $goalstate} {
+          #find path to goal state
+          set littleactions [::recall::getActionsPathWithPrediction $return_g $goalstate]
+          set ::recall::roots::actionspath [concat $::recall::roots::actionspath $littleactions]
+        }
+        break
+      }
+    }
+  }
+  return $::recall::roots::actionspath
 }
 
-proc ::recall::roots::path::findingRECURSIVE {currentstate goalstate} {
+proc ::recall::roots::path::finding {currentstate goalstate} {
   # be sure to do this before we start calling this recurssively
   # set ::recall::roots::actionspath ""
   set level     0
@@ -824,44 +773,34 @@ proc ::recall::roots::path::findingRECURSIVE {currentstate goalstate} {
     return
   }
   while {$c_region ne $g_region} {
-    puts "level $level"
     set c_region [::recall::roots::path::findRegion $currentstate $level]
     set g_region [::recall::roots::path::findRegion $goalstate $level]
-    puts "c_region $c_region g_region $g_region"
     #set atom_ins [::repo::get::tableColumnsWhere regions region [list level $level region $c_region reg_to $g_region]]
     set atom_ids [::repo::get::tableColumnsWhere regions mainid [list level $level region $c_region reg_to $g_region]]
-    puts "atom_ids $atom_ids"
     #set atom_res [::repo::get::tableColumnsWhere regions reg_to [list level $level region $c_region reg_to $g_region]]
     if {$atom_ids ne ""} { ;# there's a path from c to g on this level in regions # could be many.
       foreach lower_id $atom_ids {
-        puts "lower_id $lower_id"
         for {set i $level} {$i > 0} {incr i -1} {
           # look for this row in region and get the c and g and m for it.
           set lower_id [::repo::get::tableColumnsWhere regions mainid [list rowid $lower_id]]
-          puts "i $i lower_id $lower_id"
         }
         #now i = 0 which means level = 0 which means we need to look at the main table
         #look in main for this rowid (m), record input action result in lists
         lappend inputs  [::repo::get::tableColumnsWhere main input  [list rowid $lower_id]]
         lappend actions [::repo::get::tableColumnsWhere main action [list rowid $lower_id]]
         lappend results [::repo::get::tableColumnsWhere main result [list rowid $lower_id]]
-        puts "inputs $inputs"
-        puts "actions $actions"
-        puts "results $results"
       }
       foreach input $inputs action $actions result $results {
-        puts "inputs $input currentstate $currentstate"
         if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
         if {$input ne $currentstate} {
           #try to find a way to get there - call this recurssively
-          ::recall::roots::path::findingRECURSIVE $currentstate $input
+          ::recall::roots::path::finding $currentstate $input
         }
         if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
-        puts "result $result goalstate $goalstate"
-        lappend ::recall::roots::actionspath [list $action $currentstate $goalstate]
+        lappend ::recall::roots::actionspath $action
         if {$result ne $goalstate} {
           #try to find a way to get there - call this recurssively
-          ::recall::roots::path::findingRECURSIVE $result $goalstate
+          ::recall::roots::path::finding $result $goalstate
         }
         if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
       }
@@ -873,9 +812,8 @@ proc ::recall::roots::path::findingRECURSIVE {currentstate goalstate} {
   }
   if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
   if {$c_region eq $g_region} {
-    puts "c_region $c_region g_region $g_region"
     #look in main to find exact match and save action
-    lappend ::recall::roots::actionspath [list [::repo::get::tableColumnsWhere main action [list input $currentstate result $goalstate]] $currentstate $goalstate]
+    lappend ::recall::roots::actionspath [::repo::get::tableColumnsWhere main action [list input $currentstate result $goalstate]]
   }
   return $::recall::roots::actionspath
 }

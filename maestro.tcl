@@ -115,6 +115,9 @@ proc ::maestro::handle::user msg {
     puts [::recall::roots::path::find 000 060]
   } elseif {[::see::command $msg] eq "test9"} {
     puts [::recall::roots::path::findRegion 059 2]
+  } elseif {[::see::command $msg] eq "test10"} {
+    puts [::recall::roots::path::find 027 009]
+
 
   # these are part of the encoding system which isn't working right now.s
   } elseif {[::see::command $msg] eq "limit"} {
