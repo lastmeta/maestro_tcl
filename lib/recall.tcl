@@ -559,7 +559,29 @@ proc ::recall::curious {input acts} {
 # ROOTS ########################################################################################################################################################
 ################################################################################################################################################################
 
+proc ::recall::roots::try {goalstate} {
+  if {$::memorize::input eq ""} {
+    # assume you're at the origin if you don't know where you are. - not great but a work around
+    set ::memorize::input [::repo::get::tableColumnsWhere main input [list rowid 1]]
+  }
 
+  if {[::repo::get::maxLevel] eq ""} {
+    puts "I must sleep"
+    # candle algo
+    puts "slow path-finding"
+    return [::recall::getActionsPathWithPrediction $::memorize::input $goalstate]
+  } elseif {[::repo::get::tableColumnsWhere main result [list input  $goalstate]] eq ""
+  &&        [::repo::get::tableColumnsWhere main result [list result $goalstate]] eq ""
+  } then {
+    # generalize
+    puts "generalizing and path-finding"
+    return [::recall::roots $goalstate]
+  } else {
+    # region pathfinding
+    puts "fast path-finding"
+    return [::recall::roots::path::find $::memorize::input $goalstate]
+  }
+}
 ## roots input as word, acts as list.
 #
 # generalize path finding using what we've learned during sleep (that is the
@@ -580,7 +602,7 @@ proc ::recall::roots {goalstate} {
   set distances  [::recall::roots::getDistances $goalsdr $allsigs]
   #go to and explore that region in more detail
   ::recall::roots::explore $goalstate $allsigs $distances
-
+  puts "goalstate allsigs distances  $goalstate . $allsigs . $distances"
 }
 
 proc ::recall::roots::getDistances {goalsdr sigs} {
@@ -627,9 +649,9 @@ proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
     set ::decide::explore   roots
     set ::recall::stateacts $stateacts
     ::recall::set::goal     [::recall::roots::nextCandidate]
-
+  puts "::memorize::input ::recall::goal   $::memorize::input . $::recall::goal"
     # go to that specific place
-    ::recall::roots::path::find $::memorize::input $::recall::goal
+    puts [::recall::roots::path::find $::memorize::input $::recall::goal]
   }
 }
 

@@ -220,7 +220,7 @@ proc ::decide::commanded::single msg {
 
   # new way - calls the old way when necessary
   #set path [::recall::roots::path::find $::memorize::input $::decide::goal] # not this one, this one is if we know the goal is in main, but we may have to generalize first...
-  set path [::recall::roots $::decide::goal]
+  set path [::recall::roots::try $::decide::goal]
 
   set ::decide::path $path
   return [::decide::commanded::goal $msg]

@@ -118,6 +118,21 @@ proc ::maestro::handle::user msg {
   } elseif {[::see::command $msg] eq "test10"} {
     puts [::recall::roots::path::find 027 009]
 
+    } elseif {[::see::command $msg] eq "test14"} {
+      puts [::recall::roots::try 002]
+    } elseif {[::see::command $msg] eq "test15"} {
+      puts [::recall::roots::try 008] ;# 7
+    } elseif {[::see::command $msg] eq "test16"} {
+      puts [::recall::roots::try 018] ;# 7
+    } elseif {[::see::command $msg] eq "test17"} {
+      puts [::recall::roots::try 059]
+    } elseif {[::see::command $msg] eq "test18"} {
+      puts [::recall::roots::try 060]
+    } elseif {[::see::command $msg] eq "test20"} {
+      puts [::recall::roots::try 009] ;# 27
+    } elseif {[::see::command $msg] eq "test21"} {
+      puts [::recall::roots::try 021] ;# needs generalization
+
 
   # these are part of the encoding system which isn't working right now.s
   } elseif {[::see::command $msg] eq "limit"} {
