@@ -3,7 +3,7 @@ namespace eval ::decide::set {}
 namespace eval ::decide::commanded {}
 namespace eval ::decide::help {}
 namespace eval ::decide::actions {}
-
+namespace eval ::decide::recall {}
 
 ################################################################################################################################################################
 # SETUP #########################################################################################################################################################
@@ -23,6 +23,13 @@ proc ::decide::set::globals {} {
     }
     set ::decide::acts $actions
   }
+  set ::decide::recall::goal  ""   ;# goalstate - the state we've never seen so we have to do a generalize heuristic search to it.
+  set ::decide::recall::sigs  ""   ;# signatures - this is a list of signatures for each region - should be pulled from the db? then it might be ina different order, so no.
+  set ::decide::recall::dist  ""   ;# distances - this is how close each signature is to the goalstate
+  set ::decide::recall::ltry  ""   ;# last try - how many times have we generalized searched for a state?
+  set ::decide::recall::dict  ""   ;# state and actions dictionary - this is where we need to travel and what actions we have to do there.
+  set ::decide::recall::sacts ""   ;# state acts - current actions that must be done
+  set ::decide::recall::sgoal ""   ;# state goal - interim goal
 }
 
 proc ::decide::set::actions {actions} {
@@ -242,7 +249,12 @@ proc ::decide::commanded::goal msg {
 ################################################################################################################################################################
 
 proc ::decide::action {msg} {
-  if {$::decide::explore eq "curious" && $::decide::goal ne ""} {
+  set gen [::decide::generalization]
+  puts "gen $gen"
+  if {$gen eq "Eureka!"} {
+    puts "eureka"
+    ::decide::commanded::stop
+  } elseif {$::decide::explore eq "curious" && $::decide::goal ne ""} {
     if {$::memorize::input eq $::decide::goal} {
       set ::decide::goal ""
       set ::decide::path [::recall::guess   $::memorize::input $::decide::acts]
@@ -290,6 +302,69 @@ proc ::decide::action {msg} {
   }
 }
 
+proc ::decide::generalization {} {
+  puts "::d::r::goal $::decide::recall::goal ::d::r::sacts $::decide::recall::sacts ::d::r::sgoal $::decide::recall::sgoal"
+  puts "::d::r::dict $::decide::recall::dict"
+   if {$::decide::recall::goal ne ""} {
+    # we're currently in a generalization process. but where?
+    if {$::memorize::input eq $::decide::recall::goal} {
+      # we have found the goal we were searching for - stop.
+      set ::decide::goal          ""
+      set ::decide::recall::goal  ""
+      set ::decide::recall::sigs  ""
+      set ::decide::recall::dist  ""
+      set ::decide::recall::ltry  ""
+      set ::decide::recall::dict  ""
+      set ::decide::recall::sacts ""
+      set ::decide::recall::sgoal ""
+
+      return "Eureka!"
+    } elseif {$::decide::path ne ""} {
+      # we have somewhere to be. - go there.
+      return [::decide::actions::do]
+    } elseif {$::decide::recall::dict ne ""} {
+      # we have no list of actions, but we do have places to go.
+      if {$::decide::recall::sacts ne ""} {
+        # pop off the next action and go there
+        if {[llength $::decide::recall::sacts] > 0 } {
+          set tempaction              [lindex $::decide::recall::sacts 0     ]
+          set ::decide::recall::sacts [lrange $::decide::recall::sacts 1 end ]
+          set ::decide::path          [concat [::recall::roots::path::find $::memorize::input $::decide::recall::sgoal] $tempaction]
+          return [::decide::actions::do]
+        } else {
+          set ::decide::recall::sacts ""
+          set ::decide::recall::sgoal ""
+          # recursive
+          ::decide::generalization
+        }
+      } else {
+        # pop off the next interim goal and go there
+        if {[llength $::decide::recall::dict] > 2 } {
+          set ::decide::recall::sgoal [lindex $::decide::recall::dict 0     ]
+          set ::decide::recall::sacts [lindex $::decide::recall::dict 1     ]
+          set ::decide::recall::dict  [lrange $::decide::recall::dict 2 end ]
+          # recursive
+          ::decide::generalization
+        } elseif {[llength $::decide::recall::dict] == 2 } {
+          set ::decide::recall::sgoal [lindex $::decide::recall::dict 0     ]
+          set ::decide::recall::sacts [lindex $::decide::recall::dict 1     ]
+          set ::decide::recall::dict  ""
+          # recursive
+          ::decide::generalization
+        } else {
+          set ::decide::recall::dict  ""
+          # recursive
+          ::decide::generalization
+        }
+      }
+    } else {
+      # we have no path, we have no states to go explore. Go get some more states to explore.
+      set ::decide::path [::recall::roots::explore $::decide::recall::goal $::decide::recall::sigs $::decide::recall::dist $::decide::recall::ltry]
+      return [::decide::actions::do]
+    }
+  }
+  return ""
+}
 
 ################################################################################################################################################################
 # helpers #########################################################################################################################################################

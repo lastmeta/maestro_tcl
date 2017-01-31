@@ -57,6 +57,7 @@ proc ::maestro::handle::environment msg {
   # this is commented out because it don't work well and takes a lot of time during exploration.
   ::encode::this [::see::message $msg]
   set action [::decide::action $msg]
+  after 5000
   return [::maestro::format $action]
 }
 
@@ -132,6 +133,8 @@ proc ::maestro::handle::user msg {
       puts [::recall::roots::try 009] ;# 27
     } elseif {[::see::command $msg] eq "test21"} {
       puts [::recall::roots::try 021] ;# needs generalization
+    } elseif {[::see::command $msg] eq "test22"} {
+      puts [::recall::roots::try 021] ;# needs generalization
 
 
   # these are part of the encoding system which isn't working right now.s
@@ -184,6 +187,9 @@ proc ::maestro::die {} {
   exit
 }
 
+proc ::maestro::wake {} {
+  ::communicate::interact::send [::maestro::format 0]
+}
 
 ################################################################################
 # Run ##########################################################################
@@ -192,4 +198,5 @@ proc ::maestro::die {} {
 
 ::communicate::set::up
 ::maestro::set::up
+::maestro::wake
 ::communicate::interact::always

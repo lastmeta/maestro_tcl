@@ -601,8 +601,8 @@ proc ::recall::roots {goalstate} {
   #compare to every signature and get a list of distances corresponding to the regions by closest match (smallest divergence)
   set distances  [::recall::roots::getDistances $goalsdr $allsigs]
   #go to and explore that region in more detail
-  ::recall::roots::explore $goalstate $allsigs $distances
   puts "goalstate allsigs distances  $goalstate . $allsigs . $distances"
+  ::recall::roots::explore $goalstate $allsigs $distances
 }
 
 proc ::recall::roots::getDistances {goalsdr sigs} {
@@ -628,6 +628,7 @@ proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
     }
     incr i
   }
+  set lasttry $smallest
   #use index to get the approapriate region.
   set thing  [::repo::get::tableColumnsWhere roots [list level region state] [list sig [lindex $sigs $index]]]
   set level  [lindex $thing 0]
@@ -646,12 +647,28 @@ proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
   } else {
     #travel to each of states in the keys of stateacts
     #and do each action in the values of stateacts for that key.
-    set ::decide::explore   roots
+
+    #needed?
     set ::recall::stateacts $stateacts
-    ::recall::set::goal     [::recall::roots::nextCandidate]
-  puts "::memorize::input ::recall::goal   $::memorize::input . $::recall::goal"
+    puts "state acts $stateacts"
+    ::recall::set::goal [::recall::roots::nextCandidate]
+    puts "::memorize::input ::recall::goal   $::memorize::input . $::recall::goal"
+
+    # hand off responsibility to decide.
+    set ::decide::explore       ""
+    set ::decide::cangoal       ""
+    set ::decide::canpath       ""
+    set ::decide::goal          $goalstate
+    set ::decide::recall::goal  $goalstate
+    set ::decide::recall::sigs  $sigs
+    set ::decide::recall::dist  $distances
+    set ::decide::recall::ltry  $lasttry
+    set ::decide::recall::dict  $stateacts
+    set ::decide::recall::sacts ""
+    set ::decide::recall::sgoal ""
+
     # go to that specific place
-    puts [::recall::roots::path::find $::memorize::input $::recall::goal]
+    return [::recall::roots::path::find $::memorize::input $::recall::goal]
   }
 }
 
