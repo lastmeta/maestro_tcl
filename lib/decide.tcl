@@ -28,6 +28,7 @@ proc ::decide::set::globals {} {
   set ::decide::recall::dist  ""   ;# distances - this is how close each signature is to the goalstate
   set ::decide::recall::ltry  ""   ;# last try - how many times have we generalized searched for a state?
   set ::decide::recall::dict  ""   ;# state and actions dictionary - this is where we need to travel and what actions we have to do there.
+  set ::decide::recall::olds  ""   ;# old states - state we've alredy visted
   set ::decide::recall::sacts ""   ;# state acts - current actions that must be done
   set ::decide::recall::sgoal ""   ;# state goal - interim goal
 }
@@ -315,6 +316,7 @@ proc ::decide::generalization {} {
       set ::decide::recall::dist  ""
       set ::decide::recall::ltry  ""
       set ::decide::recall::dict  ""
+      set ::decide::recall::oldgs ""
       set ::decide::recall::sacts ""
       set ::decide::recall::sgoal ""
 
@@ -338,16 +340,22 @@ proc ::decide::generalization {} {
           ::decide::generalization
         }
       } else {
+        # make sure we don't try to go to states we've already tried to explore, incase there's regions that contain other regions. 
+        lappend ::decide::recall::oldgs $::decide::recall::sgoal
         # pop off the next interim goal and go there
         if {[llength $::decide::recall::dict] > 2 } {
-          set ::decide::recall::sgoal [lindex $::decide::recall::dict 0     ]
-          set ::decide::recall::sacts [lindex $::decide::recall::dict 1     ]
+          if {[lsearch $::decide::recall::oldgs [lindex $::decide::recall::dict 0]] eq "-1" } {
+            set ::decide::recall::sgoal [lindex $::decide::recall::dict 0     ]
+            set ::decide::recall::sacts [lindex $::decide::recall::dict 1     ]
+          }
           set ::decide::recall::dict  [lrange $::decide::recall::dict 2 end ]
           # recursive
           ::decide::generalization
         } elseif {[llength $::decide::recall::dict] == 2 } {
-          set ::decide::recall::sgoal [lindex $::decide::recall::dict 0     ]
-          set ::decide::recall::sacts [lindex $::decide::recall::dict 1     ]
+          if {[lsearch $::decide::recall::oldgs [lindex $::decide::recall::dict 0]] eq "-1" } {
+            set ::decide::recall::sgoal [lindex $::decide::recall::dict 0     ]
+            set ::decide::recall::sacts [lindex $::decide::recall::dict 1     ]
+          }
           set ::decide::recall::dict  ""
           # recursive
           ::decide::generalization
