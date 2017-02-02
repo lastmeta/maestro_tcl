@@ -57,7 +57,6 @@ proc ::maestro::handle::environment msg {
   # this is commented out because it don't work well and takes a lot of time during exploration.
   ::encode::this [::see::message $msg]
   set action [::decide::action $msg]
-  after 5000
   return [::maestro::format $action]
 }
 

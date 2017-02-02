@@ -224,12 +224,25 @@ proc ::repo::get::chainMatch {table mod thelist} {
 }
 
 proc ::repo::get::chainMatchResults {table mod thelist} {
+	set i 0
+	set return  ""
 	set newlist ""
 	foreach item $thelist {
-		if {$newlist ne ""} { set newlist "$newlist OR" }
-		set newlist "$newlist $mod='$item'"
+		if {$i < 990} {
+			if {$newlist ne ""} { set newlist "$newlist OR" }
+			set newlist "$newlist $mod='$item'"
+		} else {
+			set return [concat $return [brain eval "SELECT result FROM $table WHERE $newlist"]]
+			set thelist [lrange $thelist 990 end]
+			set newlist ""
+			if {$newlist ne ""} { set newlist "$newlist OR" }
+			set newlist "$newlist $mod='$item'"
+			set i 0
+		}
+		incr i
 	}
-	return [brain eval "SELECT result FROM $table WHERE $newlist"]
+	set return [concat $return [brain eval "SELECT result FROM $table WHERE $newlist"]]
+	return $return
 }
 
 proc ::repo::get::chainMatchIDs {table mod thelist} {

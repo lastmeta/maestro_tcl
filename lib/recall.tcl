@@ -589,9 +589,10 @@ proc ::recall::roots::try {goalstate} {
 # order from chaos.
 #
 proc ::recall::roots {goalstate} {
+  puts "in roots"
   #convert goalstate to a binary sdr
   lassign [::encode::sleep::sdr $goalstate] goalnodes goalsdr
-
+  puts "goalnodes $goalnodes goalsdr $goalsdr"
   if {$goalsdr eq ""} {
     puts "I must sleep"
   }
@@ -601,11 +602,13 @@ proc ::recall::roots {goalstate} {
   #compare to every signature and get a list of distances corresponding to the regions by closest match (smallest divergence)
   set distances  [::recall::roots::getDistances $goalsdr $allsigs]
   #go to and explore that region in more detail
-  puts "goalstate allsigs distances  $goalstate . $allsigs . $distances"
+#  puts "goalsdr $goalsdr"
+#  puts "goalstate allsigs distances  $goalstate . $allsigs . $distances"
   ::recall::roots::explore $goalstate $allsigs $distances
 }
 
 proc ::recall::roots::getDistances {goalsdr sigs} {
+  puts "in distances"
   set distance  0
   set distances ""
   foreach list $sigs {
@@ -619,6 +622,8 @@ proc ::recall::roots::getDistances {goalsdr sigs} {
 }
 
 proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
+  puts "in explore"
+
   set smallest 1000000
   set i 0
   foreach distance $distances {
@@ -634,10 +639,13 @@ proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
   set level  [lindex $thing 0]
   set region [lindex $thing 1]
   set root   [lindex $thing 2]
-
+  puts "level region root $level $region $root"
   #get all the states of that region
   set states [::recall::roots::getStates $level $region $root]
+  set states [lsort -unique $states]
   #see if we've explored everything in every child of that root. if so
+
+  puts "states $states"
   set stateacts [::recall::roots::actions $states]
 
 
@@ -650,9 +658,9 @@ proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
 
     #needed?
     set ::recall::stateacts $stateacts
-    puts "state acts $stateacts"
+    puts "stateacts $stateacts"
     ::recall::set::goal [::recall::roots::nextCandidate]
-    puts "::memorize::input ::recall::goal   $::memorize::input . $::recall::goal"
+#    puts "::memorize::input ::recall::goal   $::memorize::input . $::recall::goal"
 
     # hand off responsibility to decide.
     set ::decide::explore       ""
@@ -663,12 +671,17 @@ proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
     set ::decide::recall::sigs  $sigs
     set ::decide::recall::dist  $distances
     set ::decide::recall::ltry  $lasttry
+    set ::decide::recall::sgoal [lindex $stateacts 0]
+    set ::decide::recall::sacts [lindex $stateacts 1]
+    set stateacts               [lrange $stateacts 2 end]
     set ::decide::recall::dict  $stateacts
-    set ::decide::recall::sacts ""
-    set ::decide::recall::sgoal ""
-
     # go to that specific place
-    return [::recall::roots::path::find $::memorize::input $::recall::goal]
+    puts "recall::goal $::recall::goal"
+    after 100000
+    set path [::recall::roots::path::find $::memorize::input $::recall::goal]
+    #set path [::decide::generalization]
+    puts "trying to get to $::recall::goal path $path"
+    return $path
   }
 }
 
@@ -701,10 +714,12 @@ proc ::recall::roots::getStates {level region root} {
   }
   set candidates [string map {"\{" "" "\}" ""} [::recall::roots::findAllStates $subregion $level]]
   #now that you have a list of states make sure each of them are in the approapriate region
+  puts "back"
+  after 1000
   foreach candidate $candidates {
     for {set i 0} {$i <= $level} {incr i} {
       set resultregion [::recall::roots::path::findRegion $candidate $level]
-
+      puts "candidate $candidate i $i resultregion $resultregion"
     }
     if {$resultregion ne $region} {
       set idx [lsearch $candidates $candidate]
@@ -714,16 +729,25 @@ proc ::recall::roots::getStates {level region root} {
 
   return [string map {\} "" \{ ""} $candidates]
 }
+
+
 proc ::recall::roots::findAllStates {state level} {
+
   set results $state
   set candidates $state
+  set lastresults ""
   #go to main and get every result within a 2^(level+1) radius
   set n [expr 2**[expr $level+1]]
   for {set i 1} {$i < $n} {incr i} {
     set results [concat [::repo::get::chainMatchResults main        input $results] \
                         [::repo::get::chainMatchResults predictions input $results] ]
-    lappend candidates $results
+    set results [lsort -unique $results]
+    set candidates [concat $candidates $results]
+    if {$lastresults eq $results} { break }
+    set lastresults $results
   }
+  puts "candidates $candidates"
+  after 10000
   set candidates [lsort -unique $candidates]
   return $candidates
 }
@@ -793,6 +817,12 @@ proc ::recall::roots::path::find {currentstate goalstate} {
       }
     }
   }
+
+  if {[lindex $::recall::roots::actionspath 0] eq "_"} {
+    set ::recall::roots::actionspath ""
+    #[lrange $::recall::roots::actionspath 1 end]
+    #maybe just set it to lindex 1 instead idk.
+  }
   return $::recall::roots::actionspath
 }
 
@@ -838,6 +868,10 @@ proc ::recall::roots::path::finding {currentstate goalstate} {
         if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
         lappend ::recall::roots::actionspath $action
         if {$result ne $goalstate} {
+
+          #IS THIS BEING CALLED TOO MANY TIMES???
+          #SHOULD I RETURN WITH A MESSAGE SO THE THING CALLING ME CAN CALL ME AGAIN INSTEAD OF DOING IT RECURSSIVELY?
+                    
           #try to find a way to get there - call this recurssively
           ::recall::roots::path::finding $result $goalstate
         }

@@ -251,10 +251,15 @@ proc ::decide::commanded::goal msg {
 
 proc ::decide::action {msg} {
   set gen [::decide::generalization]
-  puts "gen $gen"
+#  puts "gen $gen"
   if {$gen eq "Eureka!"} {
-    puts "eureka"
+    puts "eureka!"
     ::decide::commanded::stop
+  } elseif {$gen ne ""} {
+    return $gen
+  # elseif $gen eq "" && $::decide::recall::goal ne ""
+    #supposed to generalize but probably in a state you've never seen.
+    #try to get back to a state you have seen? or behave reandomly? for now? randomly.
   } elseif {$::decide::explore eq "curious" && $::decide::goal ne ""} {
     if {$::memorize::input eq $::decide::goal} {
       set ::decide::goal ""
@@ -304,8 +309,9 @@ proc ::decide::action {msg} {
 }
 
 proc ::decide::generalization {} {
-  puts "::d::r::goal $::decide::recall::goal ::d::r::sacts $::decide::recall::sacts ::d::r::sgoal $::decide::recall::sgoal"
-  puts "::d::r::dict $::decide::recall::dict"
+#  puts "::d::r::goal $::decide::recall::goal ::d::r::sacts $::decide::recall::sacts ::d::r::sgoal $::decide::recall::sgoal"
+#  puts "::d::r::dict $::decide::recall::dict"
+
    if {$::decide::recall::goal ne ""} {
     # we're currently in a generalization process. but where?
     if {$::memorize::input eq $::decide::recall::goal} {
@@ -322,52 +328,67 @@ proc ::decide::generalization {} {
 
       return "Eureka!"
     } elseif {$::decide::path ne ""} {
+#      puts "if ::decide::path $::decide::path "
       # we have somewhere to be. - go there.
+#      after 5000
       return [::decide::actions::do]
-    } elseif {$::decide::recall::dict ne ""} {
+    } elseif {$::decide::recall::dict ne "" || ($::decide::recall::sgoal ne "" && $::decide::recall::sacts ne "")} {
+#      puts "if ::decide::recall::dict $::decide::recall::dict"
       # we have no list of actions, but we do have places to go.
-      if {$::decide::recall::sacts ne ""} {
-        # pop off the next action and go there
-        if {[llength $::decide::recall::sacts] > 0 } {
-          set tempaction              [lindex $::decide::recall::sacts 0     ]
-          set ::decide::recall::sacts [lrange $::decide::recall::sacts 1 end ]
-          set ::decide::path          [concat [::recall::roots::path::find $::memorize::input $::decide::recall::sgoal] $tempaction]
-          return [::decide::actions::do]
-        } else {
+      if {$::memorize::input eq $::decide::recall::sgoal} {
+#        puts "if at interim goal"
+        set tempaction              [lindex $::decide::recall::sacts 0     ]
+        set ::decide::recall::sacts [lrange $::decide::recall::sacts 1 end ]
+        set ::decide::path          $tempaction
+        if {$::decide::recall::sacts eq ""} {
           set ::decide::recall::sacts ""
           set ::decide::recall::sgoal ""
-          # recursive
-          ::decide::generalization
         }
-      } else {
-        # make sure we don't try to go to states we've already tried to explore, incase there's regions that contain other regions. 
+#        after 5000
+        return [::decide::actions::do]
+      }
+      if {$::decide::recall::sgoal eq ""} {
+        # make sure we don't try to go to states we've already tried to explore, incase there's regions that contain other regions.
         lappend ::decide::recall::oldgs $::decide::recall::sgoal
         # pop off the next interim goal and go there
         if {[llength $::decide::recall::dict] > 2 } {
+#          puts "if llength ::decide::recall::dict [llength $::decide::recall::dict]"
           if {[lsearch $::decide::recall::oldgs [lindex $::decide::recall::dict 0]] eq "-1" } {
             set ::decide::recall::sgoal [lindex $::decide::recall::dict 0     ]
             set ::decide::recall::sacts [lindex $::decide::recall::dict 1     ]
           }
           set ::decide::recall::dict  [lrange $::decide::recall::dict 2 end ]
           # recursive
+#          puts "recursive 1"
           ::decide::generalization
         } elseif {[llength $::decide::recall::dict] == 2 } {
+#          puts "if llength ::decide::recall::dict [llength $::decide::recall::dict]"
           if {[lsearch $::decide::recall::oldgs [lindex $::decide::recall::dict 0]] eq "-1" } {
             set ::decide::recall::sgoal [lindex $::decide::recall::dict 0     ]
             set ::decide::recall::sacts [lindex $::decide::recall::dict 1     ]
           }
           set ::decide::recall::dict  ""
           # recursive
+#          puts "recursive 2"
           ::decide::generalization
         } else {
           set ::decide::recall::dict  ""
           # recursive
+#          puts "recursive 3"
           ::decide::generalization
         }
+      } else {
+        #goal isn't empty but we're not at its location - so go to that location.
+        set   ::decide::path [::recall::roots::path::find $::memorize::input $::decide::recall::sgoal]
+#        puts "::decide::path $::decide::path"
+#        if {$::decide::path ne ""} { after 5000 }
+        return [::decide::actions::do]
       }
     } else {
       # we have no path, we have no states to go explore. Go get some more states to explore.
       set ::decide::path [::recall::roots::explore $::decide::recall::goal $::decide::recall::sigs $::decide::recall::dist $::decide::recall::ltry]
+#      puts "::decidePath $::decide::path"
+#      after 5000
       return [::decide::actions::do]
     }
   }
@@ -400,6 +421,7 @@ proc ::decide::help::weHaveActions? {} {
 
 # pops the first action off the acionlist and returns it.
 proc ::decide::actions::do {} {
+#  puts "PATH $::decide::path"
   if {[lsearch $::decide::path "_"] ne "-1" || $::decide::path eq ""} {
     set ::decide::path [::recall::guess $::memorize::input $::decide::acts]
   }
