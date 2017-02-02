@@ -173,7 +173,6 @@ proc ::decide::commanded::sleep msg {
   } else {
     puts "sleeping..."
     puts "acts"
-    after 1000
     ::decide::commanded::sleep acts
     puts $::decide::acts
     puts "opps"

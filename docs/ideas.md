@@ -463,3 +463,8 @@ So what does a signature look like? We don't want to create nodes and connection
 Now lets have a word about path finding. to get to a region from the region we're at will be very easy. not easy to program but easy to find. instead of using the double breadth-first-search strategy on large scales that'll only be done on small scales, and in between regions. The "action" portion, the middle portion of what you actually do to get to that other state becomes what ever happens in the region below. so... anyway I'll write about that later, but its efficient, trust me. So anyway there's lots of work to be done, but I think the next step is to make a process that makes a signature out of each region, on each level.
 
 side note: is another way to look at at partially observable and therefore partially deterministic environment is to see it as an environment where the goal changes based on the way in which you travel to it?
+
+
+16. ROOTS AND REGIONS DONE
+
+Ok, so I spent weeks on roots and regions, finished it. it sucks. it's slow, but so far in my testing it kinda works, is it better than what I've tried in the past? probably not. But anyway you let it crunch and it eventually works. So I'm just thinking about it, it creates these regions simply based on everything the root can directly travel to, not a bad system in theory. but I think an intelligent system would do better because it would cut up the environment into regions and roots depending on the rules of the local environment. I'm pretty tired so I'm gonna put this project away for a while. 

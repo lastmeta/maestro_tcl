@@ -408,7 +408,6 @@ proc ::recall::getActionsPathWithPrediction {input goal {retinput ""} {retgoal "
     set reti $tempinput
     set tempgoal $match
     while {[lsearch $goal $tempgoal] eq "-1"} {
-      after 200
       set tgindex [lsearch $gloc $tempgoal]
       lappend actions [lindex $gact $tgindex]
       set tempgoal [lindex $gres $tgindex]
@@ -677,7 +676,7 @@ proc ::recall::roots::explore {goalstate sigs distances {lasttry -1}} {
     set ::decide::recall::dict  $stateacts
     # go to that specific place
     puts "recall::goal $::recall::goal"
-    after 100000
+
     set path [::recall::roots::path::find $::memorize::input $::recall::goal]
     #set path [::decide::generalization]
     puts "trying to get to $::recall::goal path $path"
@@ -712,10 +711,15 @@ proc ::recall::roots::getStates {level region root} {
     set subregion [::repo::get::tableColumnsWhere roots state [list region $subregion level $i]]
     if {$i == 1} { set smallregion $subregion }
   }
+  puts "level $level subregion $subregion"
+  if {$subregion eq ""} {
+    return ""
+  }
+
   set candidates [string map {"\{" "" "\}" ""} [::recall::roots::findAllStates $subregion $level]]
   #now that you have a list of states make sure each of them are in the approapriate region
   puts "back"
-  after 1000
+
   foreach candidate $candidates {
     for {set i 0} {$i <= $level} {incr i} {
       set resultregion [::recall::roots::path::findRegion $candidate $level]
@@ -747,7 +751,7 @@ proc ::recall::roots::findAllStates {state level} {
     set lastresults $results
   }
   puts "candidates $candidates"
-  after 10000
+
   set candidates [lsort -unique $candidates]
   return $candidates
 }
@@ -826,6 +830,10 @@ proc ::recall::roots::path::find {currentstate goalstate} {
   return $::recall::roots::actionspath
 }
 
+
+
+# since the above idea is simply just coding recurssive process manually here's
+# the new idea. follow it down until we get the next action and return it and be done.
 proc ::recall::roots::path::finding {currentstate goalstate} {
   # be sure to do this before we start calling this recurssively
   # set ::recall::roots::actionspath ""
@@ -844,9 +852,7 @@ proc ::recall::roots::path::finding {currentstate goalstate} {
   while {$c_region ne $g_region} {
     set c_region [::recall::roots::path::findRegion $currentstate $level]
     set g_region [::recall::roots::path::findRegion $goalstate $level]
-    #set atom_ins [::repo::get::tableColumnsWhere regions region [list level $level region $c_region reg_to $g_region]]
     set atom_ids [::repo::get::tableColumnsWhere regions mainid [list level $level region $c_region reg_to $g_region]]
-    #set atom_res [::repo::get::tableColumnsWhere regions reg_to [list level $level region $c_region reg_to $g_region]]
     if {$atom_ids ne ""} { ;# there's a path from c to g on this level in regions # could be many.
       foreach lower_id $atom_ids {
         for {set i $level} {$i > 0} {incr i -1} {
@@ -867,14 +873,15 @@ proc ::recall::roots::path::finding {currentstate goalstate} {
         }
         if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
         lappend ::recall::roots::actionspath $action
-        if {$result ne $goalstate} {
+        return $::recall::roots::actionspath
+        #if {$result ne $goalstate} {
 
           #IS THIS BEING CALLED TOO MANY TIMES???
           #SHOULD I RETURN WITH A MESSAGE SO THE THING CALLING ME CAN CALL ME AGAIN INSTEAD OF DOING IT RECURSSIVELY?
-                    
+        #  puts "calling $result $goalstate"
           #try to find a way to get there - call this recurssively
-          ::recall::roots::path::finding $result $goalstate
-        }
+        #  ::recall::roots::path::finding $result $goalstate
+        #}
         if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
       }
       break

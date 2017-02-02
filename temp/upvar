@@ -1,0 +1,6 @@
+proc someproc varname {
+    upvar 1 $varname var
+    set var 5
+}
+someproc a
+puts $a ;# -> 5

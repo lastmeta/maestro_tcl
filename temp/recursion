@@ -1,0 +1,5 @@
+proc callme {i} {
+  puts [incr i]
+  return [callme $i]
+}
+callme 0
