@@ -10,7 +10,7 @@ proc ::simulation::setGlobals {} {
   set ::chan {}
   set ::myname {}
   set ::mymaestro {}
-  set ::location "000"
+  set ::location "0000"
 }
 
 
@@ -64,12 +64,14 @@ proc ::simulation::encode {input} {
   set enc ""
   if {[string match *-* $input] != 0} {
     set enc $::location ;#"000"
-  } elseif {$input >999} {
+  } elseif {$input >9999} {
     set enc $::location ;#"999"
-  } elseif {[string length $input] == 2 } {
+  } elseif {[string length $input] == 3 } {
     set enc "0$input"
-  } elseif {[string length $input] == 1 } {
+  } elseif {[string length $input] == 2 } {
     set enc "00$input"
+  } elseif {[string length $input] == 1 } {
+    set enc "000$input"
   } else {
     set enc $input
   }
@@ -87,11 +89,11 @@ proc ::simulation::decodeMotor {input} {
   switch -exact $input {
     0 {return 0      }
     1 {return +1     }
-    2 {return +10    }
     3 {return -1     }
-    4 {return -10    }
     default {return 0}
   }
+#    2 {return +10    }
+#    4 {return -10    }
 }
 
 
