@@ -87,13 +87,29 @@ proc ::simulation::decode {input} {
 
 proc ::simulation::decodeMotor {input} {
   switch -exact $input {
-    0 {return 0      }
-    1 {return +1     }
-    3 {return -1     }
+    0  {return 0   }
+    1  {return +1  }
+    2  {return +10 }
+    3  {return -1  }
+    4  {return -10 }
+    5  {return +2  }
+    6  {return -2  }
+    7  {return +3  }
+    8  {return -3  }
+    9  {return +4  }
+    10 {return -4  }
+    11 {return +5  }
+    12 {return -5  }
+    13 {return +6  }
+    14 {return -6  }
+    15 {return +7  }
+    16 {return -7  }
+    17 {return +8  }
+    18 {return -8  }
+    19 {return +9  }
+    20 {return -9  }
     default {return 0}
   }
-#    2 {return +10    }
-#    4 {return -10    }
 }
 
 
