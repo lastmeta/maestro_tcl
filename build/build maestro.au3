@@ -73,9 +73,9 @@ Func startUser()
 	sleep(50)
 	send("{ENTER}")
 	sleep(50)
-	send("acts 1 2 3 4")
-  sleep(50)
-	send("{ENTER}")
+	;send("acts 1 2 3 4")
+    ;sleep(50)
+	;send("{ENTER}")
 	;sleep(50)
 	;send("explore")
 EndFunc
@@ -91,3 +91,4 @@ Func closeAll()
 	ProcessClose($sim)
 	ProcessClose($user)
 EndFunc
+

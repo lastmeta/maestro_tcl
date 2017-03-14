@@ -563,8 +563,7 @@ proc ::recall::roots::try {goalstate} {
     # assume you're at the origin if you don't know where you are. - not great but a work around
     set ::memorize::input [::repo::get::tableColumnsWhere main input [list rowid 1]]
   }
-
-  if {[::repo::get::maxLevel] eq ""} {
+  if {[::repo::get::maxLevel] eq "{}"} {
     puts "I must sleep"
     # candle algo
     puts "slow path-finding"
@@ -873,15 +872,15 @@ proc ::recall::roots::path::finding {currentstate goalstate} {
         }
         if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
         lappend ::recall::roots::actionspath $action
-        return $::recall::roots::actionspath
-        #if {$result ne $goalstate} {
+        #return $::recall::roots::actionspath
+        if {$result ne $goalstate} {
 
           #IS THIS BEING CALLED TOO MANY TIMES???
           #SHOULD I RETURN WITH A MESSAGE SO THE THING CALLING ME CAN CALL ME AGAIN INSTEAD OF DOING IT RECURSSIVELY?
         #  puts "calling $result $goalstate"
           #try to find a way to get there - call this recurssively
-        #  ::recall::roots::path::finding $result $goalstate
-        #}
+          ::recall::roots::path::finding $result $goalstate
+        }
         if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
       }
       break

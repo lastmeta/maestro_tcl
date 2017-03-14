@@ -1,0 +1,201 @@
+proc ::recall::roots::path::findingOLD {currentstate goalstate} {
+  # be sure to do this before we start calling this recurssively
+  # set ::recall::roots::actionspath ""
+  set level     0
+  set c_region  ""
+  set g_region  "_"
+  set lowerids  ""
+  set inputs    ""
+  set actions   ""
+  set results   ""
+  #don't go down multiple paths
+  if {$currentstate eq $goalstate} {
+    set ::recall::roots::done yes
+    return
+  }
+  while {$c_region ne $g_region} {
+    set c_region [::recall::roots::path::findRegion $currentstate $level]
+    set g_region [::recall::roots::path::findRegion $goalstate $level]
+    set atom_ids [::repo::get::tableColumnsWhere regions mainid [list level $level region $c_region reg_to $g_region]]
+    if {$atom_ids ne ""} { ;# there's a path from c to g on this level in regions # could be many.
+      foreach lower_id $atom_ids {
+        for {set i $level} {$i > 0} {incr i -1} {
+          # look for this row in region and get the c and g and m for it.
+          set lower_id [::repo::get::tableColumnsWhere regions mainid [list rowid $lower_id]]
+        }
+        #now i = 0 which means level = 0 which means we need to look at the main table
+        #look in main for this rowid (m), record input action result in lists
+        lappend inputs  [::repo::get::tableColumnsWhere main input  [list rowid $lower_id]]
+        lappend actions [::repo::get::tableColumnsWhere main action [list rowid $lower_id]]
+        lappend results [::repo::get::tableColumnsWhere main result [list rowid $lower_id]]
+      }
+      foreach input $inputs action $actions result $results {
+        if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
+        if {$input ne $currentstate} {
+          #try to find a way to get there - call this recurssively
+          ::recall::roots::path::finding $currentstate $input
+        }
+        if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
+        lappend ::recall::roots::actionspath $action
+        if {$result ne $goalstate} {
+
+          #IS THIS BEING CALLED TOO MANY TIMES???
+          #SHOULD I RETURN WITH A MESSAGE SO THE THING CALLING ME CAN CALL ME AGAIN INSTEAD OF DOING IT RECURSSIVELY?
+          puts "calling $result $goalstate"
+          #try to find a way to get there - call this recurssively
+          ::recall::roots::path::finding $result $goalstate
+        }
+        if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
+      }
+      break
+    }
+    incr level
+    if {$level > [::repo::get::maxLevel]} { return }
+
+  }
+  if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
+  if {$c_region eq $g_region} {
+    #look in main to find exact match and save action
+    lappend ::recall::roots::actionspath [::repo::get::tableColumnsWhere main action [list input $currentstate result $goalstate]]
+  }
+  return $::recall::roots::actionspath
+}
+
+
+# Since RECURSSIVELY didn't work this idea is to have this call finding2 and have
+# finding2 just return, we then manually put the relevant variables in a stack
+# and call it again.
+proc ::recall::roots::path::finding1 {currentstate goalstate} {
+  # be sure to do this before we start calling this recurssively
+  # set ::recall::roots::actionspath ""
+  set level     0
+  set c_region  ""
+  set g_region  "_"
+  set lowerids  ""
+  set inputs    ""
+  set actions   ""
+  set results   ""
+  while {$::recall::roots::done ne "yes"} {
+    #don't go down multiple paths
+    if {$currentstate eq $goalstate} {
+      set ::recall::roots::done yes
+    }
+    ::recall::roots::path::findings {currentstate goalstate}
+
+
+  }
+
+
+
+  while {$c_region ne $g_region} {
+    set c_region [::recall::roots::path::findRegion $currentstate $level]
+    set g_region [::recall::roots::path::findRegion $goalstate $level]
+    set atom_ids [::repo::get::tableColumnsWhere regions mainid [list level $level region $c_region reg_to $g_region]]
+    if {$atom_ids ne ""} { ;# there's a path from c to g on this level in regions # could be many.
+      foreach lower_id $atom_ids {
+        for {set i $level} {$i > 0} {incr i -1} {
+          # look for this row in region and get the c and g and m for it.
+          set lower_id [::repo::get::tableColumnsWhere regions mainid [list rowid $lower_id]]
+        }
+        #now i = 0 which means level = 0 which means we need to look at the main table
+        #look in main for this rowid (m), record input action result in lists
+        lappend inputs  [::repo::get::tableColumnsWhere main input  [list rowid $lower_id]]
+        lappend actions [::repo::get::tableColumnsWhere main action [list rowid $lower_id]]
+        lappend results [::repo::get::tableColumnsWhere main result [list rowid $lower_id]]
+      }
+      foreach input $inputs action $actions result $results {
+        if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
+        if {$input ne $currentstate} {
+          #try to find a way to get there - call this recurssively
+          ::recall::roots::path::finding $currentstate $input
+        }
+        if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
+        lappend ::recall::roots::actionspath $action
+        if {$result ne $goalstate} {
+
+          #IS THIS BEING CALLED TOO MANY TIMES???
+          #SHOULD I RETURN WITH A MESSAGE SO THE THING CALLING ME CAN CALL ME AGAIN INSTEAD OF DOING IT RECURSSIVELY?
+          puts "calling $result $goalstate"
+          #try to find a way to get there - call this recurssively
+          ::recall::roots::path::finding $result $goalstate
+        }
+        if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
+      }
+      break
+    }
+    incr level
+    if {$level > [::repo::get::maxLevel]} { return }
+
+  }
+  if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
+  if {$c_region eq $g_region} {
+    #look in main to find exact match and save action
+    lappend ::recall::roots::actionspath [::repo::get::tableColumnsWhere main action [list input $currentstate result $goalstate]]
+  }
+  return $::recall::roots::actionspath
+}
+
+
+proc ::recall::roots::path::finding2 {currentstate goalstate} {
+  upvar 1 $varname var
+  set var 5
+
+  set level     0
+  set c_region  ""
+  set g_region  "_"
+  set lowerids  ""
+  set inputs    ""
+  set actions   ""
+  set results   ""
+  #don't go down multiple paths
+  if {$currentstate eq $goalstate} {
+    set ::recall::roots::done yes
+    return
+  }
+  while {$c_region ne $g_region} {
+    set c_region [::recall::roots::path::findRegion $currentstate $level]
+    set g_region [::recall::roots::path::findRegion $goalstate $level]
+    set atom_ids [::repo::get::tableColumnsWhere regions mainid [list level $level region $c_region reg_to $g_region]]
+    if {$atom_ids ne ""} { ;# there's a path from c to g on this level in regions # could be many.
+      foreach lower_id $atom_ids {
+        for {set i $level} {$i > 0} {incr i -1} {
+          # look for this row in region and get the c and g and m for it.
+          set lower_id [::repo::get::tableColumnsWhere regions mainid [list rowid $lower_id]]
+        }
+        #now i = 0 which means level = 0 which means we need to look at the main table
+        #look in main for this rowid (m), record input action result in lists
+        lappend inputs  [::repo::get::tableColumnsWhere main input  [list rowid $lower_id]]
+        lappend actions [::repo::get::tableColumnsWhere main action [list rowid $lower_id]]
+        lappend results [::repo::get::tableColumnsWhere main result [list rowid $lower_id]]
+      }
+      foreach input $inputs action $actions result $results {
+        if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
+        if {$input ne $currentstate} {
+          #try to find a way to get there - call this recurssively
+          ::recall::roots::path::finding $currentstate $input
+        }
+        if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
+        lappend ::recall::roots::actionspath $action
+        if {$result ne $goalstate} {
+
+          #IS THIS BEING CALLED TOO MANY TIMES???
+          #SHOULD I RETURN WITH A MESSAGE SO THE THING CALLING ME CAN CALL ME AGAIN INSTEAD OF DOING IT RECURSSIVELY?
+          puts "calling $result $goalstate"
+          #try to find a way to get there - call this recurssively
+          ::recall::roots::path::finding $result $goalstate
+        }
+        if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
+      }
+      break
+    }
+    incr level
+    if {$level > [::repo::get::maxLevel]} { return }
+
+  }
+  if {$::recall::roots::done} { return } ;# if we found an actions path break the recursion process
+  if {$c_region eq $g_region} {
+    #look in main to find exact match and save action
+    lappend ::recall::roots::actionspath [::repo::get::tableColumnsWhere main action [list input $currentstate result $goalstate]]
+  }
+  return $::recall::roots::actionspath
+}
