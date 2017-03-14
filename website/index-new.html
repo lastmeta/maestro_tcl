@@ -79,7 +79,7 @@ ul.sys_navigation li a{
 }
 .content-inner-wrapper {
   margin:0 auto;
-  max-width: 800px;
+  max-width: 1400px;
 }
 .content-innermost-wrapper {
   margin:0 auto;
@@ -89,14 +89,7 @@ ul.sys_navigation li a{
 
 .sys_layout blockquote {
   border-color: #ffe9c8;;
-
-
-
-
-
-
   font-style: italic;
-
 }
 
 /* A rendered screen width > 736px excludes event the largest of mobile
@@ -388,11 +381,12 @@ div.sys_navigation ul li a:hover, div#menu ul li a:hover, #navigation li a:hover
 }
 
 /* Hyperlinks (a, a:hover, a:visited) */
-a, .sys_txt a:link, .sys_layout a:link {color: #ffffff;}
-a, .sys_txt a:link, .sys_layout a:link {text-decoration: underline;}
+a {text-decoration: none;}
+/*a, .sys_txt a:link, .sys_layout a:link {color: #ffffff;}
+a, .sys_txt a:link, .sys_layout a:link {text-decoration: none;}
 a:visited, .sys_txt a:visited, .sys_layout a:visited {color: #ffffff;}
 a:hover, .sys_txt a:hover, .sys_layout a:hover {color: #e31d2c;}
-a:hover, .sys_txt a:hover, .sys_layout a:hover {text-decoration: underline;}
+a:hover, .sys_txt a:hover, .sys_layout a:hover {text-decoration: none;}*/
 
 /* Headings (h2, h3, h4, h5, h6) */
 .sys_layout h2, .sys_txt h2 {
@@ -614,13 +608,40 @@ a:hover, .sys_txt a:hover, .sys_layout a:hover {text-decoration: underline;}
 
 
 
-#c1, #c2 {
-    width: 33%;
+#one, #two {
+  width: 31.6%;
+  margin: auto;
+  float: left;
+  padding-left: 1%;
+  padding-right: 1%;
+  padding-top: 60px;
 }
 
-#c3 {
-    width: auto;
+
+#three {
+  width: 31.6%;
+  margin: auto;
+  float: left;
+  padding-left: 1%;
+    padding-top: 60px;
 }
+
+.footer {
+  /*position: absolute;*/
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 1rem;
+  background-color: #efefef;
+  opacity: .5;
+  text-align: center;
+  font-family: 'Inconsolata';
+  font-weight: 300;
+  font-size: 1.3rem;
+  color: #ad69dd;
+}
+
+
 </style>
   </head>
   <body lang="en">
@@ -671,15 +692,48 @@ a:hover, .sys_txt a:hover, .sys_layout a:hover {text-decoration: underline;}
                         </p>
                         <h3 style="text-align: center;"></h3>
                         <h2 style="text-align: center; color: #fafafa;">maestro ai</h2>
-                      <p style="text-align: center;" class="over_outline">conduct <span style="color: #dadada;">everything.</span></p>
-                      <p style="text-align: center;" class="over_outline">maestro ai <span style="color: #dadada;">is an attempt at creating a generalized sensorimotor inference engine. what is that? a system that explores its environment all on its own to learn how that environment works. once it has learned how the environment works it can manipulate that environment anyway you like. it can work with any environment. it can learn to do anything. it's essentially a generalized machine learning.</span></p>
-                      <div id="wrapper">
-                        <div id="c1"><h3 style="text-align: center; color: #fafafa;">why?</h3></div>
-                        <div id="c2"><h3 style="text-align: center; color: #fafafa;">what?</h3></div>
-                        <div id="c3"><h3 style="text-align: center; color: #fafafa;">theory</h3></div>
+                        <p></p>
+                        <a href="https://github.com/LegitStack/maestro">
+                          <p style="text-align: center;" class="over_outline">conduct <span style="color: #dadada;">everything</span></p>
+                        </a>
+                        <p></p>
                       </div>
-                      <h3 style="text-align: center; color: #fafafa;">contact</h3>
-                      <h3 style="text-align: center; color: #fafafa;">about</h3>
+                      <div id="wrapper">
+                        <div id="one">
+                          <h3 style="text-align: center; color: #dadada;">why</h3>
+                          <span style="color: #dadada;">
+                            we need to learn the opperating principles of intelligence. <br /><br />
+                            what does it mean to <i>understand</i> something?<br /><br />
+                            how do you create <i>meaningful</i> behavior in an efficient manner?<br /><br />
+                            maestro ai is an effort to answer these questions through the creation of the simplest possible thinking machine.<br /><br />
+                            we need a generalized sensorimotor inference engine that can learn anything on its own.
+                          </span>
+                          <a href="http://blog.maestroai.com/the-most-important-thing/"><p>click here<span style="color: #dadada;"> to read more...</span></p></a>
+                        </div>
+                        <div id="two">
+                          <h3 style="text-align: center; color: #fafafa;">what</h3>
+                          <span style="color: #dadada;">
+                            maestro ai is not a musician.<br /><br />
+                            it is an attempt at creating a generalized sensorimotor inference engine:<br /><br />
+                            a system that explores its environment all on its own to learn how the environment works.<br /><br />
+                            once it has learned how the environment works it can manipulate that environment anyway you like.<br /><br />
+                            it can work with any environment.<br /><br />
+                            it can learn to do anything.<br /><br />
+                            it's essentially generalized machine learning.
+                          </span>
+                          <a href="http://blog.maestroai.com/a-naive-sensorimotor-inference-engine/"><p>click here<span style="color: #dadada;"> to read more...</span></p></a>
+                        </div>
+                        <div id="three">
+                          <h3 style="text-align: center; color: #fafafa;">theory</h3>
+                          <span style="color: #dadada;">
+                            our approach to creating an ultra-simplified sensorimotor inference engine has been to:<br /><br />
+                            1. use fundamentals of information theory<br /><br />
+                            2. always take the simplest possible path<br /><br />
+                            3. rely on structure over computation<br /><br />
+                            4. rely on reasoning by analogy to reduce the state-space serach
+                          </span>
+                          <a href="http://blog.maestroai.com/home/"><p>click here<span style="color: #dadada;"> to read more...</span></p></a>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -689,6 +743,9 @@ a:hover, .sys_txt a:hover, .sys_layout a:hover {text-decoration: underline;}
           </div>
         </div>
       </div>
+    </div>
+    <div class="footer">
+      <a href="http://blog.maestroai.com/the-most-important-thing/">  why  </a>|<a href="http://blog.maestroai.com/a-naive-sensorimotor-inference-engine/">  what  </a>|<a href="http://blog.maestroai.com/home/">  <strong>theory</strong>  </a>|<a href="http://blog.maestroai.com/contact-us-2/">  contact  </a>|<a href="https://github.com/LegitStack/maestro">  code  </a>
     </div>
   </body>
 </html>
