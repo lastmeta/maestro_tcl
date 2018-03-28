@@ -157,56 +157,77 @@ This rule expresses a generalized prediction based on the fact that it's seen th
 Maestro first converts the data it sees to a sparse distributed representation:
 
 ```
-f 	-> 	f in index 0	->	1
-fo 	->	f in index 0, o in index 1 	-> 	11
-f		->	f in index 0,   in index 1	->  01
-foo ->  f in index 0, o in index 1, o in index 2 ->	111
-b 	-> 	b in index 0	->	0001
-ba 	->	b in index 0, a in index 1 	-> 	00011
-b		->	b in index 0,   in index 1	->  00010
-bar ->  b in index 0, a in index 1, r in index 2 ->	000111
-foo ->  111000
-bar ->	000111
-far ->  100011
-boo ->  011100
-baz ->  0 0 0 1 1 0 1
-			(	f o o b a r z )
-			(	@ @ @ @ @ @ @ )
-			(	0 1 2 0 1 2 2 )
+f   -> f at index 0                             -> 1
+fo  -> f at index 0, o at index 1               -> 11
+f   -> f at index 0,   at index 1               -> 01
+foo -> f at index 0, o at index 1, o at index 2 -> 111
+b   -> b at index 0                             -> 0001
+ba  -> b at index 0, a at index 1               -> 00011
+b   -> b at index 0,   at index 1               -> 00010
+bar -> b at index 0, a at index 1, r at index 2 -> 000111
+foo -> 111000
+bar -> 000111
+far -> 100011
+boo -> 011100
+baz ->
+ 0001101
+(foobarz)
+(@@@@@@@)
+(0120122)
 ```
 
 Next, Maestro learns transitions from one sparse distributed representation (SDR) to another in terms of binary bitwise transitions called a Transition String:
 
 ```
-foo ->  1110
-boo ->  0111
-
+foo = 1110
+boo = 0111
 foo -> boo = 1110 -> 0111
 
-- = flip
+| = flip
 . = stay
 
 0 = .... = 1110
-1 = ---- = 0001
-1 = ---. = 1001
-1 = --.- = 0100
-0 = --.. = 0100 (no flip because it's what we want)
-1 = -.-- = 1111
-1 = -.-. = 0101
-0 = -..- = 0101 (no flip because it's what we want)
-0 = -... = 0101 (no flip because it's what we want)
-1 = .--- = 0010
-1 = .--. = 0100
-1 = .-.- = 0001
-1 = .-.. = 0101
-1 = ..-- = 0110
-0 = ..-. = 0110 (no flip because it's what we want)
-1 = ...- = 0111 (done)
+1 = ...| = 1111
+0 = ..|. = 1111 (corresponding indices are already accurate).
+0 = ..|| = 1111 (corresponding indices are already accurate).
+0 = .|.. = 1111 (corresponding indices are already accurate).
+0 = .|.| = 1111 (corresponding indices are already accurate).
+0 = .||. = 1111 (corresponding indices are already accurate).
+1 = .||| = 0111
+0 = |... = 0111 (corresponding indices are already accurate).
+0 = |..| = 0111 (corresponding indices are already accurate).
+0 = |.|. = 0111 (corresponding indices are already accurate).
+0 = |.|| = 0111 (corresponding indices are already accurate).
+0 = ||.. = 0111 (corresponding indices are already accurate).
+0 = ||.| = 0111 (corresponding indices are already accurate).
+0 = |||. = 0111 (corresponding indices are already accurate).
+0 = |||| = 0111 (corresponding indices are already accurate).
 ||
-|| > 0111011001111101			
+|| > 0100000100000000
+(flipping them all first which would be a reverse path is 0111011001111101)			
 
 foo -> boo
-the transition string from foo to boo is 0111011001111101
+the transition string from foo to boo is 0100000100000000
+
+Furthermore, a different set of transitions may work well as long as it preserves the fact that any transition can be created:
+
+0 = .... = 1110
+1 = ...| = 1111
+1 = |... = 0111
+0 = .|.. = 0111
+0 = ..|. = 0111
+0 = ||.. = 0111
+0 = ..|| = 0111
+0 = .||. = 0111
+0 = |..| = 0111
+0 = .|.| = 0111
+0 = |.|. = 0111
+0 = |.|| = 0111
+0 = ||.| = 0111
+0 = |||. = 0111
+1 = .||| = 0111
+0 = |||| = 0111
+
 ```
 
 Since our inputs' SDRs are 4 digits long (cropped) the maximum transition length is 16 digits.
